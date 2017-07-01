@@ -17,10 +17,6 @@ public class ChartReaderTest {
     }
 
     @Test
-    public void create() {
-    }
-
-    @Test
     public void canFindChart() throws IOException {
         assertTrue(reader.findChart());
     }
