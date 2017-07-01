@@ -1,6 +1,5 @@
 package chart;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -21,9 +20,9 @@ public class ChartReaderTest {
         assertTrue(reader.findChart());
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void cannotFindNonExistentChart() throws IOException {
         ChartReader other = new ChartReader(1337);
-        assertFalse(other.findChart());
+        other.findChart();
     }
 }
