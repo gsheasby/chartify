@@ -1,6 +1,8 @@
 package chart;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
@@ -14,20 +16,30 @@ public class ChartCompilerTest {
         compiler.compileChart(1);
     }
 
-    // TODO add mocking
     @Test
-    public void firstWeekHasNewEntries() throws IOException {
-        ChartReader reader = new ChartReader("src/test/resources");
+    public void firstMockedWeekHasNewEntries() throws IOException {
+        ChartReader reader = mock(ChartReader.class);
+        SimpleChartEntry entry = ImmutableSimpleChartEntry.builder()
+                .title("title")
+                .artist("artist")
+                .position(1)
+                .build();
+        SimpleChart simpleChart = ImmutableSimpleChart.builder()
+                                                      .addEntries(entry)
+                                                      .build();
+        when(reader.findChart(1))
+                .thenReturn(simpleChart);
+
         ChartCompiler compiler = new ChartCompiler(reader);
         Chart chart = compiler.compileChart(1);
         assertEquals(1, chart.entries().size());
 
         ChartEntry expected = ImmutableChartEntry.builder()
-                .position(1)
-                .title("title")
-                .artist("artist")
-                .weeksOnChart(1)
-                .build();
+                                                 .position(1)
+                                                 .title("title")
+                                                 .artist("artist")
+                                                 .weeksOnChart(1)
+                                                 .build();
         assertEquals(expected, chart.entries().get(0));
     }
 }
