@@ -9,17 +9,18 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ChartReader {
-    public static final String FOLDER = "src/main/resources";
+    private final String folder;
     private final int week;
 
-    public ChartReader(int week) {
+    public ChartReader(String folder, int week) {
+        this.folder = folder;
         this.week = week;
     }
 
     public boolean findChart() throws IOException {
-        Path folder = Paths.get(FOLDER);
+        Path path = Paths.get(folder);
         String weekStr = Integer.toString(week);
-        List<Path> chartFiles = Files.walk(folder)
+        List<Path> chartFiles = Files.walk(path)
                                   .filter(file -> file.getFileName().toString().startsWith(weekStr))
                                   .collect(Collectors.toList());
         if (chartFiles.isEmpty()) {

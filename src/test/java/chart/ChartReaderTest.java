@@ -8,11 +8,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class ChartReaderTest {
+    private static String FOLDER = "src/main/resources";
+
     private ChartReader reader;
 
     @Before
     public void setUp() {
-        reader = new ChartReader(589);
+        reader = new ChartReader(FOLDER, 589);
     }
 
     @Test
@@ -22,7 +24,7 @@ public class ChartReaderTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void cannotFindNonExistentChart() throws IOException {
-        ChartReader other = new ChartReader(1337);
+        ChartReader other = new ChartReader(FOLDER, 1337);
         other.findChart();
     }
 }
