@@ -14,12 +14,12 @@ public class ChartReaderTest {
 
     @Before
     public void setUp() {
-        reader = new ChartReader(FOLDER, 1);
+        reader = new ChartReader(FOLDER);
     }
 
     @Test
     public void canFindChart() throws IOException {
-        SimpleChart chart = reader.findChart();
+        SimpleChart chart = reader.findChart(1);
         assertEquals(1, chart.entries().size());
 
         SimpleChartEntry expected = ImmutableSimpleChartEntry.builder()
@@ -32,7 +32,7 @@ public class ChartReaderTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void cannotFindNonExistentChart() throws IOException {
-        ChartReader other = new ChartReader(FOLDER, 1337);
-        other.findChart();
+        ChartReader other = new ChartReader(FOLDER);
+        other.findChart(1337);
     }
 }

@@ -10,14 +10,12 @@ import java.util.stream.Stream;
 
 public class ChartReader {
     private final String folder;
-    private final int week;
 
-    public ChartReader(String folder, int week) {
+    public ChartReader(String folder) {
         this.folder = folder;
-        this.week = week;
     }
 
-    public SimpleChart findChart() throws IOException {
+    public SimpleChart findChart(int week) throws IOException {
         Path path = Paths.get(folder);
         String weekStr = Integer.toString(week);
         List<Path> chartFiles = Files.walk(path)
