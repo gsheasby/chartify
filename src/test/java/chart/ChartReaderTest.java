@@ -8,13 +8,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class ChartReaderTest {
-    private static String FOLDER = "src/main/resources";
+    private static String FOLDER = "src/test/resources";
 
     private ChartReader reader;
 
     @Before
     public void setUp() {
-        reader = new ChartReader(FOLDER, 589);
+        reader = new ChartReader(FOLDER, 1);
     }
 
     @Test
