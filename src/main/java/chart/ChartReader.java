@@ -17,7 +17,7 @@ public class ChartReader {
         this.week = week;
     }
 
-    public boolean findChart() throws IOException {
+    public SimpleChart findChart() throws IOException {
         Path path = Paths.get(folder);
         String weekStr = Integer.toString(week);
         List<Path> chartFiles = Files.walk(path)
@@ -28,7 +28,7 @@ public class ChartReader {
         }
 
         Stream<String> lines = Files.lines(chartFiles.get(0));
-        lines.forEach(System.out::println);
-        return chartFiles.size() > 0;
+        List<SimpleChartEntry> entries = lines.map(CsvLineParser::parse).collect(Collectors.toList());
+        return ImmutableSimpleChart.builder().entries(entries).build();
     }
 }

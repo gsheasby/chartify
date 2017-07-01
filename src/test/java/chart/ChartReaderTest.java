@@ -1,6 +1,6 @@
 package chart;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
@@ -19,7 +19,15 @@ public class ChartReaderTest {
 
     @Test
     public void canFindChart() throws IOException {
-        assertTrue(reader.findChart());
+        SimpleChart chart = reader.findChart();
+        assertEquals(1, chart.entries().size());
+
+        SimpleChartEntry expected = ImmutableSimpleChartEntry.builder()
+                .position(1)
+                .title("title")
+                .artist("artist")
+                .build();
+        assertEquals(expected, chart.entries().get(0));
     }
 
     @Test(expected = IllegalArgumentException.class)
