@@ -1,5 +1,15 @@
 package chart;
 
+import java.io.IOException;
+
 public class ChartCompiler {
-    public ChartCompiler(ChartReader reader) {}
+    private final ChartReader reader;
+
+    public ChartCompiler(ChartReader reader) {
+        this.reader = reader;
+    }
+
+    public void compileChart(int week) throws IOException {
+        SimpleChart thisWeek = reader.findChart(week);
+    }
 }
