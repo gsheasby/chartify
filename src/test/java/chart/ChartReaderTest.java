@@ -3,6 +3,8 @@ package chart;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,14 +20,13 @@ public class ChartReaderTest {
     public void create() {
     }
 
-    // TODO can't find chart that isn't there
     @Test
-    public void canFindChart() {
+    public void canFindChart() throws IOException {
         assertTrue(reader.findChart());
     }
 
     @Test
-    public void cannotFindNonExistentChart() {
+    public void cannotFindNonExistentChart() throws IOException {
         ChartReader other = new ChartReader(1337);
         assertFalse(other.findChart());
     }
