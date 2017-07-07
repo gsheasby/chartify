@@ -12,4 +12,12 @@ public class CsvLineParserTest {
         assertEquals("title", actual.title());
         assertEquals("artist", actual.artist());
     }
+
+    @Test
+    public void parseLineWithComma() {
+        SimpleChartEntry actual = CsvLineParser.parse("1,\"title, with comma\",artist");
+        assertEquals(1, actual.position());
+        assertEquals("title, with comma", actual.title());
+        assertEquals("artist", actual.artist());
+    }
 }
