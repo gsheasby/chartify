@@ -35,7 +35,11 @@ public class ChartCompiler {
                 entries.add(entry);
             }
 
-            return ImmutableChart.builder().entries(entries).build();
+            return ImmutableChart.builder()
+                                 .week(thisWeek.week())
+                                 .date(thisWeek.date())
+                                 .entries(entries)
+                                 .build();
 
         } catch (IllegalArgumentException ex) {
             return allNewEntries(thisWeek);
@@ -58,7 +62,9 @@ public class ChartCompiler {
                                            .map(this::newEntry)
                                            .collect(Collectors.toList());
 
-        return ImmutableChart.builder().entries(entries).build();
+        return ImmutableChart.builder().week(thisWeek.week())
+                             .date(thisWeek.date())
+                             .entries(entries).build();
     }
 
     private ChartEntry newEntry(SimpleChartEntry simpleEntry) {

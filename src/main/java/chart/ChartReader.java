@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.joda.time.DateTime;
+
 public class ChartReader {
     private final String folder;
 
@@ -25,8 +27,14 @@ public class ChartReader {
             throw new IllegalArgumentException("Chart for week " + week + " not found!");
         }
 
-        Stream<String> lines = Files.lines(chartFiles.get(0));
+        Path chartPath = chartFiles.get(0);
+        DateTime chartDate = ChartUtils.getDate(chartPath.getFileName().toString());
+        Stream<String> lines = Files.lines(chartPath);
         List<SimpleChartEntry> entries = lines.map(CsvLineParser::parse).collect(Collectors.toList());
-        return ImmutableSimpleChart.builder().entries(entries).build();
+        return ImmutableSimpleChart.builder()
+                                   .week(week)
+                                   .date(chartDate)
+                                   .entries(entries)
+                                   .build();
     }
 }

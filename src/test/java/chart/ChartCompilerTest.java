@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
+import org.joda.time.DateTime;
 import org.junit.Test;
 
 public class ChartCompilerTest {
@@ -15,6 +16,8 @@ public class ChartCompilerTest {
                                                                                   .position(1)
                                                                                   .build();
     private static final SimpleChart SIMPLE_CHART = ImmutableSimpleChart.builder()
+                                                                        .week(1)
+                                                                        .date(DateTime.now())
                                                                         .addEntries(SIMPLE_ENTRY)
                                                                         .build();
     private static final ImmutableChartEntry CHART_ENTRY = ImmutableChartEntry.builder()
