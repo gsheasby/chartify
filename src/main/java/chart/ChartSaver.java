@@ -42,11 +42,23 @@ public class ChartSaver {
             return String.format("%d,%d,%d,%s,%s",
                                  entry.position(),
                                  entry.lastPosition().get(),
-                                 entry.weeksOnChart(), entry.title(), entry.artist());
+                                 entry.weeksOnChart(),
+                                 surroundWithQuotesIfComma(entry.title()),
+                                 entry.artist());
         } else {
             return String.format("%d,,%d,%s,%s",
                                  entry.position(),
-                                 entry.weeksOnChart(), entry.title(), entry.artist());
+                                 entry.weeksOnChart(),
+                                 surroundWithQuotesIfComma(entry.title()),
+                                 entry.artist());
+        }
+    }
+
+    private String surroundWithQuotesIfComma(String str) {
+        if (str.indexOf(',') < 0) {
+            return str;
+        } else {
+            return "\"" + str + "\"";
         }
     }
 }
