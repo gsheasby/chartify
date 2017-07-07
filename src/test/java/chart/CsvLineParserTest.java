@@ -2,6 +2,8 @@ package chart;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Optional;
+
 import org.junit.Test;
 
 public class CsvLineParserTest {
@@ -18,6 +20,26 @@ public class CsvLineParserTest {
         SimpleChartEntry actual = CsvLineParser.parse("1,\"title, with comma\",artist");
         assertEquals(1, actual.position());
         assertEquals("title, with comma", actual.title());
+        assertEquals("artist", actual.artist());
+    }
+
+    @Test
+    public void parseChartLine() {
+        ChartEntry actual = CsvLineParser.parseEntry("1,2,3,title,artist");
+        assertEquals(new Integer(1), actual.position());
+        assertEquals(Optional.of(2), actual.lastPosition());
+        assertEquals(new Integer(3), actual.weeksOnChart());
+        assertEquals("title", actual.title());
+        assertEquals("artist", actual.artist());
+    }
+
+    @Test
+    public void parseNewEntry() {
+        ChartEntry actual = CsvLineParser.parseEntry("1,,1,title,artist");
+        assertEquals(new Integer(1), actual.position());
+        assertEquals(Optional.empty(), actual.lastPosition());
+        assertEquals(new Integer(1), actual.weeksOnChart());
+        assertEquals("title", actual.title());
         assertEquals("artist", actual.artist());
     }
 }

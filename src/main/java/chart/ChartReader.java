@@ -17,6 +17,27 @@ public class ChartReader {
         this.folder = folder;
     }
 
+    public Chart findDerivedChart(int week) throws IOException {
+        Path path = Paths.get(folder);
+        String weekStr = Integer.toString(week);
+        List<Path> chartFiles = Files.walk(path)
+                                     .filter(file -> file.getFileName().toString().startsWith(weekStr))
+                                     .collect(Collectors.toList());
+        if (chartFiles.isEmpty()) {
+            throw new IllegalArgumentException("Chart for week " + week + " not found!");
+        }
+
+        Path chartPath = chartFiles.get(0);
+        DateTime chartDate = ChartUtils.getDate(chartPath.getFileName().toString());
+        Stream<String> lines = Files.lines(chartPath);
+        List<ChartEntry> entries = lines.map(CsvLineParser::parseEntry).collect(Collectors.toList());
+        return ImmutableChart.builder()
+                                   .week(week)
+                                   .date(chartDate)
+                                   .entries(entries)
+                                   .build();
+    }
+
     public SimpleChart findChart(int week) throws IOException {
         Path path = Paths.get(folder);
         String weekStr = Integer.toString(week);

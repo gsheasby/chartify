@@ -30,7 +30,8 @@ public class ChartCompilerTest {
     @Test
     public void canCompileChart() throws IOException {
         ChartReader reader = new ChartReader("src/test/resources");
-        ChartCompiler compiler = new ChartCompiler(reader);
+        ChartReader derivedReader = reader; // TODO
+        ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
         compiler.compileChart(1);
     }
 
@@ -40,7 +41,8 @@ public class ChartCompilerTest {
         when(reader.findChart(1)).thenReturn(SIMPLE_CHART);
         when(reader.findChart(0)).thenThrow(IllegalArgumentException.class);
 
-        ChartCompiler compiler = new ChartCompiler(reader);
+        ChartReader derivedReader = reader; // TODO
+        ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart(1);
         assertEquals(1, chart.entries().size());
 
@@ -53,7 +55,8 @@ public class ChartCompilerTest {
         when(reader.findChart(1)).thenReturn(SIMPLE_CHART);
         when(reader.findChart(2)).thenReturn(SIMPLE_CHART);
 
-        ChartCompiler compiler = new ChartCompiler(reader);
+        ChartReader derivedReader = reader; // TODO
+        ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart(2);
         assertEquals(1, chart.entries().size());
 

@@ -9,28 +9,30 @@ import java.util.stream.Collectors;
 
 public class ChartCompiler {
     private final ChartReader reader;
+    private final ChartReader derivedReader;
 
-    public ChartCompiler(ChartReader reader) {
+    public ChartCompiler(ChartReader reader, ChartReader derivedReader) {
         this.reader = reader;
+        this.derivedReader = derivedReader;
     }
 
     public Chart compileChart(int week) throws IOException {
         SimpleChart thisWeek = reader.findChart(week);
 
         try {
-            SimpleChart lastWeek = reader.findChart(week - 1);
+            Chart lastWeek = derivedReader.findDerivedChart(week - 1);
 
             List<ChartEntry> entries = new ArrayList<>();
 
             for (SimpleChartEntry simpleEntry : thisWeek.entries()) {
-                Optional<Integer> lastPos = findSongInChart(lastWeek, simpleEntry);
-                int weeksOnChart = lastPos.isPresent() ? 2 : 1;
+                Optional<ChartEntry> lastPos = findSongInChart(lastWeek, simpleEntry);
+                int weeksOnChart = lastPos.map(chartEntry -> chartEntry.weeksOnChart() + 1).orElse(1);
                 ChartEntry entry = ImmutableChartEntry.builder()
                         .position(simpleEntry.position())
                         .title(simpleEntry.title())
                         .artist(simpleEntry.artist())
                         .weeksOnChart(weeksOnChart)
-                        .lastPosition(lastPos)
+                        .lastPosition(lastPos.map(ChartEntry::position))
                         .build();
                 entries.add(entry);
             }
@@ -42,18 +44,18 @@ public class ChartCompiler {
                                  .build();
 
         } catch (IllegalArgumentException ex) {
+            ex.printStackTrace();
             return allNewEntries(thisWeek);
         }
     }
 
-    private Optional<Integer> findSongInChart(SimpleChart lastWeek, SimpleChartEntry entry) {
+    private Optional<ChartEntry> findSongInChart(Chart lastWeek, SimpleChartEntry entry) {
         return lastWeek.entries().stream()
                        .filter(sameSongAs(entry))
-                       .map(SimpleChartEntry::position)
                        .findAny();
     }
 
-    private Predicate<SimpleChartEntry> sameSongAs(SimpleChartEntry entry) {
+    private Predicate<ChartEntry> sameSongAs(SimpleChartEntry entry) {
         return sce -> sce.artist().equals(entry.artist()) && sce.title().equals(entry.title());
     }
 
