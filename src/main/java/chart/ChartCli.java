@@ -23,14 +23,16 @@ public class ChartCli {
     private static void printEntry(ChartEntry entry) {
         String s;
         if (entry.lastPosition().isPresent()) {
-            s = String.format("%02d (%02d) %s - %s",
+            s = String.format("%02d (%02d) %d %s - %s",
                               entry.position(),
                               entry.lastPosition().get(),
+                              entry.weeksOnChart(),
                               entry.title(),
                               entry.artist());
         } else {
-            s = String.format("%02d (NE) %s - %s",
+            s = String.format("%02d (NE) %d %s - %s",
                               entry.position(),
+                              entry.weeksOnChart(),
                               entry.title(),
                               entry.artist());
         }
