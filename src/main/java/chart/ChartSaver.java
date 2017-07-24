@@ -44,13 +44,13 @@ public class ChartSaver {
                                  entry.lastPosition().get(),
                                  entry.weeksOnChart(),
                                  surroundWithQuotesIfComma(entry.title()),
-                                 entry.artist());
+                                 surroundWithQuotesIfComma(entry.artist()));
         } else {
             return String.format("%d,,%d,%s,%s",
                                  entry.position(),
                                  entry.weeksOnChart(),
                                  surroundWithQuotesIfComma(entry.title()),
-                                 entry.artist());
+                                 surroundWithQuotesIfComma(entry.artist()));
         }
     }
 
