@@ -24,6 +24,14 @@ public class CsvLineParserTest {
     }
 
     @Test
+    public void parseLineWithCommaInLastPart() {
+        SimpleChartEntry actual = CsvLineParser.parse("1,title,\"artist, friend\"");
+        assertEquals(1, actual.position());
+        assertEquals("title", actual.title());
+        assertEquals("artist, friend", actual.artist());
+    }
+
+    @Test
     public void parseChartLine() {
         ChartEntry actual = CsvLineParser.parseEntry("1,2,3,title,artist");
         assertEquals(new Integer(1), actual.position());

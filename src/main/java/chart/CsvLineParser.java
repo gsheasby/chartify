@@ -52,8 +52,10 @@ public class CsvLineParser {
             String next;
             int endIndex;
             if (restOfLine.startsWith("\"")) {
-                endIndex = restOfLine.indexOf('"', 1) + 1;
-                next = restOfLine.substring(1, endIndex - 1);
+                int nextQuote = restOfLine.indexOf('"', 1);
+                endIndex = restOfLine.indexOf(',', nextQuote);
+                next = endIndex >= 0 ? restOfLine.substring(1, endIndex - 1)
+                        : restOfLine.substring(1, nextQuote);
             } else {
                 endIndex = restOfLine.indexOf(',');
                 next = endIndex >= 0 ? restOfLine.substring(0, endIndex) : restOfLine;
