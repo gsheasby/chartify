@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -37,10 +38,20 @@ public class ChartCompiler {
                 entries.add(entry);
             }
 
+            Set<Integer> inFromLastWeek = entries.stream()
+                                          .map(ent -> ent.lastPosition().orElse(-1))
+                                          .filter(pos -> pos != -1) // bit of a hack
+                                          .collect(Collectors.toSet());
+
+            List<ChartEntry> dropouts = lastWeek.entries().stream()
+                    .filter(ent -> !inFromLastWeek.contains(ent.position()))
+                    .collect(Collectors.toList());
+
             return ImmutableChart.builder()
                                  .week(thisWeek.week())
                                  .date(thisWeek.date())
                                  .entries(entries)
+                                 .dropouts(dropouts)
                                  .build();
 
         } catch (IllegalArgumentException ex) {
