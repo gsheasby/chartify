@@ -10,4 +10,5 @@ public abstract class Chart {
     public abstract int week();
     public abstract DateTime date();
     public abstract List<ChartEntry> entries();
+    public abstract List<ChartEntry> dropouts();
 }

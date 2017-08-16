@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.joda.time.DateTime;
 import org.junit.Test;
@@ -15,17 +16,16 @@ public class ChartCompilerTest {
                                                                                   .artist("artist")
                                                                                   .position(1)
                                                                                   .build();
-    private static final SimpleChart SIMPLE_CHART = ImmutableSimpleChart.builder()
-                                                                        .week(1)
-                                                                        .date(DateTime.now())
-                                                                        .addEntries(SIMPLE_ENTRY)
-                                                                        .build();
     private static final ImmutableChartEntry CHART_ENTRY = ImmutableChartEntry.builder()
                                                                               .position(1)
                                                                               .title("title")
                                                                               .artist("artist")
                                                                               .weeksOnChart(1)
                                                                               .build();
+    private static final SimpleChartEntry OTHER_ENTRY = ImmutableSimpleChartEntry.builder()
+            .title("other-title").artist("other-artist").position(1).build();
+    private static final SimpleChart OTHER_CHART = ImmutableSimpleChart.builder()
+            .week(2).date(DateTime.now()).addEntries(OTHER_ENTRY).build();
 
     @Test
     public void canCompileChart() throws IOException {
@@ -38,10 +38,11 @@ public class ChartCompilerTest {
     @Test
     public void firstMockedWeekHasNewEntries() throws IOException {
         ChartReader reader = mock(ChartReader.class);
-        when(reader.findChart(1)).thenReturn(SIMPLE_CHART);
+        when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
         when(reader.findChart(0)).thenThrow(IllegalArgumentException.class);
 
-        ChartReader derivedReader = reader; // TODO
+        ChartReader derivedReader = mock(ChartReader.class);
+        when(derivedReader.findDerivedChart(0)).thenThrow(IllegalArgumentException.class);
         ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart(1);
         assertEquals(1, chart.entries().size());
@@ -52,10 +53,11 @@ public class ChartCompilerTest {
     @Test
     public void secondWeekRecordsPreviousPosition() throws IOException {
         ChartReader reader = mock(ChartReader.class);
-        when(reader.findChart(1)).thenReturn(SIMPLE_CHART);
-        when(reader.findChart(2)).thenReturn(SIMPLE_CHART);
+        when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
+        when(reader.findChart(2)).thenReturn(defaultSimpleChart(2));
 
-        ChartReader derivedReader = reader; // TODO
+        ChartReader derivedReader = mock(ChartReader.class);
+        when(derivedReader.findDerivedChart(1)).thenReturn(defaultChart(1));
         ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart(2);
         assertEquals(1, chart.entries().size());
@@ -69,5 +71,36 @@ public class ChartCompilerTest {
                 .build();
 
         assertEquals(expected, chart.entries().get(0));
+    }
+
+    @Test
+    public void dropoutsAreRecorded() throws IOException {
+        ChartReader reader = mock(ChartReader.class);
+        when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
+        when(reader.findChart(2)).thenReturn(OTHER_CHART);
+
+        ChartReader derivedReader = mock(ChartReader.class);
+        when(derivedReader.findDerivedChart(1)).thenReturn(defaultChart(1));
+        ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
+        Chart chart = compiler.compileChart(2);
+
+        assertEquals(1, chart.dropouts().size());
+    }
+
+    private SimpleChart defaultSimpleChart(int week) {
+        return ImmutableSimpleChart.builder()
+                                   .week(week)
+                                   .date(DateTime.now())
+                                   .addEntries(SIMPLE_ENTRY)
+                                   .build();
+    }
+
+    private Chart defaultChart(int week) {
+        return ImmutableChart.builder()
+                .date(DateTime.now())
+                .week(week)
+                .addEntries(CHART_ENTRY)
+                .dropouts(new ArrayList<>())
+                .build();
     }
 }

@@ -13,7 +13,7 @@ import org.junit.Test;
 
 public class ChartSaverTest {
     String folder = "src/test/resources/temp";
-    String file = "src/test/resources/temp/123-20170707.csv";
+    String file = "src/test/resources/temp/123-20170816.csv";
 
     @Before
     public void setUp() throws IOException {
