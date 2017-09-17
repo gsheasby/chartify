@@ -67,7 +67,8 @@ public class ChartCompiler {
     }
 
     private Predicate<ChartEntry> sameSongAs(SimpleChartEntry entry) {
-        return sce -> sce.artist().equals(entry.artist()) && sce.title().equals(entry.title());
+        return sce -> sce.artist().equalsIgnoreCase(entry.artist())
+                && sce.title().equalsIgnoreCase(entry.title());
     }
 
     private Chart allNewEntries(SimpleChart thisWeek) {
