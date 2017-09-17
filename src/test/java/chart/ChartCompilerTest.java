@@ -29,7 +29,7 @@ public class ChartCompilerTest {
 
     @Test
     public void canCompileChart() throws IOException {
-        ChartReader reader = new ChartReader("src/test/resources");
+        ChartReader reader = new FileChartReader("src/test/resources");
         ChartReader derivedReader = reader; // TODO
         ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
         compiler.compileChart(1);
@@ -37,11 +37,11 @@ public class ChartCompilerTest {
 
     @Test
     public void firstMockedWeekHasNewEntries() throws IOException {
-        ChartReader reader = mock(ChartReader.class);
+        ChartReader reader = mock(FileChartReader.class);
         when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
         when(reader.findChart(0)).thenThrow(IllegalArgumentException.class);
 
-        ChartReader derivedReader = mock(ChartReader.class);
+        ChartReader derivedReader = mock(FileChartReader.class);
         when(derivedReader.findDerivedChart(0)).thenThrow(IllegalArgumentException.class);
         ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart(1);
@@ -52,11 +52,11 @@ public class ChartCompilerTest {
 
     @Test
     public void secondWeekRecordsPreviousPosition() throws IOException {
-        ChartReader reader = mock(ChartReader.class);
+        ChartReader reader = mock(FileChartReader.class);
         when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
         when(reader.findChart(2)).thenReturn(defaultSimpleChart(2));
 
-        ChartReader derivedReader = mock(ChartReader.class);
+        ChartReader derivedReader = mock(FileChartReader.class);
         when(derivedReader.findDerivedChart(1)).thenReturn(defaultChart(1));
         ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart(2);
@@ -75,11 +75,11 @@ public class ChartCompilerTest {
 
     @Test
     public void dropoutsAreRecorded() throws IOException {
-        ChartReader reader = mock(ChartReader.class);
+        ChartReader reader = mock(FileChartReader.class);
         when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
         when(reader.findChart(2)).thenReturn(OTHER_CHART);
 
-        ChartReader derivedReader = mock(ChartReader.class);
+        ChartReader derivedReader = mock(FileChartReader.class);
         when(derivedReader.findDerivedChart(1)).thenReturn(defaultChart(1));
         ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart(2);

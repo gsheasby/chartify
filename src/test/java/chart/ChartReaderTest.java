@@ -14,7 +14,7 @@ public class ChartReaderTest {
 
     @Before
     public void setUp() {
-        reader = new ChartReader(FOLDER);
+        reader = new FileChartReader(FOLDER);
     }
 
     @Test
@@ -32,7 +32,7 @@ public class ChartReaderTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void cannotFindNonExistentChart() throws IOException {
-        ChartReader other = new ChartReader(FOLDER);
+        ChartReader other = new FileChartReader(FOLDER);
         other.findChart(1337);
     }
 }
