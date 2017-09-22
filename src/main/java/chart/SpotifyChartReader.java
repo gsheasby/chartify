@@ -13,6 +13,12 @@ import com.wrapper.spotify.models.Track;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class SpotifyChartReader implements ChartReader {
+    private final int chartSize;
+
+    public SpotifyChartReader(int chartSize) {
+        this.chartSize = chartSize;
+    }
+
     @Override
     public Chart findDerivedChart(int week) throws IOException {
         throw new NotImplementedException();
@@ -22,7 +28,7 @@ public class SpotifyChartReader implements ChartReader {
     public SimpleChart findChart(int week) throws IOException {
         SpotifyPlaylistLoader playlistLoader = new SpotifyPlaylistLoader();
         List<PlaylistTrack> playlist = playlistLoader.load();
-        List<Track> tracks = playlist.stream().limit(30).map(PlaylistTrack::getTrack).collect(Collectors.toList());
+        List<Track> tracks = playlist.stream().limit(chartSize).map(PlaylistTrack::getTrack).collect(Collectors.toList());
         int position = 1;
         List<SimpleChartEntry> entries = Lists.newArrayList();
         for (Track track : tracks) {
