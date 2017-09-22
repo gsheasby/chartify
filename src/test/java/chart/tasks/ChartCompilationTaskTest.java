@@ -1,4 +1,4 @@
-package chart;
+package chart.tasks;
 
 import org.junit.Test;
 

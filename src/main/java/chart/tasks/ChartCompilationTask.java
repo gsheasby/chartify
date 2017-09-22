@@ -1,10 +1,18 @@
-package chart;
+package chart.tasks;
 
 import java.io.IOException;
 
 import com.wrapper.spotify.exceptions.WebApiException;
 
-public class ChartCli {
+import chart.Chart;
+import chart.ChartCompiler;
+import chart.ChartPrinter;
+import chart.ChartReader;
+import chart.ChartSaver;
+import chart.FileChartReader;
+import chart.SpotifyChartReader;
+
+public class ChartCompilationTask {
     private static final String FOLDER = "src/main/resources";
     private static final String DERIVED_FOLDER = FOLDER + "/derived";
 
