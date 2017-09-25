@@ -6,3 +6,10 @@ build/*
 .DS_Store
 generated_src/
 out/
+temp/
+
+# Idea files
+chart.iml
+chart.ipr
+chart.iws
+
