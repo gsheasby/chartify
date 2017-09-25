@@ -14,11 +14,12 @@ public class ChartPreviewTask {
     public static void main(String[] args) throws IOException {
         int week = Integer.parseInt(args[0]);
 
+        // Options
         int chartSize = getChartSize(args);
+        String lastWeekSource = CsvConstants.TOP_75_FOLDER;
 
         ChartReader reader = new SpotifyChartReader(chartSize);
-        ChartReader derivedReader = new FileChartReader(CsvConstants.DERIVED_FOLDER);
-
+        ChartReader derivedReader = new FileChartReader(lastWeekSource);
         ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart(week);
 
