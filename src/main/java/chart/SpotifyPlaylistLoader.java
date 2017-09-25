@@ -22,6 +22,10 @@ public class SpotifyPlaylistLoader {
                 .build();
     }
 
+    public SpotifyPlaylistLoader(SpotifyConfig config) {
+        this.config = config;
+    }
+
     public List<PlaylistTrack> load() {
         Api api = getApi();
         PlaylistRequest request = api.getPlaylist(config.userName(), config.playlistId()).build();

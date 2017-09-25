@@ -14,9 +14,16 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class SpotifyChartReader implements ChartReader {
     private final int chartSize;
+    private final SpotifyPlaylistLoader playlistLoader;
 
     public SpotifyChartReader(int chartSize) {
         this.chartSize = chartSize;
+        this.playlistLoader = new SpotifyPlaylistLoader();
+    }
+
+    public SpotifyChartReader(ChartConfig config) {
+        this.chartSize = config.chartSize();
+        this.playlistLoader = new SpotifyPlaylistLoader(config.spotifyConfig());
     }
 
     @Override
@@ -26,7 +33,6 @@ public class SpotifyChartReader implements ChartReader {
 
     @Override
     public SimpleChart findChart(int week) throws IOException {
-        SpotifyPlaylistLoader playlistLoader = new SpotifyPlaylistLoader();
         List<PlaylistTrack> playlist = playlistLoader.load();
         List<Track> tracks = playlist.stream().limit(chartSize).map(PlaylistTrack::getTrack).collect(Collectors.toList());
         int position = 1;
