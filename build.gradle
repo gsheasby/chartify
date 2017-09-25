@@ -19,6 +19,9 @@ repositories {
 
 dependencies {
     compile group: 'org.immutables', name: 'value', version: '2.5.3'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.6.7'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.7'
+    compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.9.1'
     compile group: 'joda-time', name: 'joda-time', version: '2.3'
     compile group: 'se.michaelthelin.spotify', name: 'spotify-web-api-java', version: '1.5.0'
 
