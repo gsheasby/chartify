@@ -30,19 +30,4 @@ public class ChartPreviewTask {
 
         ChartPrinter.print(chart);
     }
-
-    private static int getChartSize(String[] args) {
-        int defaultSize = 75;
-        if (args.length > 1) {
-            try {
-                return Integer.parseInt(args[1]);
-            } catch (NumberFormatException ex) {
-                System.err.println(String.format(
-                        "Illegal argument %s; using default chart size %d",
-                        args[1],
-                        defaultSize));
-            }
-        }
-        return defaultSize;
-    }
 }
