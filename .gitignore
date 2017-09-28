@@ -13,3 +13,6 @@ chart.iml
 chart.ipr
 chart.iws
 
+# Config file
+src/main/resources/conf/config.yml
+

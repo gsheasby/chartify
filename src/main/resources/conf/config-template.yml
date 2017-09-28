@@ -1,0 +1,7 @@
+spotify:
+  clientId: <your client ID here>
+  clientSecret: <your client secret here>
+  userName: <Spotify user who owns the playlist>
+  playlistId: <the playlistID>
+chartSize: 75
+csvDestination: 'src/main/resources/top75'
