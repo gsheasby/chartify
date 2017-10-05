@@ -2,8 +2,7 @@ package chart;
 
 import java.util.Optional;
 
-import org.jetbrains.annotations.NotNull;
-
+// TODO handle invalid input (e.g. empty line)
 public class CsvLineParser {
     public static SimpleChartEntry parse(String line) {
         int numElements = 3;
@@ -43,7 +42,7 @@ public class CsvLineParser {
                                   .build();
     }
 
-    @NotNull
+//    @NotNull
     private static String[] getStrings(String line, int numElements) {
         String restOfLine = line;
         String[] split = new String[numElements];
