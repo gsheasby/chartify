@@ -9,6 +9,8 @@ import java.util.stream.Stream;
 
 import org.joda.time.DateTime;
 
+import javafx.util.Pair;
+
 public class FileChartReader implements ChartReader {
     private final FileChartLoader fileChartLoader;
 
@@ -17,16 +19,28 @@ public class FileChartReader implements ChartReader {
     }
 
     @Override
+    public Chart findLatestChart() throws IOException {
+        Pair<Integer, Path> mostRecent = fileChartLoader.findMostRecent();
+        int week = mostRecent.getKey();
+        Path chartPath = mostRecent.getValue();
+        return findDerivedChart(week, chartPath);
+    }
+
+    @Override
     public Chart findDerivedChart(int week) throws IOException {
         Path chartPath = fileChartLoader.findFileForWeek(week);
+        return findDerivedChart(week, chartPath);
+    }
+
+    private Chart findDerivedChart(int week, Path chartPath) throws IOException {
         DateTime chartDate = ChartUtils.getDate(chartPath.getFileName().toString());
         Stream<String> lines = Files.lines(chartPath);
         List<ChartEntry> entries = lines.map(CsvLineParser::parseEntry).collect(Collectors.toList());
         return ImmutableChart.builder()
-                                   .week(week)
-                                   .date(chartDate)
-                                   .entries(entries)
-                                   .build();
+                             .week(week)
+                             .date(chartDate)
+                             .entries(entries)
+                             .build();
     }
 
     @Override

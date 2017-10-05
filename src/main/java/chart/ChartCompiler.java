@@ -17,47 +17,56 @@ public class ChartCompiler {
         this.derivedReader = derivedReader;
     }
 
+    public Chart compileChart() throws IOException {
+        Chart lastWeek = derivedReader.findLatestChart();
+        int lastWeekIndex = lastWeek.week();
+        SimpleChart thisWeek = reader.findChart(lastWeekIndex + 1);
+        return compileChart(thisWeek, lastWeek);
+    }
+
     public Chart compileChart(int week) throws IOException {
         SimpleChart thisWeek = reader.findChart(week);
 
         try {
             Chart lastWeek = derivedReader.findDerivedChart(week - 1);
-
-            List<ChartEntry> entries = new ArrayList<>();
-
-            for (SimpleChartEntry simpleEntry : thisWeek.entries()) {
-                Optional<ChartEntry> lastPos = findSongInChart(lastWeek, simpleEntry);
-                int weeksOnChart = lastPos.map(chartEntry -> chartEntry.weeksOnChart() + 1).orElse(1);
-                ChartEntry entry = ImmutableChartEntry.builder()
-                        .position(simpleEntry.position())
-                        .title(simpleEntry.title())
-                        .artist(simpleEntry.artist())
-                        .weeksOnChart(weeksOnChart)
-                        .lastPosition(lastPos.map(ChartEntry::position))
-                        .build();
-                entries.add(entry);
-            }
-
-            Set<Integer> inFromLastWeek = entries.stream()
-                                          .map(ent -> ent.lastPosition().orElse(-1))
-                                          .filter(pos -> pos != -1) // bit of a hack
-                                          .collect(Collectors.toSet());
-
-            List<ChartEntry> dropouts = lastWeek.entries().stream()
-                    .filter(ent -> !inFromLastWeek.contains(ent.position()))
-                    .collect(Collectors.toList());
-
-            return ImmutableChart.builder()
-                                 .week(thisWeek.week())
-                                 .date(thisWeek.date())
-                                 .entries(entries)
-                                 .dropouts(dropouts)
-                                 .build();
-
+            return compileChart(thisWeek, lastWeek);
         } catch (IllegalArgumentException ex) {
             ex.printStackTrace();
             return allNewEntries(thisWeek);
         }
+    }
+
+    private Chart compileChart(SimpleChart thisWeek, Chart lastWeek) {
+        List<ChartEntry> entries = new ArrayList<>();
+
+        for (SimpleChartEntry simpleEntry : thisWeek.entries()) {
+            Optional<ChartEntry> lastPos = findSongInChart(lastWeek, simpleEntry);
+            int weeksOnChart = lastPos.map(chartEntry -> chartEntry.weeksOnChart() + 1).orElse(1);
+            ChartEntry entry = ImmutableChartEntry.builder()
+                                                  .position(simpleEntry.position())
+                                                  .title(simpleEntry.title())
+                                                  .artist(simpleEntry.artist())
+                                                  .weeksOnChart(weeksOnChart)
+                                                  .lastPosition(lastPos.map(ChartEntry::position))
+                                                  .build();
+            entries.add(entry);
+        }
+
+        Set<Integer> inFromLastWeek = entries.stream()
+                                             .map(ent -> ent.lastPosition().orElse(-1))
+                                             .filter(pos -> pos != -1) // bit of a hack
+                                             .collect(Collectors.toSet());
+
+        List<ChartEntry> dropouts = lastWeek.entries().stream()
+                .filter(ent -> !inFromLastWeek.contains(ent.position()))
+                .collect(Collectors.toList());
+
+        return ImmutableChart.builder()
+                             .week(thisWeek.week())
+                             .date(thisWeek.date())
+                             .entries(entries)
+                             .dropouts(dropouts)
+                             .build();
     }
 
     private Optional<ChartEntry> findSongInChart(Chart lastWeek, SimpleChartEntry entry) {
