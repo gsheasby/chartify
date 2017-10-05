@@ -37,7 +37,7 @@ public class ChartCompilerTest {
 
     @Test
     public void firstMockedWeekHasNewEntries() throws IOException {
-        ChartReader reader = mock(FileChartReader.class);
+        SimpleChartReader reader = mock(FileChartReader.class);
         when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
         when(reader.findChart(0)).thenThrow(IllegalArgumentException.class);
 
@@ -52,7 +52,7 @@ public class ChartCompilerTest {
 
     @Test
     public void secondWeekRecordsPreviousPosition() throws IOException {
-        ChartReader reader = mock(FileChartReader.class);
+        SimpleChartReader reader = mock(FileChartReader.class);
         when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
         when(reader.findChart(2)).thenReturn(defaultSimpleChart(2));
 
@@ -75,7 +75,7 @@ public class ChartCompilerTest {
 
     @Test
     public void dropoutsAreRecorded() throws IOException {
-        ChartReader reader = mock(FileChartReader.class);
+        SimpleChartReader reader = mock(FileChartReader.class);
         when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
         when(reader.findChart(2)).thenReturn(OTHER_CHART);
 

@@ -10,7 +10,7 @@ import org.junit.Test;
 public class FileChartReaderTest {
     private static String FOLDER = "src/test/resources";
 
-    private ChartReader reader;
+    private SimpleChartReader reader;
 
     @Before
     public void setUp() {
@@ -32,7 +32,7 @@ public class FileChartReaderTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void cannotFindNonExistentChart() throws IOException {
-        ChartReader other = new FileChartReader(FOLDER);
+        SimpleChartReader other = new FileChartReader(FOLDER);
         other.findChart(1337);
     }
 }

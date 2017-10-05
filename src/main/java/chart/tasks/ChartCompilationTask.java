@@ -13,6 +13,7 @@ import chart.ChartPrinter;
 import chart.ChartReader;
 import chart.ChartSaver;
 import chart.FileChartReader;
+import chart.SimpleChartReader;
 import chart.SpotifyChartReader;
 
 public class ChartCompilationTask {
@@ -25,7 +26,7 @@ public class ChartCompilationTask {
                 new File("src/main/resources/conf/config.yml"),
                 ChartConfig.class);
 
-        ChartReader reader = new SpotifyChartReader(config);
+        SimpleChartReader reader = new SpotifyChartReader(config);
         ChartReader derivedReader = new FileChartReader(config.csvDestination());
         ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart(week);

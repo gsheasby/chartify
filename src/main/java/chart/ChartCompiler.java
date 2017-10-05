@@ -9,10 +9,10 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ChartCompiler {
-    private final ChartReader reader;
+    private final SimpleChartReader reader;
     private final ChartReader derivedReader;
 
-    public ChartCompiler(ChartReader reader, ChartReader derivedReader) {
+    public ChartCompiler(SimpleChartReader reader, ChartReader derivedReader) {
         this.reader = reader;
         this.derivedReader = derivedReader;
     }

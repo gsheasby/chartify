@@ -10,20 +10,13 @@ import com.google.common.collect.Lists;
 import com.wrapper.spotify.models.PlaylistTrack;
 import com.wrapper.spotify.models.Track;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
-public class SpotifyChartReader implements ChartReader {
+public class SpotifyChartReader implements SimpleChartReader {
     private final int chartSize;
     private final SpotifyPlaylistLoader playlistLoader;
 
     public SpotifyChartReader(ChartConfig config) {
         this.chartSize = config.chartSize();
         this.playlistLoader = new SpotifyPlaylistLoader(config.spotifyConfig());
-    }
-
-    @Override
-    public Chart findDerivedChart(int week) throws IOException {
-        throw new NotImplementedException();
     }
 
     @Override
