@@ -26,4 +26,23 @@ public class FileChartLoader {
 
         return chartFiles.get(0);
     }
+
+    public Path findMostRecent() throws IOException {
+        List<Path> chartFiles = Files.walk(Paths.get(folder), 1)
+                                     .filter(path -> path.getFileName().toString().endsWith(".csv"))
+                                     .collect(Collectors.toList());
+
+        int latestWeek = -1;
+        Path latest = null;
+        for (Path path : chartFiles) {
+            String fileName = path.getFileName().toString();
+            int week = Integer.parseInt(fileName.split("[-.]")[0]);
+            if (week > latestWeek) {
+                latestWeek = week;
+                latest = path;
+            }
+        }
+
+        return latest;
+    }
 }

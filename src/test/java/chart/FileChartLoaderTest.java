@@ -31,4 +31,11 @@ public class FileChartLoaderTest {
         loader.findFileForWeek(1337);
     }
 
+    @Test
+    public void canLoadMostRecentChart() throws IOException {
+        Path expected = Paths.get(FOLDER, "1.csv");
+
+        Path path = loader.findMostRecent();
+        assertEquals(expected, path);
+    }
 }
