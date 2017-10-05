@@ -16,11 +16,6 @@ public class SpotifyChartReader implements ChartReader {
     private final int chartSize;
     private final SpotifyPlaylistLoader playlistLoader;
 
-    public SpotifyChartReader(int chartSize) {
-        this.chartSize = chartSize;
-        this.playlistLoader = new SpotifyPlaylistLoader();
-    }
-
     public SpotifyChartReader(ChartConfig config) {
         this.chartSize = config.chartSize();
         this.playlistLoader = new SpotifyPlaylistLoader(config.spotifyConfig());

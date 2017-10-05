@@ -12,16 +12,6 @@ import com.wrapper.spotify.models.PlaylistTrack;
 public class SpotifyPlaylistLoader {
     private final SpotifyConfig config;
 
-    public SpotifyPlaylistLoader() {
-        // TODO load from config file
-        this.config = ImmutableSpotifyConfig.builder()
-                .clientId("your ID here")
-                .clientSecret("it's a secret!")
-                .userName("your username")
-                .playlistId("your playlist's ID")
-                .build();
-    }
-
     public SpotifyPlaylistLoader(SpotifyConfig config) {
         this.config = config;
     }
