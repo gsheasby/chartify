@@ -9,6 +9,8 @@ import java.nio.file.Paths;
 import org.junit.Before;
 import org.junit.Test;
 
+import javafx.util.Pair;
+
 public class FileChartLoaderTest {
     private static String FOLDER = "src/test/resources";
     private FileChartLoader loader;
@@ -35,7 +37,7 @@ public class FileChartLoaderTest {
     public void canLoadMostRecentChart() throws IOException {
         Path expected = Paths.get(FOLDER, "1.csv");
 
-        Path path = loader.findMostRecent();
-        assertEquals(expected, path);
+        Pair<Integer, Path> latest = loader.findMostRecent();
+        assertEquals(expected, latest.getValue());
     }
 }
