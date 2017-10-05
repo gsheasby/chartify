@@ -7,7 +7,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ChartReaderTest {
+public class FileChartReaderTest {
     private static String FOLDER = "src/test/resources";
 
     private ChartReader reader;
