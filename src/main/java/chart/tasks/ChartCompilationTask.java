@@ -19,8 +19,6 @@ import chart.SpotifyChartReader;
 public class ChartCompilationTask {
 
     public static void main(String[] args) throws IOException {
-        int week = Integer.parseInt(args[0]);
-
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         ChartConfig config = mapper.readValue(
                 new File("src/main/resources/conf/config.yml"),
@@ -29,7 +27,7 @@ public class ChartCompilationTask {
         SimpleChartReader reader = new SpotifyChartReader(config);
         ChartReader derivedReader = new FileChartReader(config.csvDestination());
         ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
-        Chart chart = compiler.compileChart(week);
+        Chart chart = compiler.compileChart();
 
         new ChartSaver(config.csvDestination()).saveChart(chart);
 
