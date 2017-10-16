@@ -2,6 +2,11 @@ package chart;
 
 public class ChartPrinter {
     public static void print(Chart chart) {
+        System.out.println(String.format("Week %d: %s",
+                                         chart.week(),
+                                         chart.date().toString("EEEE, MMMM dd, yyyy")));
+        System.out.println();
+
         for (ChartEntry entry : chart.entries()) {
             printEntry(entry);
         }
