@@ -63,7 +63,7 @@ public class ChartCompiler {
 
         return ImmutableChart.builder()
                              .week(thisWeek.week())
-                             .date(thisWeek.date())
+                             .date(lastWeek.date().plusDays(7))
                              .entries(entries)
                              .dropouts(dropouts)
                              .build();

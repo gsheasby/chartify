@@ -26,6 +26,7 @@ public class ChartCompilerTest {
             .title("other-title").artist("other-artist").position(1).build();
     private static final SimpleChart OTHER_CHART = ImmutableSimpleChart.builder()
             .week(2).date(DateTime.now()).addEntries(OTHER_ENTRY).build();
+    public static final DateTime DEFAULT_DATE = new DateTime(2017, 1, 1, 0, 0);
 
     @Test
     public void canCompileChart() throws IOException {
@@ -74,6 +75,20 @@ public class ChartCompilerTest {
     }
 
     @Test
+    public void secondWeekIsSevenDaysAfterFirst() throws IOException {
+        SimpleChartReader reader = mock(FileChartReader.class);
+        when(reader.findChart(2)).thenReturn(defaultSimpleChart(2));
+
+        ChartReader derivedReader = mock(FileChartReader.class);
+        when(derivedReader.findDerivedChart(1)).thenReturn(defaultChart(1));
+
+        ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
+        Chart chart = compiler.compileChart(2);
+
+        assertEquals(DEFAULT_DATE.plusWeeks(1), chart.date());
+    }
+
+    @Test
     public void dropoutsAreRecorded() throws IOException {
         SimpleChartReader reader = mock(FileChartReader.class);
         when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
@@ -90,14 +105,14 @@ public class ChartCompilerTest {
     private SimpleChart defaultSimpleChart(int week) {
         return ImmutableSimpleChart.builder()
                                    .week(week)
-                                   .date(DateTime.now())
+                                   .date(DEFAULT_DATE)
                                    .addEntries(SIMPLE_ENTRY)
                                    .build();
     }
 
     private Chart defaultChart(int week) {
         return ImmutableChart.builder()
-                .date(DateTime.now())
+                .date(DEFAULT_DATE)
                 .week(week)
                 .addEntries(CHART_ENTRY)
                 .dropouts(new ArrayList<>())
