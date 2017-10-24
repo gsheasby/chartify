@@ -1,3 +1,7 @@
+postgres:
+  dbName: chart
+  user: postgres
+  password: postgres
 spotify:
   clientId: <your client ID here>
   clientSecret: <your client secret here>
