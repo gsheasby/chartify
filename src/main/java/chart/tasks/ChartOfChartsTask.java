@@ -1,8 +1,10 @@
 package chart.tasks;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.joda.time.DateTime;
 
@@ -35,12 +37,15 @@ public class ChartOfChartsTask {
             }
         }
 
-        chartRuns.values().stream().sorted().forEach(ChartOfChartsTask::print);
-
+        Iterator<ChartRun> chartOfCharts = chartRuns.values().stream().sorted().collect(Collectors.toList()).iterator();
+        for (int pos = 1; chartOfCharts.hasNext(); pos++) {
+            ChartRun chartRun = chartOfCharts.next();
+            print(pos, chartRun);
+        }
     }
 
-    private static void print(ChartRun run) {
-        System.out.println(run.toString());
+    private static void print(int pos, ChartRun chartRun) {
+        System.out.println(pos + ": " + chartRun.toString());
     }
 
     private static class ChartRun implements Comparable<ChartRun> {
