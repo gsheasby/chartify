@@ -18,7 +18,7 @@ public class CsvLineParser {
                                             .title(title)
                                             .artist(artist)
                                             .build();
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (ArrayIndexOutOfBoundsException | StringIndexOutOfBoundsException e) {
             throw new RuntimeException("Failed to parse line: " + line, e);
         }
     }
