@@ -16,6 +16,18 @@ public class FileChartLoader {
         this.folder = folder;
     }
 
+    public List<Pair<Integer, Path>> findFiles() throws IOException {
+        Path path = Paths.get(folder);
+        List<Path> chartFiles = Files.walk(path)
+                                     .filter(file -> file.getFileName().toString().endsWith(".csv"))
+                                     .collect(Collectors.toList());
+        return chartFiles.stream().map(file -> new Pair<>(getWeek(file), file)).collect(Collectors.toList());
+    }
+
+    private int getWeek(Path path) {
+        return Integer.parseInt(path.getFileName().toString().split("-")[0]);
+    }
+
     public Path findFileForWeek(int week) throws IOException {
         Path path = Paths.get(folder);
         String weekStr = Integer.toString(week);
