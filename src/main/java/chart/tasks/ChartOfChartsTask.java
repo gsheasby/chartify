@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.joda.time.DateTime;
@@ -45,10 +46,12 @@ public class ChartOfChartsTask {
     }
 
     private static void print(int pos, ChartRun chartRun) {
-        System.out.println(pos + ": " + chartRun.toString());
+        System.out.println(String.format("%02d ", pos) + chartRun.toString());
     }
 
     private static class ChartRun implements Comparable<ChartRun> {
+        private static final int POSITIONS_TO_SCORE = 30;
+
         private final Song song;
         private final Integer entryWeek;
         private final DateTime entryDate;
@@ -67,22 +70,54 @@ public class ChartOfChartsTask {
         }
 
         Integer getScore() {
-            return positions.stream().filter(pos -> pos <= 30)
-                     .map(pos -> 31 - pos)
+            return positions.stream().filter(pos -> pos <= POSITIONS_TO_SCORE)
+                     .map(pos -> POSITIONS_TO_SCORE + 1 - pos)
                      .mapToInt(Integer::intValue)
                      .sum();
         }
 
+        private Integer getPeak() {
+            //noinspection ConstantConditions
+            return positions.stream().mapToInt(i -> i).min().getAsInt();
+        }
+
+        private Integer getWeeks() {
+            return positions.size();
+        }
+
         @Override
         public int compareTo(ChartRun o) {
-            // Negative so we sort the scores descending order.
-            return -getScore().compareTo(o.getScore());
+            Integer score = getScore();
+            Integer otherScore = o.getScore();
+            if (!Objects.equals(score, otherScore)) {
+                // Higher scores are better
+                return -score.compareTo(otherScore);
+            } else {
+                Integer peak = getPeak();
+                Integer otherPeak = o.getPeak();
+                if (!Objects.equals(peak, otherPeak)) {
+                    // Lower peaks are better
+                    return peak.compareTo(otherPeak);
+                } else {
+                    // More weeks are better
+                    return -getWeeks().compareTo(o.getWeeks());
+                }
+            }
         }
 
         @Override
         public String toString() {
-            return getScore() + ": " + song.title() + " - " + song.artist()
-                    + " (" + positions.size() + " weeks; run: " + positions.toString() + ")";
+            return String.format("%03d %02d %02d %s - %s %s",
+                                 getScore(),
+                                 positions.size(),
+                                 getPeak(),
+                                 song.title(),
+                                 song.artist(),
+                                 positions.toString());
+
+//                    getScore() + ": " + song.title() + " - " + song.artist()
+//                    + " (" + positions.size() + " weeks; run: " + positions.toString() + ")";
         }
+
     }
 }
