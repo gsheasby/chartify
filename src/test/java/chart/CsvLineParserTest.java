@@ -50,4 +50,17 @@ public class CsvLineParserTest {
         assertEquals("title", actual.title());
         assertEquals("artist", actual.artist());
     }
+
+    @Test
+    public void parseChartLineWithSpotifyInfo() {
+        ChartEntry actual = CsvLineParser.parseEntry("1,,1,title,artist,id,href,uri");
+        assertEquals(new Integer(1), actual.position());
+        assertEquals(Optional.empty(), actual.lastPosition());
+        assertEquals(new Integer(1), actual.weeksOnChart());
+        assertEquals("title", actual.title());
+        assertEquals("artist", actual.artist());
+        assertEquals("id", actual.id());
+        assertEquals("href", actual.href());
+        assertEquals("uri", actual.uri());
+    }
 }

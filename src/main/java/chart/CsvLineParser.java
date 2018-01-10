@@ -24,7 +24,7 @@ public class CsvLineParser {
     }
 
     public static ChartEntry parseEntry(String line) {
-        int numElements = 5;
+        int numElements = 8;
         String[] split = getStrings(line, numElements);
 
         int pos = Integer.parseInt(split[0]);
@@ -33,16 +33,26 @@ public class CsvLineParser {
         int weeks = Integer.parseInt(split[2]);
         String title = split[3];
         String artist = split[4];
+        String id = split[5];
+        String href = split[6];
+        String uri = split[7];
         return ImmutableChartEntry.builder()
                                   .position(pos)
                                   .lastPosition(lastWeek)
                                   .weeksOnChart(weeks)
                                   .title(title)
                                   .artist(artist)
+                                  .id(emptyIfNull(id))
+                                  .href(emptyIfNull(href))
+                                  .uri(emptyIfNull(uri))
                                   .build();
     }
 
-//    @NotNull
+    private static String emptyIfNull(String str) {
+        return str != null ? str : "";
+    }
+
+    //    @NotNull
     private static String[] getStrings(String line, int numElements) {
         String restOfLine = line;
         String[] split = new String[numElements];
