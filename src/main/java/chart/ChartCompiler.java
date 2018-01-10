@@ -46,6 +46,9 @@ public class ChartCompiler {
                                                   .position(simpleEntry.position())
                                                   .title(simpleEntry.title())
                                                   .artist(simpleEntry.artist())
+                                                  .id(simpleEntry.id())
+                                                  .href(simpleEntry.href())
+                                                  .uri(simpleEntry.uri())
                                                   .weeksOnChart(weeksOnChart)
                                                   .lastPosition(lastPos.map(ChartEntry::position))
                                                   .build();
@@ -96,6 +99,9 @@ public class ChartCompiler {
                 .weeksOnChart(1)
                 .title(simpleEntry.title())
                 .artist(simpleEntry.artist())
+                .id(simpleEntry.id())
+                .href(simpleEntry.href())
+                .uri(simpleEntry.uri())
                 .build();
     }
 }

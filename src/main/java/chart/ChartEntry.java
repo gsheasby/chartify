@@ -11,4 +11,19 @@ public abstract class ChartEntry {
     public abstract Integer weeksOnChart();
     public abstract String title();
     public abstract String artist();
+
+    @Value.Default
+    public String id() {
+        return "";
+    }
+
+    @Value.Default
+    public String href() {
+        return "";
+    }
+
+    @Value.Default
+    public String uri() {
+        return "";
+    }
 }

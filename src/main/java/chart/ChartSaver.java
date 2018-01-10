@@ -39,18 +39,24 @@ public class ChartSaver {
 
     private String getLine(ChartEntry entry) {
         if (entry.lastPosition().isPresent()) {
-            return String.format("%d,%d,%d,%s,%s",
+            return String.format("%d,%d,%d,%s,%s,%s,%s,%s",
                                  entry.position(),
                                  entry.lastPosition().get(),
                                  entry.weeksOnChart(),
                                  surroundWithQuotesIfComma(entry.title()),
-                                 surroundWithQuotesIfComma(entry.artist()));
+                                 surroundWithQuotesIfComma(entry.artist()),
+                                 surroundWithQuotesIfComma(entry.id()),
+                                 surroundWithQuotesIfComma(entry.href()),
+                                 surroundWithQuotesIfComma(entry.uri()));
         } else {
-            return String.format("%d,,%d,%s,%s",
+            return String.format("%d,,%d,%s,%s,%s,%s,%s",
                                  entry.position(),
                                  entry.weeksOnChart(),
                                  surroundWithQuotesIfComma(entry.title()),
-                                 surroundWithQuotesIfComma(entry.artist()));
+                                 surroundWithQuotesIfComma(entry.artist()),
+                                 surroundWithQuotesIfComma(entry.id()),
+                                 surroundWithQuotesIfComma(entry.href()),
+                                 surroundWithQuotesIfComma(entry.uri()));
         }
     }
 

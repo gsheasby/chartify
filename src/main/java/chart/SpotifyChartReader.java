@@ -48,6 +48,9 @@ public class SpotifyChartReader implements SimpleChartReader {
                 .artist(artist)
                 .title(title)
                 .position(position)
+                .id(track.getId())
+                .href(track.getHref())
+                .uri(track.getUri())
                 .build();
     }
 }
