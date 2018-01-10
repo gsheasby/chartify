@@ -9,5 +9,5 @@ import org.joda.time.DateTime;
 public abstract class SimpleChart {
     public abstract int week();
     public abstract DateTime date();
-    public abstract List<SimpleChartEntry> entries();
+    public abstract List<SimpleSpotifyChartEntry> entries();
 }

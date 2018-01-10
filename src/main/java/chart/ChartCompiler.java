@@ -42,7 +42,7 @@ public class ChartCompiler {
         for (SimpleChartEntry simpleEntry : thisWeek.entries()) {
             Optional<ChartEntry> lastPos = findSongInChart(lastWeek, simpleEntry);
             int weeksOnChart = lastPos.map(chartEntry -> chartEntry.weeksOnChart() + 1).orElse(1);
-            ChartEntry entry = ImmutableChartEntry.builder()
+            SpotifyChartEntry entry = ImmutableSpotifyChartEntry.builder()
                                                   .position(simpleEntry.position())
                                                   .title(simpleEntry.title())
                                                   .artist(simpleEntry.artist())

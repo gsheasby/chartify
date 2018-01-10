@@ -24,9 +24,9 @@ public class SpotifyChartReader implements SimpleChartReader {
         List<PlaylistTrack> playlist = playlistLoader.load();
         List<Track> tracks = playlist.stream().limit(chartSize).map(PlaylistTrack::getTrack).collect(Collectors.toList());
         int position = 1;
-        List<SimpleChartEntry> entries = Lists.newArrayList();
+        List<SimpleSpotifyChartEntry> entries = Lists.newArrayList();
         for (Track track : tracks) {
-            SimpleChartEntry entry = createEntry(position, track);
+            SimpleSpotifyChartEntry entry = createEntry(position, track);
             position += 1;
             entries.add(entry);
         }
@@ -38,16 +38,19 @@ public class SpotifyChartReader implements SimpleChartReader {
                 .build();
     }
 
-    private SimpleChartEntry createEntry(int position, Track track) {
+    private SimpleSpotifyChartEntry createEntry(int position, Track track) {
         String title = track.getName();
 
         // TODO handle multiple artists
         String artist = track.getArtists().get(0).getName();
 
-        return ImmutableSimpleChartEntry.builder()
+        return ImmutableSimpleSpotifyChartEntry.builder()
+                .id(track.getId())
                 .artist(artist)
                 .title(title)
                 .position(position)
+                .href(track.getHref())
+                .uri(track.getUri())
                 .build();
     }
 }

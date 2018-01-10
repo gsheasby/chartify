@@ -2,13 +2,14 @@ package chart;
 
 import java.util.Optional;
 
-import org.immutables.value.Value;
+public interface ChartEntry {
+    Integer position();
 
-@Value.Immutable
-public abstract class ChartEntry {
-    public abstract Integer position();
-    public abstract Optional<Integer> lastPosition();
-    public abstract Integer weeksOnChart();
-    public abstract String title();
-    public abstract String artist();
+    Optional<Integer> lastPosition();
+
+    Integer weeksOnChart();
+
+    String title();
+
+    String artist();
 }

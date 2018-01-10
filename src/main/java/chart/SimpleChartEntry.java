@@ -1,10 +1,9 @@
 package chart;
 
-import org.immutables.value.Value;
+public interface SimpleChartEntry {
+    int position();
 
-@Value.Immutable
-public abstract class SimpleChartEntry {
-    public abstract int position();
-    public abstract String title();
-    public abstract String artist();
+    String title();
+
+    String artist();
 }
