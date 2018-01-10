@@ -102,6 +102,21 @@ public class ChartCompilerTest {
         assertEquals(1, chart.dropouts().size());
     }
 
+    @Test
+    public void offsetsAreRespected() throws IOException {
+        SimpleChartReader reader = mock(FileChartReader.class);
+        when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
+        when(reader.findChart(2)).thenReturn(OTHER_CHART);
+
+        ChartReader derivedReader = mock(FileChartReader.class);
+        when(derivedReader.findDerivedChart(1)).thenReturn(defaultChart(1));
+        ChartCompiler compiler = new ChartCompiler(reader, derivedReader, 42);
+        Chart chart = compiler.compileChart(2);
+
+        DateTime expected = DEFAULT_DATE.plusDays(42);
+        assertEquals(expected, chart.date());
+    }
+
     private SimpleChart defaultSimpleChart(int week) {
         return ImmutableSimpleChart.builder()
                                    .week(week)

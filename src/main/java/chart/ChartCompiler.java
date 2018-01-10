@@ -11,10 +11,16 @@ import java.util.stream.Collectors;
 public class ChartCompiler {
     private final SimpleChartReader reader;
     private final ChartReader derivedReader;
+    private final int offset;
 
     public ChartCompiler(SimpleChartReader reader, ChartReader derivedReader) {
+        this(reader, derivedReader, 7);
+    }
+
+    public ChartCompiler(SimpleChartReader reader, ChartReader derivedReader, int offset) {
         this.reader = reader;
         this.derivedReader = derivedReader;
+        this.offset = offset;
     }
 
     public Chart compileChart() throws IOException {
@@ -66,7 +72,7 @@ public class ChartCompiler {
 
         return ImmutableChart.builder()
                              .week(thisWeek.week())
-                             .date(lastWeek.date().plusDays(7))
+                             .date(lastWeek.date().plusDays(offset))
                              .entries(entries)
                              .dropouts(dropouts)
                              .build();
