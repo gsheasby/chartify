@@ -13,7 +13,7 @@ public class PostgresSetupTask {
         PostgresConnection connection = new PostgresConnection(config);
 
         try {
-            connection.createDatabase();
+            connection.setupSchema();
         } catch (SQLException e) {
             System.out.println("Encountered exception " + e.getMessage() + " creating database.");
             e.printStackTrace();

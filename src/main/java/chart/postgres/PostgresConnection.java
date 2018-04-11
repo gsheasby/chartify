@@ -13,35 +13,46 @@ public class PostgresConnection {
         this.config = config;
     }
 
-    public void createDatabase() throws ClassNotFoundException, SQLException {
+    public void setupSchema() throws ClassNotFoundException, SQLException {
         Class.forName("org.postgresql.Driver");
 
-        System.out.println("Creating db for user " + config.user());
+        boolean dbWasCreated = ensureDatabaseExists();
+        if (dbWasCreated) {
+            createSchema();
+        }
+    }
 
+    private boolean ensureDatabaseExists() throws SQLException {
         try (Connection conn = DriverManager.getConnection(
                 "jdbc:postgresql://localhost/",
                 config.user(),
                 config.password())) {
-            createDatabase(conn);
-        }
-
-        try (Connection conn = DriverManager.getConnection(
-                "jdbc:postgresql://localhost/" + config.dbName(),
-                config.user(),
-                config.password())) {
-            createSchema(conn);
+            return createDatabaseIfNotExists(conn);
         }
     }
 
-    private void createDatabase(Connection conn) throws SQLException {
+    private boolean createDatabaseIfNotExists(Connection conn) throws SQLException {
         Statement statement = conn.createStatement();
 
         ResultSet resultSet = statement.executeQuery(String.format("SELECT 1 FROM pg_database WHERE datname = '%s'", config.dbName()));
         if (!resultSet.next()) {
+            System.out.println("Creating db for user " + config.user());
             int output = statement.executeUpdate("CREATE DATABASE " + config.dbName());
             System.out.println("Create database returned " + output);
+            return true;
         } else {
             System.out.println("Skipping creation - DB exists");
+            return false;
+        }
+    }
+
+    private void createSchema() throws SQLException {
+        try (Connection conn = DriverManager.getConnection(
+                "jdbc:postgresql://localhost/" + config.dbName(),
+                config.user(),
+                config.password()))
+        {
+            createSchema(conn);
         }
     }
 
