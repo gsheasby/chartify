@@ -11,7 +11,9 @@ import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ChartSaverTest {
+import chart.csv.CsvChartSaver;
+
+public class CsvChartSaverTest {
     String folder = "src/test/resources/temp";
     String file = "src/test/resources/temp/123-20170816.csv";
 
@@ -23,7 +25,7 @@ public class ChartSaverTest {
 
     @Test
     public void create() throws IOException {
-        ChartSaver saver = new ChartSaver(folder);
+        ChartSaver saver = new CsvChartSaver(folder);
         Chart chart = mock(Chart.class);
         when(chart.date()).thenReturn(DateTime.now());
         when(chart.week()).thenReturn(123);

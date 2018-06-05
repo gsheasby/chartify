@@ -7,10 +7,10 @@ import chart.ChartCompiler;
 import chart.ChartConfig;
 import chart.ChartPrinter;
 import chart.ChartReader;
-import chart.ChartSaver;
 import chart.FileChartReader;
 import chart.SimpleChartReader;
 import chart.SpotifyChartReader;
+import chart.csv.CsvChartSaver;
 
 public class ChartCompilationTask {
 
@@ -22,7 +22,7 @@ public class ChartCompilationTask {
         ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart();
 
-        new ChartSaver(config.csvDestination()).saveChart(chart);
+        new CsvChartSaver(config.csvDestination()).saveChart(chart);
 
         ChartPrinter.print(chart);
     }
