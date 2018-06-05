@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import chart.Chart;
 import chart.ChartSaver;
+import chart.CsvChart;
 
 public class CsvChartSaverTest {
     String folder = "src/test/resources/temp";
@@ -27,7 +28,7 @@ public class CsvChartSaverTest {
     @Test
     public void create() throws IOException {
         ChartSaver saver = new CsvChartSaver(folder);
-        Chart chart = mock(Chart.class);
+        Chart chart = mock(CsvChart.class);
         when(chart.date()).thenReturn(DateTime.now());
         when(chart.week()).thenReturn(123);
         saver.saveChart(chart);
