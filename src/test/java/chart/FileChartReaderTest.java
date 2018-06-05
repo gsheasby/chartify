@@ -22,11 +22,11 @@ public class FileChartReaderTest {
         SimpleChart chart = reader.findChart(1);
         assertEquals(1, chart.entries().size());
 
-        SimpleChartEntry expected = ImmutableSimpleChartEntry.builder()
-                .position(1)
-                .title("title")
-                .artist("artist")
-                .build();
+        CsvSimpleChartEntry expected = ImmutableCsvSimpleChartEntry.builder()
+                                                                   .position(1)
+                                                                   .title("title")
+                                                                   .artist("artist")
+                                                                   .build();
         assertEquals(expected, chart.entries().get(0));
     }
 

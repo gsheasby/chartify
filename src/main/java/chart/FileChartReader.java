@@ -48,7 +48,7 @@ public class FileChartReader implements ChartReader {
         Path chartPath = fileChartLoader.findFileForWeek(week);
         DateTime chartDate = ChartUtils.getDate(chartPath.getFileName().toString());
         Stream<String> lines = Files.lines(chartPath);
-        List<SimpleChartEntry> entries = lines.map(CsvLineParser::parse).collect(Collectors.toList());
+        List<CsvSimpleChartEntry> entries = lines.map(CsvLineParser::parse).collect(Collectors.toList());
         return ImmutableSimpleChart.builder()
                                    .week(week)
                                    .date(chartDate)

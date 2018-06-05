@@ -11,19 +11,19 @@ import org.joda.time.DateTime;
 import org.junit.Test;
 
 public class ChartCompilerTest {
-    private static final SimpleChartEntry SIMPLE_ENTRY = ImmutableSimpleChartEntry.builder()
-                                                                                  .title("title")
-                                                                                  .artist("artist")
-                                                                                  .position(1)
-                                                                                  .build();
+    private static final CsvSimpleChartEntry SIMPLE_ENTRY = ImmutableCsvSimpleChartEntry.builder()
+                                                                                        .title("title")
+                                                                                        .artist("artist")
+                                                                                        .position(1)
+                                                                                        .build();
     private static final ImmutableChartEntry CHART_ENTRY = ImmutableChartEntry.builder()
                                                                               .position(1)
                                                                               .title("title")
                                                                               .artist("artist")
                                                                               .weeksOnChart(1)
                                                                               .build();
-    private static final SimpleChartEntry OTHER_ENTRY = ImmutableSimpleChartEntry.builder()
-            .title("other-title").artist("other-artist").position(1).build();
+    private static final CsvSimpleChartEntry OTHER_ENTRY = ImmutableCsvSimpleChartEntry.builder()
+                                                                                       .title("other-title").artist("other-artist").position(1).build();
     private static final SimpleChart OTHER_CHART = ImmutableSimpleChart.builder()
             .week(2).date(DateTime.now()).addEntries(OTHER_ENTRY).build();
     public static final DateTime DEFAULT_DATE = new DateTime(2017, 1, 1, 0, 0);

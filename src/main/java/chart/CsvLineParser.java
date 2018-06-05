@@ -4,7 +4,7 @@ import java.util.Optional;
 
 // TODO handle invalid input (e.g. empty line)
 public class CsvLineParser {
-    public static SimpleChartEntry parse(String line) {
+    public static CsvSimpleChartEntry parse(String line) {
         int numElements = 3;
 
         try {
@@ -13,11 +13,11 @@ public class CsvLineParser {
             int pos = Integer.parseInt(split[0]);
             String title = split[1];
             String artist = split[2];
-            return ImmutableSimpleChartEntry.builder()
-                                            .position(pos)
-                                            .title(title)
-                                            .artist(artist)
-                                            .build();
+            return ImmutableCsvSimpleChartEntry.builder()
+                                               .position(pos)
+                                               .title(title)
+                                               .artist(artist)
+                                               .build();
         } catch (ArrayIndexOutOfBoundsException | StringIndexOutOfBoundsException e) {
             throw new RuntimeException("Failed to parse line: " + line, e);
         }
