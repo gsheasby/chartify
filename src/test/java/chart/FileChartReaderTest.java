@@ -7,6 +7,8 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
+import chart.csv.CsvSimpleChartEntry;
+
 public class FileChartReaderTest {
     private static String FOLDER = "src/test/resources";
 

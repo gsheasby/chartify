@@ -1,4 +1,4 @@
-package chart;
+package chart.csv;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -11,7 +11,8 @@ import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 
-import chart.csv.CsvChartSaver;
+import chart.Chart;
+import chart.ChartSaver;
 
 public class CsvChartSaverTest {
     String folder = "src/test/resources/temp";

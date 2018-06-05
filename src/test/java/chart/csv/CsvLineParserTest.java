@@ -1,10 +1,12 @@
-package chart;
+package chart.csv;
 
 import static org.junit.Assert.assertEquals;
 
 import java.util.Optional;
 
 import org.junit.Test;
+
+import chart.ChartEntry;
 
 public class CsvLineParserTest {
     @Test

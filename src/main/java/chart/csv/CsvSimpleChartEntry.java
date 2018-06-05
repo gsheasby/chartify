@@ -1,6 +1,8 @@
-package chart;
+package chart.csv;
 
 import org.immutables.value.Value;
+
+import chart.SimpleChartEntry;
 
 @Value.Immutable
 public abstract class CsvSimpleChartEntry implements SimpleChartEntry {

@@ -9,6 +9,8 @@ import java.util.stream.Stream;
 
 import org.joda.time.DateTime;
 
+import chart.csv.CsvLineParser;
+import chart.csv.CsvSimpleChartEntry;
 import javafx.util.Pair;
 
 public class FileChartReader implements ChartReader {

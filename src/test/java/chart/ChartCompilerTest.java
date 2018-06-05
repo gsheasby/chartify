@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
+import chart.csv.CsvSimpleChartEntry;
+
 public class ChartCompilerTest {
     private static final CsvSimpleChartEntry SIMPLE_ENTRY = ImmutableCsvSimpleChartEntry.builder()
                                                                                         .title("title")
