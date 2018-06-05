@@ -12,7 +12,7 @@ import chart.Chart;
 import chart.ChartEntry;
 import chart.ChartSaver;
 
-public class CsvChartSaver implements ChartSaver {
+public class CsvChartSaver implements ChartSaver<Chart> {
     private final Path path;
     private final String folder;
 
