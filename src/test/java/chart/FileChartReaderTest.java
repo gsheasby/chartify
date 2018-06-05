@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import chart.csv.CsvSimpleChartEntry;
+import chart.csv.ImmutableCsvSimpleChartEntry;
 
 public class FileChartReaderTest {
     private static String FOLDER = "src/test/resources";

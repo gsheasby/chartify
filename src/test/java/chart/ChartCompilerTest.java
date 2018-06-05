@@ -11,6 +11,7 @@ import org.joda.time.DateTime;
 import org.junit.Test;
 
 import chart.csv.CsvSimpleChartEntry;
+import chart.csv.ImmutableCsvSimpleChartEntry;
 
 public class ChartCompilerTest {
     private static final CsvSimpleChartEntry SIMPLE_ENTRY = ImmutableCsvSimpleChartEntry.builder()
@@ -18,7 +19,7 @@ public class ChartCompilerTest {
                                                                                         .artist("artist")
                                                                                         .position(1)
                                                                                         .build();
-    private static final ImmutableChartEntry CHART_ENTRY = ImmutableChartEntry.builder()
+    private static final CsvChartEntry CHART_ENTRY = ImmutableCsvChartEntry.builder()
                                                                               .position(1)
                                                                               .title("title")
                                                                               .artist("artist")
@@ -65,7 +66,7 @@ public class ChartCompilerTest {
         Chart chart = compiler.compileChart(2);
         assertEquals(1, chart.entries().size());
 
-        ChartEntry expected = ImmutableChartEntry.builder()
+        ChartEntry expected = ImmutableCsvChartEntry.builder()
                 .artist("artist")
                 .lastPosition(1)
                 .position(1)

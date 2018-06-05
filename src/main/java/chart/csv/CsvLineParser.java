@@ -3,8 +3,7 @@ package chart.csv;
 import java.util.Optional;
 
 import chart.ChartEntry;
-import chart.ImmutableChartEntry;
-import chart.ImmutableCsvSimpleChartEntry;
+import chart.ImmutableCsvChartEntry;
 
 // TODO handle invalid input (e.g. empty line)
 public class CsvLineParser {
@@ -40,7 +39,7 @@ public class CsvLineParser {
         String id = split[5];
         String href = split[6];
         String uri = split[7];
-        return ImmutableChartEntry.builder()
+        return ImmutableCsvChartEntry.builder()
                                   .position(pos)
                                   .lastPosition(lastWeek)
                                   .weeksOnChart(weeks)

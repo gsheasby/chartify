@@ -48,7 +48,7 @@ public class ChartCompiler {
         for (SimpleChartEntry simpleEntry : thisWeek.entries()) {
             Optional<ChartEntry> lastPos = findSongInChart(lastWeek, simpleEntry);
             int weeksOnChart = lastPos.map(chartEntry -> chartEntry.weeksOnChart() + 1).orElse(1);
-            ChartEntry entry = ImmutableChartEntry.builder()
+            ChartEntry entry = ImmutableCsvChartEntry.builder()
                                                   .position(simpleEntry.position())
                                                   .title(simpleEntry.title())
                                                   .artist(simpleEntry.artist())
@@ -100,7 +100,7 @@ public class ChartCompiler {
     }
 
     private ChartEntry newEntry(SimpleChartEntry simpleEntry) {
-        return ImmutableChartEntry.builder()
+        return ImmutableCsvChartEntry.builder()
                 .position(simpleEntry.position())
                 .weeksOnChart(1)
                 .title(simpleEntry.title())
