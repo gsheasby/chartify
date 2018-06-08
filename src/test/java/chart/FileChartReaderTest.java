@@ -11,7 +11,7 @@ import chart.csv.CsvSimpleChartEntry;
 import chart.csv.ImmutableCsvSimpleChartEntry;
 
 public class FileChartReaderTest {
-    private static String FOLDER = "src/test/resources";
+    private static String FOLDER = "src/test/resources/charts";
 
     private SimpleChartReader reader;
 
