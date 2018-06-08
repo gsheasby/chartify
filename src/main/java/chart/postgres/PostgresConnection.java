@@ -5,6 +5,11 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.google.common.base.Strings;
+import com.wrapper.spotify.models.SimpleArtist;
 
 public class PostgresConnection {
     private final PostgresConfig config;
@@ -20,6 +25,33 @@ public class PostgresConnection {
         if (dbWasCreated) {
             createSchema();
         }
+    }
+
+    // TODO does this abstraction make sense?
+    // TODO better exception handling
+    public void saveArtists(Set<SimpleArtist> artists) {
+        try (Connection conn = getConnection()) {
+            String sql = "INSERT INTO artists (id, href, name, uri) " +
+                    "VALUES " + getFields(artists) +
+                    " ON CONFLICT DO NOTHING";
+
+            Statement statement = conn.createStatement();
+            statement.executeUpdate(sql);
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to insert artists!", e);
+        }
+    }
+
+    private String getFields(Set<SimpleArtist> artists) {
+        return artists.stream().map(this::getFields).collect(Collectors.joining(", "));
+    }
+
+    private String getFields(SimpleArtist artist) {
+        return String.format("('%s', '%s', '%s', '%s')",
+                             artist.getId(),
+                             artist.getHref()
+                             artist.getName(),
+                             artist.getUri());
     }
 
     private boolean ensureDatabaseExists() throws SQLException {
@@ -47,13 +79,17 @@ public class PostgresConnection {
     }
 
     private void createSchema() throws SQLException {
-        try (Connection conn = DriverManager.getConnection(
-                "jdbc:postgresql://localhost/" + config.dbName(),
-                config.user(),
-                config.password()))
+        try (Connection conn = getConnection())
         {
             createSchema(conn);
         }
+    }
+
+    private Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(
+                "jdbc:postgresql://localhost/" + config.dbName(),
+                config.user(),
+                config.password());
     }
 
     private void createSchema(Connection conn) throws SQLException {
