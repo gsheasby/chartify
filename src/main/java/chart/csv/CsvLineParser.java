@@ -2,7 +2,7 @@ package chart.csv;
 
 import java.util.Optional;
 
-import chart.ChartEntry;
+import chart.CsvChartEntry;
 import chart.ImmutableCsvChartEntry;
 
 // TODO handle invalid input (e.g. empty line)
@@ -26,7 +26,7 @@ public class CsvLineParser {
         }
     }
 
-    public static ChartEntry parseEntry(String line) {
+    public static CsvChartEntry parseEntry(String line) {
         int numElements = 8;
         String[] split = getStrings(line, numElements);
 

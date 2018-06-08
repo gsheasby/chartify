@@ -10,7 +10,9 @@ import java.util.ArrayList;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
+import chart.csv.CsvSimpleChart;
 import chart.csv.CsvSimpleChartEntry;
+import chart.csv.ImmutableCsvSimpleChart;
 import chart.csv.ImmutableCsvSimpleChartEntry;
 
 public class ChartCompilerTest {
@@ -27,14 +29,14 @@ public class ChartCompilerTest {
                                                                               .build();
     private static final CsvSimpleChartEntry OTHER_ENTRY = ImmutableCsvSimpleChartEntry.builder()
                                                                                        .title("other-title").artist("other-artist").position(1).build();
-    private static final SimpleChart OTHER_CHART = ImmutableSimpleChart.builder()
-            .week(2).date(DateTime.now()).addEntries(OTHER_ENTRY).build();
+    private static final CsvSimpleChart OTHER_CHART = ImmutableCsvSimpleChart.builder()
+                                                                             .week(2).date(DateTime.now()).addEntries(OTHER_ENTRY).build();
     public static final DateTime DEFAULT_DATE = new DateTime(2017, 1, 1, 0, 0);
 
     @Test
     public void canCompileChart() throws IOException {
-        ChartReader reader = new FileChartReader("src/test/resources");
-        ChartReader derivedReader = reader; // TODO
+        FileChartReader reader = new FileChartReader("src/test/resources");
+        FileChartReader derivedReader = reader; // TODO
         ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
         compiler.compileChart(1);
     }
@@ -45,7 +47,7 @@ public class ChartCompilerTest {
         when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
         when(reader.findChart(0)).thenThrow(IllegalArgumentException.class);
 
-        ChartReader derivedReader = mock(FileChartReader.class);
+        FileChartReader derivedReader = mock(FileChartReader.class);
         when(derivedReader.findDerivedChart(0)).thenThrow(IllegalArgumentException.class);
         ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart(1);
@@ -60,7 +62,7 @@ public class ChartCompilerTest {
         when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
         when(reader.findChart(2)).thenReturn(defaultSimpleChart(2));
 
-        ChartReader derivedReader = mock(FileChartReader.class);
+        FileChartReader derivedReader = mock(FileChartReader.class);
         when(derivedReader.findDerivedChart(1)).thenReturn(defaultChart(1));
         ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart(2);
@@ -82,7 +84,7 @@ public class ChartCompilerTest {
         SimpleChartReader reader = mock(FileChartReader.class);
         when(reader.findChart(2)).thenReturn(defaultSimpleChart(2));
 
-        ChartReader derivedReader = mock(FileChartReader.class);
+        FileChartReader derivedReader = mock(FileChartReader.class);
         when(derivedReader.findDerivedChart(1)).thenReturn(defaultChart(1));
 
         ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
@@ -97,7 +99,7 @@ public class ChartCompilerTest {
         when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
         when(reader.findChart(2)).thenReturn(OTHER_CHART);
 
-        ChartReader derivedReader = mock(FileChartReader.class);
+        FileChartReader derivedReader = mock(FileChartReader.class);
         when(derivedReader.findDerivedChart(1)).thenReturn(defaultChart(1));
         ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart(2);
@@ -111,7 +113,7 @@ public class ChartCompilerTest {
         when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
         when(reader.findChart(2)).thenReturn(OTHER_CHART);
 
-        ChartReader derivedReader = mock(FileChartReader.class);
+        FileChartReader derivedReader = mock(FileChartReader.class);
         when(derivedReader.findDerivedChart(1)).thenReturn(defaultChart(1));
         ChartCompiler compiler = new ChartCompiler(reader, derivedReader, 42);
         Chart chart = compiler.compileChart(2);
@@ -121,15 +123,15 @@ public class ChartCompilerTest {
     }
 
     private SimpleChart defaultSimpleChart(int week) {
-        return ImmutableSimpleChart.builder()
+        return ImmutableCsvSimpleChart.builder()
                                    .week(week)
                                    .date(DEFAULT_DATE)
                                    .addEntries(SIMPLE_ENTRY)
                                    .build();
     }
 
-    private Chart defaultChart(int week) {
-        return ImmutableChart.builder()
+    private CsvChart defaultChart(int week) {
+        return ImmutableCsvChart.builder()
                 .date(DEFAULT_DATE)
                 .week(week)
                 .addEntries(CHART_ENTRY)

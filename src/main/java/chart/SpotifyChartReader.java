@@ -1,6 +1,5 @@
 package chart;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,10 +9,12 @@ import com.google.common.collect.Lists;
 import com.wrapper.spotify.models.PlaylistTrack;
 import com.wrapper.spotify.models.Track;
 
+import chart.spotify.ImmutableSimpleSpotifyChart;
 import chart.spotify.ImmutableSimpleSpotifyChartEntry;
+import chart.spotify.SimpleSpotifyChart;
 import chart.spotify.SimpleSpotifyChartEntry;
 
-public class SpotifyChartReader implements SimpleChartReader {
+public class SpotifyChartReader implements SimpleChartReader<SimpleSpotifyChart> {
     private final int chartSize;
     private final SpotifyPlaylistLoader playlistLoader;
 
@@ -23,7 +24,7 @@ public class SpotifyChartReader implements SimpleChartReader {
     }
 
     @Override
-    public SimpleChart findChart(int week) throws IOException {
+    public SimpleSpotifyChart findChart(int week) {
         List<PlaylistTrack> playlist = playlistLoader.load();
         List<Track> tracks = playlist.stream().limit(chartSize).map(PlaylistTrack::getTrack).collect(Collectors.toList());
         int position = 1;
@@ -34,11 +35,11 @@ public class SpotifyChartReader implements SimpleChartReader {
             entries.add(entry);
         }
 
-        return ImmutableSimpleChart.builder()
-                .week(week)
-                .date(DateTime.now())
-                .entries(entries)
-                .build();
+        return ImmutableSimpleSpotifyChart.builder()
+                                          .week(week)
+                                          .date(DateTime.now())
+                                          .entries(entries)
+                                          .build();
     }
 
     private SimpleSpotifyChartEntry createEntry(int position, Track track) {

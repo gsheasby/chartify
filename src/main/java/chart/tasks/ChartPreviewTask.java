@@ -6,7 +6,6 @@ import chart.Chart;
 import chart.ChartCompiler;
 import chart.ChartConfig;
 import chart.ChartPrinter;
-import chart.ChartReader;
 import chart.FileChartReader;
 import chart.SimpleChartReader;
 import chart.SpotifyChartReader;
@@ -16,7 +15,7 @@ public class ChartPreviewTask {
         ChartConfig config = TaskUtils.getConfig();
 
         SimpleChartReader reader = new SpotifyChartReader(config);
-        ChartReader derivedReader = new FileChartReader(config.csvDestination());
+        FileChartReader derivedReader = new FileChartReader(config.csvDestination());
         ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart();
 

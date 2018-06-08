@@ -10,21 +10,21 @@ import java.util.stream.Collectors;
 
 public class ChartCompiler {
     private final SimpleChartReader reader;
-    private final ChartReader derivedReader;
+    private final FileChartReader derivedReader;
     private final int offset;
 
-    public ChartCompiler(SimpleChartReader reader, ChartReader derivedReader) {
+    public ChartCompiler(SimpleChartReader reader, FileChartReader derivedReader) {
         this(reader, derivedReader, 7);
     }
 
-    public ChartCompiler(SimpleChartReader reader, ChartReader derivedReader, int offset) {
+    public ChartCompiler(SimpleChartReader reader, FileChartReader derivedReader, int offset) {
         this.reader = reader;
         this.derivedReader = derivedReader;
         this.offset = offset;
     }
 
     public Chart compileChart() throws IOException {
-        Chart lastWeek = derivedReader.findLatestChart();
+        CsvChart lastWeek = derivedReader.findLatestChart();
         int lastWeekIndex = lastWeek.week();
         SimpleChart thisWeek = reader.findChart(lastWeekIndex + 1);
         return compileChart(thisWeek, lastWeek);
@@ -34,7 +34,7 @@ public class ChartCompiler {
         SimpleChart thisWeek = reader.findChart(week);
 
         try {
-            Chart lastWeek = derivedReader.findDerivedChart(week - 1);
+            CsvChart lastWeek = derivedReader.findDerivedChart(week - 1);
             return compileChart(thisWeek, lastWeek);
         } catch (IllegalArgumentException ex) {
             ex.printStackTrace();
@@ -42,13 +42,13 @@ public class ChartCompiler {
         }
     }
 
-    private Chart compileChart(SimpleChart thisWeek, Chart lastWeek) {
-        List<ChartEntry> entries = new ArrayList<>();
+    private Chart compileChart(SimpleChart thisWeek, CsvChart lastWeek) {
+        List<CsvChartEntry> entries = new ArrayList<>();
 
         for (SimpleChartEntry simpleEntry : thisWeek.entries()) {
             Optional<? extends ChartEntry> lastPos = findSongInChart(lastWeek, simpleEntry);
             int weeksOnChart = lastPos.map(chartEntry -> chartEntry.weeksOnChart() + 1).orElse(1);
-            ChartEntry entry = ImmutableCsvChartEntry.builder()
+            CsvChartEntry entry = ImmutableCsvChartEntry.builder()
                                                   .position(simpleEntry.position())
                                                   .title(simpleEntry.title())
                                                   .artist(simpleEntry.artist())
@@ -66,11 +66,11 @@ public class ChartCompiler {
                                              .filter(pos -> pos != -1) // bit of a hack
                                              .collect(Collectors.toSet());
 
-        List<ChartEntry> dropouts = lastWeek.entries().stream()
+        List<CsvChartEntry> dropouts = lastWeek.entries().stream()
                 .filter(ent -> !inFromLastWeek.contains(ent.position()))
                 .collect(Collectors.toList());
 
-        return ImmutableChart.builder()
+        return ImmutableCsvChart.builder()
                              .week(thisWeek.week())
                              .date(lastWeek.date().plusDays(offset))
                              .entries(entries)
@@ -90,16 +90,16 @@ public class ChartCompiler {
     }
 
     private Chart allNewEntries(SimpleChart thisWeek) {
-        List<ChartEntry> entries = thisWeek.entries().stream()
+        List<CsvChartEntry> entries = thisWeek.entries().stream()
                                            .map(this::newEntry)
                                            .collect(Collectors.toList());
 
-        return ImmutableChart.builder().week(thisWeek.week())
+        return ImmutableCsvChart.builder().week(thisWeek.week())
                              .date(thisWeek.date())
                              .entries(entries).build();
     }
 
-    private ChartEntry newEntry(SimpleChartEntry simpleEntry) {
+    private CsvChartEntry newEntry(SimpleChartEntry simpleEntry) {
         return ImmutableCsvChartEntry.builder()
                 .position(simpleEntry.position())
                 .weeksOnChart(1)

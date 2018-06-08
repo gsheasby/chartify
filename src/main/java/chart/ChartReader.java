@@ -2,8 +2,8 @@ package chart;
 
 import java.io.IOException;
 
-public interface ChartReader extends SimpleChartReader {
-    Chart findLatestChart() throws IOException;
+public interface ChartReader<T extends Chart, U extends SimpleChart> extends SimpleChartReader<U> {
+    T findLatestChart() throws IOException;
 
-    Chart findDerivedChart(int week) throws IOException;
+    T findDerivedChart(int week) throws IOException;
 }
