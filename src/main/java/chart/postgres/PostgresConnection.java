@@ -8,7 +8,6 @@ import java.sql.Statement;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.google.common.base.Strings;
 import com.wrapper.spotify.models.SimpleArtist;
 
 public class PostgresConnection {
@@ -49,7 +48,7 @@ public class PostgresConnection {
     private String getFields(SimpleArtist artist) {
         return String.format("('%s', '%s', '%s', '%s')",
                              artist.getId(),
-                             artist.getHref()
+                             artist.getHref(),
                              artist.getName(),
                              artist.getUri());
     }
