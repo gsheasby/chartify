@@ -20,21 +20,16 @@ public class PostgresChartSaver implements ChartSaver<SpotifyChart> {
 
     @Override
     public void saveChart(SpotifyChart chart) throws IOException {
-        // TODO richer Chart
         Set<SimpleArtist> artists = chart.entries().stream()
                                          .map(entry -> entry.track().getArtists().get(0))
                                          .collect(Collectors.toSet());
-
-        // TODO save artists to Artists table, if necessary
         connection.saveArtists(artists);
 
-        // TODO Then save new tracks to Tracks table
         Set<Track> tracks = chart.entries().stream()
                                  .map(SpotifyChartEntry::track)
                                  .collect(Collectors.toSet());
         connection.saveTracks(tracks);
-
-        // TODO Then save chart entries and chart metadata
-//        chart.entries().stream().map(entry -> entry.artist());
+        connection.saveMetadata(chart);
+        connection.saveEntries(chart.week(), chart.entries());
     }
 }

@@ -5,11 +5,17 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.joda.time.DateTime;
+
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
+
+import chart.spotify.SpotifyChart;
+import chart.spotify.SpotifyChartEntry;
 
 public class PostgresConnection {
     private final PostgresConfig config;
@@ -61,6 +67,42 @@ public class PostgresConnection {
         } catch (SQLException e) {
             throw new RuntimeException("Failed to insert tracks!", e);
         }
+    }
+
+    public void saveMetadata(SpotifyChart chart) {
+        try (Connection conn = getConnection()) {
+            Statement statement = conn.createStatement();
+            DateTime chartDate = chart.date();
+            String sql = String.format("INSERT INTO chart (week, date) VALUES (%d, '%s-%s-%s')",
+                                       chart.week(),
+                                       chartDate.year(),
+                                       chartDate.monthOfYear(),
+                                       chartDate.dayOfMonth());
+            statement.executeUpdate(sql);
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to insert tracks!", e);
+        }
+    }
+
+    public void saveEntries(int week, List<SpotifyChartEntry> entries) {
+        try (Connection conn = getConnection()) {
+            String sql = "INSERT INTO chartEntries (chart_week, position, track_id) " +
+                    "VALUES " + getFieldsForEntries(week, entries) +
+                    " ON CONFLICT DO NOTHING";
+
+            Statement statement = conn.createStatement();
+            statement.executeUpdate(sql);
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to insert tracks!", e);
+        }
+    }
+
+    private String getFieldsForEntries(int week, List<SpotifyChartEntry> entries) {
+        return entries.stream().map(entry -> getFieldsForEntry(week, entry)).collect(Collectors.joining(", "));
+    }
+
+    private String getFieldsForEntry(int week, SpotifyChartEntry entry) {
+        return String.format("(%d, %d, '%s')", week, entry.position(), entry.track().getId());
     }
 
     private String getArtistsForTracks(Set<Track> tracks) {
@@ -175,4 +217,5 @@ public class PostgresConnection {
                                         ");");
 
     }
+
 }
