@@ -4,13 +4,13 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import chart.postgres.PostgresConfig;
-import chart.postgres.PostgresConnection;
+import chart.postgres.PostgresConnectionManager;
 
 public class PostgresSetupTask {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         PostgresConfig config = TaskUtils.getConfig().postgresConfig();
 
-        PostgresConnection connection = new PostgresConnection(config);
+        PostgresConnectionManager connection = new PostgresConnectionManager(config);
 
         try {
             connection.setupSchema();

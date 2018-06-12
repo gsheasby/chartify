@@ -1,8 +1,6 @@
 package chart.postgres;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
@@ -18,26 +16,17 @@ import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;
 
 public class PostgresConnection {
-    private final PostgresConfig config;
+    private final PostgresConnectionManager manager;
 
-    public PostgresConnection(PostgresConfig config) {
-        this.config = config;
-    }
-
-    public void setupSchema() throws ClassNotFoundException, SQLException {
-        Class.forName("org.postgresql.Driver");
-
-        boolean dbWasCreated = ensureDatabaseExists();
-        if (dbWasCreated) {
-            createSchema();
-        }
+    public PostgresConnection(PostgresConnectionManager manager) {
+        this.manager = manager;
     }
 
     // TODO does this abstraction make sense?
     // TODO - what if a new artist has an ID that isn't its spotify ID? Maybe do a lookup for artists when importing from CSV
     // TODO better exception handling
     public void saveArtists(Set<SimpleArtist> artists) {
-        try (Connection conn = getConnection()) {
+        try (Connection conn = manager.getConnection()) {
             String sql = "INSERT INTO artists (id, href, name, uri) " +
                     "VALUES " + getFieldsForArtists(artists) +
                     " ON CONFLICT DO NOTHING";
@@ -50,7 +39,7 @@ public class PostgresConnection {
     }
 
     public void saveTracks(Set<Track> tracks) {
-        try (Connection conn = getConnection()) {
+        try (Connection conn = manager.getConnection()) {
             // Save the tracks
             String sql = "INSERT INTO tracks (id, href, name, uri) " +
                     "VALUES " + getFieldsForTracks(tracks) +
@@ -70,7 +59,7 @@ public class PostgresConnection {
     }
 
     public void saveMetadata(SpotifyChart chart) {
-        try (Connection conn = getConnection()) {
+        try (Connection conn = manager.getConnection()) {
             Statement statement = conn.createStatement();
             DateTime chartDate = chart.date();
             String sql = String.format("INSERT INTO chart (week, date) VALUES (%d, '%s-%s-%s')",
@@ -85,7 +74,7 @@ public class PostgresConnection {
     }
 
     public void saveEntries(int week, List<SpotifyChartEntry> entries) {
-        try (Connection conn = getConnection()) {
+        try (Connection conn = manager.getConnection()) {
             String sql = "INSERT INTO chartEntries (chart_week, position, track_id) " +
                     "VALUES " + getFieldsForEntries(week, entries) +
                     " ON CONFLICT DO NOTHING";
@@ -142,80 +131,4 @@ public class PostgresConnection {
                              artist.getHref(),
                              artist.getUri());
     }
-
-    private boolean ensureDatabaseExists() throws SQLException {
-        try (Connection conn = DriverManager.getConnection(
-                "jdbc:postgresql://localhost/",
-                config.user(),
-                config.password())) {
-            return createDatabaseIfNotExists(conn);
-        }
-    }
-
-    private boolean createDatabaseIfNotExists(Connection conn) throws SQLException {
-        Statement statement = conn.createStatement();
-
-        ResultSet resultSet = statement.executeQuery(String.format("SELECT 1 FROM pg_database WHERE datname = '%s'", config.dbName()));
-        if (!resultSet.next()) {
-            System.out.println("Creating db for user " + config.user());
-            int output = statement.executeUpdate("CREATE DATABASE " + config.dbName());
-            System.out.println("Create database returned " + output);
-            return true;
-        } else {
-            System.out.println("Skipping creation - DB exists");
-            return false;
-        }
-    }
-
-    private void createSchema() throws SQLException {
-        try (Connection conn = getConnection())
-        {
-            createSchema(conn);
-        }
-    }
-
-    private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(
-                "jdbc:postgresql://localhost/" + config.dbName(),
-                config.user(),
-                config.password());
-    }
-
-    private void createSchema(Connection conn) throws SQLException {
-        Statement statement = conn.createStatement();
-
-        statement.executeUpdate("CREATE TABLE artists (" +
-                                        "id varchar(256) CONSTRAINT artistid PRIMARY KEY," +
-                                        "name varchar(256) NOT NULL," +
-                                        "href varchar(512)," +
-                                        "uri varchar(256)" +
-                                        ");");
-
-        statement.executeUpdate("CREATE TABLE tracks (" +
-                                        "id varchar(256) CONSTRAINT trackid PRIMARY KEY," +
-                                        "name varchar(256) NOT NULL," +
-                                        "href varchar(512)," +
-                                        "uri varchar(256)" +
-                                        ");");
-
-        statement.executeUpdate("CREATE TABLE trackArtists (" +
-                                        "track_id varchar(256) REFERENCES tracks," +
-                                        "artist_id varchar(256) REFERENCES artists" +
-                                        ");");
-
-        statement.executeUpdate("CREATE TABLE chart (" +
-                                        "week int CONSTRAINT chartweek PRIMARY KEY," +
-                                        "date date" +
-                                        ");");
-
-        statement.executeUpdate("CREATE TABLE chartEntries (" +
-                                        "chart_week int REFERENCES chart," +
-                                        "position int NOT NULL," +
-                                        "track_id varchar(256) REFERENCES tracks," +
-                                        "CONSTRAINT chart_position PRIMARY KEY(chart_week,position)," +
-                                        "CONSTRAINT pospos CHECK (position > 0)" +
-                                        ");");
-
-    }
-
 }
