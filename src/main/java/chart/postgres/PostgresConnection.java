@@ -96,8 +96,8 @@ public class PostgresConnection {
     private String getFieldForArtist(SimpleArtist artist) {
         return String.format("('%s', '%s', '%s', '%s')",
                              artist.getId(),
-                             artist.getHref(),
                              artist.getName(),
+                             artist.getHref(),
                              artist.getUri());
     }
 
@@ -144,8 +144,8 @@ public class PostgresConnection {
 
         statement.executeUpdate("CREATE TABLE artists (" +
                                         "id varchar(256) CONSTRAINT artistid PRIMARY KEY," +
-                                        "href varchar(512)," +
                                         "name varchar(256) NOT NULL," +
+                                        "href varchar(512)," +
                                         "uri varchar(256)" +
                                         ");");
 
