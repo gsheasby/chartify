@@ -5,9 +5,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.wrapper.spotify.models.SimpleArtist;
+import com.wrapper.spotify.models.Track;
 
 import chart.ChartSaver;
 import chart.spotify.SpotifyChart;
+import chart.spotify.SpotifyChartEntry;
 
 public class PostgresChartSaver implements ChartSaver<SpotifyChart> {
     private final PostgresConnection connection;
@@ -27,6 +29,10 @@ public class PostgresChartSaver implements ChartSaver<SpotifyChart> {
         connection.saveArtists(artists);
 
         // TODO Then save new tracks to Tracks table
+        Set<Track> tracks = chart.entries().stream()
+                                 .map(SpotifyChartEntry::track)
+                                 .collect(Collectors.toSet());
+        connection.saveTracks(tracks);
 
         // TODO Then save chart entries and chart metadata
 //        chart.entries().stream().map(entry -> entry.artist());

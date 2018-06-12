@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.wrapper.spotify.models.SimpleArtist;
+import com.wrapper.spotify.models.Track;
 
 public class PostgresConnection {
     private final PostgresConfig config;
@@ -27,11 +28,12 @@ public class PostgresConnection {
     }
 
     // TODO does this abstraction make sense?
+    // TODO - what if a new artist has an ID that isn't its spotify ID? Maybe do a lookup for artists when importing from CSV
     // TODO better exception handling
     public void saveArtists(Set<SimpleArtist> artists) {
         try (Connection conn = getConnection()) {
             String sql = "INSERT INTO artists (id, href, name, uri) " +
-                    "VALUES " + getFields(artists) +
+                    "VALUES " + getFieldsForArtists(artists) +
                     " ON CONFLICT DO NOTHING";
 
             Statement statement = conn.createStatement();
@@ -41,11 +43,57 @@ public class PostgresConnection {
         }
     }
 
-    private String getFields(Set<SimpleArtist> artists) {
-        return artists.stream().map(this::getFields).collect(Collectors.joining(", "));
+    public void saveTracks(Set<Track> tracks) {
+        try (Connection conn = getConnection()) {
+            // Save the tracks
+            String sql = "INSERT INTO tracks (id, href, name, uri) " +
+                    "VALUES " + getFieldsForTracks(tracks) +
+                    " ON CONFLICT DO NOTHING";
+
+            Statement statement = conn.createStatement();
+            statement.executeUpdate(sql);
+
+            // Connect tracks to artists
+            String insertTrackArtists = "INSERT INTO trackArtists (track_id, artist_id) " +
+                    "VALUES " + getArtistsForTracks(tracks) +
+                    " ON CONFLICT DO NOTHING";
+            statement.executeUpdate(insertTrackArtists);
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to insert artists!", e);
+        }
     }
 
-    private String getFields(SimpleArtist artist) {
+    private String getArtistsForTracks(Set<Track> tracks) {
+        return tracks.stream().map(this::getArtistsForTrack).collect(Collectors.joining(", "));
+    }
+
+    private String getArtistsForTrack(Track track) {
+        return track.getArtists().stream()
+                    .map(artist -> getTrackAndArtistIds(track, artist))
+                    .collect(Collectors.joining(", "));
+    }
+
+    private String getTrackAndArtistIds(Track track, SimpleArtist artist) {
+        return String.format("(%s, %s)", track.getId(), artist.getId());
+    }
+
+    private String getFieldsForTracks(Set<Track> tracks) {
+        return tracks.stream().map(this::getFieldsForTrack).collect(Collectors.joining(", "));
+    }
+
+    private String getFieldsForTrack(Track track) {
+        return String.format("('%s', '%s', '%s', '%s')",
+                             track.getId(),
+                             track.getName(),
+                             track.getHref(),
+                             track.getUri());
+    }
+
+    private String getFieldsForArtists(Set<SimpleArtist> artists) {
+        return artists.stream().map(this::getFieldForArtist).collect(Collectors.joining(", "));
+    }
+
+    private String getFieldForArtist(SimpleArtist artist) {
         return String.format("('%s', '%s', '%s', '%s')",
                              artist.getId(),
                              artist.getHref(),
