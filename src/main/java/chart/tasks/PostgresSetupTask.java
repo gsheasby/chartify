@@ -10,10 +10,8 @@ public class PostgresSetupTask {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         PostgresConfig config = TaskUtils.getConfig().postgresConfig();
 
-        PostgresConnectionManager connection = new PostgresConnectionManager(config);
-
         try {
-            connection.setupSchema();
+            PostgresConnectionManager.create(config);
         } catch (SQLException e) {
             System.out.println("Encountered exception " + e.getMessage() + " creating database.");
             e.printStackTrace();

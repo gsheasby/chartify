@@ -9,11 +9,24 @@ import java.sql.Statement;
 public class PostgresConnectionManager {
     final PostgresConfig config;
 
-    public PostgresConnectionManager(PostgresConfig config) {
+    public static PostgresConnectionManager create(PostgresConfig config) throws SQLException, ClassNotFoundException {
+        PostgresConnectionManager manager = new PostgresConnectionManager(config);
+        manager.setupSchema();
+        return manager;
+    }
+
+    private PostgresConnectionManager(PostgresConfig config) {
         this.config = config;
     }
 
-    public void setupSchema() throws ClassNotFoundException, SQLException {
+    Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(
+                "jdbc:postgresql://localhost/" + config.dbName(),
+                config.user(),
+                config.password());
+    }
+
+    private void setupSchema() throws ClassNotFoundException, SQLException {
         Class.forName("org.postgresql.Driver");
 
         boolean dbWasCreated = ensureDatabaseExists();
@@ -22,7 +35,7 @@ public class PostgresConnectionManager {
         }
     }
 
-    boolean ensureDatabaseExists() throws SQLException {
+    private boolean ensureDatabaseExists() throws SQLException {
         try (Connection conn = DriverManager.getConnection(
                 "jdbc:postgresql://localhost/",
                 config.user(),
@@ -32,14 +45,7 @@ public class PostgresConnectionManager {
         }
     }
 
-    public Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(
-                "jdbc:postgresql://localhost/" + config.dbName(),
-                config.user(),
-                config.password());
-    }
-
-    boolean createDatabaseIfNotExists(Connection conn) throws SQLException {
+    private boolean createDatabaseIfNotExists(Connection conn) throws SQLException {
         Statement statement = conn.createStatement();
 
         ResultSet resultSet = statement.executeQuery(String.format("SELECT 1 FROM pg_database WHERE datname = '%s'", config.dbName()));
@@ -54,13 +60,13 @@ public class PostgresConnectionManager {
         }
     }
 
-    void createSchema() throws SQLException {
+    private void createSchema() throws SQLException {
         try (Connection conn = getConnection()) {
             createSchema(conn);
         }
     }
 
-    void createSchema(Connection conn) throws SQLException {
+    private void createSchema(Connection conn) throws SQLException {
         Statement statement = conn.createStatement();
 
         statement.executeUpdate("CREATE TABLE artists (" +
