@@ -59,7 +59,7 @@ public class PostgresConnection {
                     " ON CONFLICT DO NOTHING";
             statement.executeUpdate(insertTrackArtists);
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to insert artists!", e);
+            throw new RuntimeException("Failed to insert tracks!", e);
         }
     }
 
@@ -175,5 +175,4 @@ public class PostgresConnection {
                                         ");");
 
     }
-
 }
