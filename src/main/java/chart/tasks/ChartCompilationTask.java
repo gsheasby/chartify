@@ -9,6 +9,7 @@ import chart.ChartPrinter;
 import chart.FileChartReader;
 import chart.SimpleChartReader;
 import chart.SpotifyChartReader;
+import chart.csv.CsvChartCompiler;
 import chart.csv.CsvChartSaver;
 
 public class ChartCompilationTask {
@@ -18,7 +19,7 @@ public class ChartCompilationTask {
 
         SimpleChartReader reader = new SpotifyChartReader(config);
         FileChartReader derivedReader = new FileChartReader(config.csvDestination());
-        ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
+        ChartCompiler compiler = new CsvChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart();
 
         new CsvChartSaver(config.csvDestination()).saveChart(chart);

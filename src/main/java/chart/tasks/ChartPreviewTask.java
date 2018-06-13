@@ -9,6 +9,7 @@ import chart.ChartPrinter;
 import chart.FileChartReader;
 import chart.SimpleChartReader;
 import chart.SpotifyChartReader;
+import chart.csv.CsvChartCompiler;
 
 public class ChartPreviewTask {
     public static void main(String[] args) throws IOException {
@@ -16,7 +17,7 @@ public class ChartPreviewTask {
 
         SimpleChartReader reader = new SpotifyChartReader(config);
         FileChartReader derivedReader = new FileChartReader(config.csvDestination());
-        ChartCompiler compiler = new ChartCompiler(reader, derivedReader);
+        ChartCompiler compiler = new CsvChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart();
 
         ChartPrinter.print(chart);
