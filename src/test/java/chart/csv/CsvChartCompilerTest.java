@@ -41,7 +41,7 @@ public class CsvChartCompilerTest {
 
     @Test
     public void canCompileChart() throws IOException {
-        FileChartReader reader = new FileChartReader("src/test/resources");
+        FileChartReader reader = new FileChartReader("src/test/resources/charts");
         FileChartReader derivedReader = reader; // TODO
         ChartCompiler compiler = new CsvChartCompiler(reader, derivedReader);
         compiler.compileChart(1);
