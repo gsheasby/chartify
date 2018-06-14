@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.joda.time.DateTime;
+import org.junit.Before;
 import org.junit.Test;
 
 import chart.Chart;
@@ -19,43 +20,55 @@ import chart.FileChartReader;
 import chart.ImmutableCsvChart;
 import chart.ImmutableCsvChartEntry;
 import chart.SimpleChart;
+import chart.SimpleChartEntry;
 import chart.SimpleChartReader;
 
 public class CsvChartCompilerTest {
-    private static final CsvSimpleChartEntry SIMPLE_ENTRY = ImmutableCsvSimpleChartEntry.builder()
-                                                                                        .title("title")
-                                                                                        .artist("artist")
-                                                                                        .position(1)
-                                                                                        .build();
-    private static final CsvChartEntry CHART_ENTRY = ImmutableCsvChartEntry.builder()
+    private static final SimpleChartEntry SIMPLE_ENTRY = ImmutableCsvSimpleChartEntry.builder()
+                                                                                     .title("title")
+                                                                                     .artist("artist")
+                                                                                     .position(1)
+                                                                                     .build();
+    private static final ChartEntry CHART_ENTRY = ImmutableCsvChartEntry.builder()
                                                                            .position(1)
                                                                            .title("title")
                                                                            .artist("artist")
                                                                            .weeksOnChart(1)
                                                                            .build();
-    private static final CsvSimpleChartEntry OTHER_ENTRY = ImmutableCsvSimpleChartEntry.builder()
-                                                                                       .title("other-title").artist("other-artist").position(1).build();
-    private static final CsvSimpleChart OTHER_CHART = ImmutableCsvSimpleChart.builder()
-                                                                             .week(2).date(DateTime.now()).addEntries(OTHER_ENTRY).build();
+    private static final CsvSimpleChartEntry OTHER_CSV_ENTRY = ImmutableCsvSimpleChartEntry.builder()
+                                                                                           .title("other-title")
+                                                                                           .artist("other-artist")
+                                                                                           .position(1)
+                                                                                           .build();
+    private static final SimpleChart OTHER_CHART = ImmutableCsvSimpleChart.builder()
+                                                                          .week(2)
+                                                                          .date(DateTime.now())
+                                                                          .addEntries(OTHER_CSV_ENTRY)
+                                                                          .build();
     private static final DateTime DEFAULT_DATE = new DateTime(2017, 1, 1, 0, 0);
+
+    SimpleChartReader reader = mock(FileChartReader.class);
+    FileChartReader derivedReader = mock(FileChartReader.class);
+    private CsvChartCompiler compiler;
+
+    @Before
+    public void setUp() {
+        compiler = new CsvChartCompiler(reader, derivedReader);
+
+    }
 
     @Test
     public void canCompileChart() throws IOException {
-        FileChartReader reader = new FileChartReader("src/test/resources/charts");
-        FileChartReader derivedReader = reader; // TODO
-        ChartCompiler compiler = new CsvChartCompiler(reader, derivedReader);
-        compiler.compileChart(1);
+        FileChartReader realReader = new FileChartReader("src/test/resources/charts");
+        new CsvChartCompiler(realReader, realReader).compileChart(1);
     }
 
     @Test
     public void firstMockedWeekHasNewEntries() throws IOException {
-        SimpleChartReader reader = mock(FileChartReader.class);
         when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
         when(reader.findChart(0)).thenThrow(IllegalArgumentException.class);
 
-        FileChartReader derivedReader = mock(FileChartReader.class);
         when(derivedReader.findDerivedChart(0)).thenThrow(IllegalArgumentException.class);
-        ChartCompiler compiler = new CsvChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart(1);
         assertEquals(1, chart.entries().size());
 
@@ -64,13 +77,11 @@ public class CsvChartCompilerTest {
 
     @Test
     public void secondWeekRecordsPreviousPosition() throws IOException {
-        SimpleChartReader reader = mock(FileChartReader.class);
         when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
         when(reader.findChart(2)).thenReturn(defaultSimpleChart(2));
 
-        FileChartReader derivedReader = mock(FileChartReader.class);
         when(derivedReader.findDerivedChart(1)).thenReturn(defaultChart(1));
-        ChartCompiler compiler = new CsvChartCompiler(reader, derivedReader);
+
         Chart chart = compiler.compileChart(2);
         assertEquals(1, chart.entries().size());
 
@@ -87,13 +98,9 @@ public class CsvChartCompilerTest {
 
     @Test
     public void secondWeekIsSevenDaysAfterFirst() throws IOException {
-        SimpleChartReader reader = mock(FileChartReader.class);
         when(reader.findChart(2)).thenReturn(defaultSimpleChart(2));
-
-        FileChartReader derivedReader = mock(FileChartReader.class);
         when(derivedReader.findDerivedChart(1)).thenReturn(defaultChart(1));
 
-        ChartCompiler compiler = new CsvChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart(2);
 
         assertEquals(DEFAULT_DATE.plusWeeks(1), chart.date());
@@ -101,13 +108,10 @@ public class CsvChartCompilerTest {
 
     @Test
     public void dropoutsAreRecorded() throws IOException {
-        SimpleChartReader reader = mock(FileChartReader.class);
         when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
         when(reader.findChart(2)).thenReturn(OTHER_CHART);
-
-        FileChartReader derivedReader = mock(FileChartReader.class);
         when(derivedReader.findDerivedChart(1)).thenReturn(defaultChart(1));
-        ChartCompiler compiler = new CsvChartCompiler(reader, derivedReader);
+
         Chart chart = compiler.compileChart(2);
 
         assertEquals(1, chart.dropouts().size());
@@ -115,11 +119,9 @@ public class CsvChartCompilerTest {
 
     @Test
     public void offsetsAreRespected() throws IOException {
-        SimpleChartReader reader = mock(FileChartReader.class);
         when(reader.findChart(1)).thenReturn(defaultSimpleChart(1));
         when(reader.findChart(2)).thenReturn(OTHER_CHART);
 
-        FileChartReader derivedReader = mock(FileChartReader.class);
         when(derivedReader.findDerivedChart(1)).thenReturn(defaultChart(1));
         ChartCompiler compiler = new CsvChartCompiler(reader, derivedReader, 42);
         Chart chart = compiler.compileChart(2);
@@ -132,7 +134,7 @@ public class CsvChartCompilerTest {
         return ImmutableCsvSimpleChart.builder()
                                    .week(week)
                                    .date(DEFAULT_DATE)
-                                   .addEntries(SIMPLE_ENTRY)
+                                   .addEntries((CsvSimpleChartEntry) SIMPLE_ENTRY)
                                    .build();
     }
 
@@ -140,7 +142,7 @@ public class CsvChartCompilerTest {
         return ImmutableCsvChart.builder()
                                 .date(DEFAULT_DATE)
                                 .week(week)
-                                .addEntries(CHART_ENTRY)
+                                .addEntries((CsvChartEntry) CHART_ENTRY)
                                 .dropouts(new ArrayList<>())
                                 .build();
     }
