@@ -21,9 +21,17 @@ public class PostgresConnectionManager {
 
     Connection getConnection() throws SQLException {
         return DriverManager.getConnection(
-                "jdbc:postgresql://localhost/" + config.dbName(),
+                getDatabaseUrl(),
                 config.user(),
                 config.password());
+    }
+
+    private String getDatabaseUrl() {
+        return getPostgresUrl() + config.dbName();
+    }
+
+    private String getPostgresUrl() {
+        return String.format("jdbc:postgresql://localhost:%d/", config.port());
     }
 
     private void setupSchema() throws ClassNotFoundException, SQLException {
@@ -37,7 +45,7 @@ public class PostgresConnectionManager {
 
     private boolean ensureDatabaseExists() throws SQLException {
         try (Connection conn = DriverManager.getConnection(
-                "jdbc:postgresql://localhost/",
+                getPostgresUrl(),
                 config.user(),
                 config.password()))
         {
