@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 
 import com.wrapper.spotify.models.SimpleArtist;
@@ -27,9 +28,8 @@ public class PostgresConnection {
     // TODO better exception handling
     public void saveArtists(Set<SimpleArtist> artists) {
         try (Connection conn = manager.getConnection()) {
-            String sql = "INSERT INTO artists (id, href, name, uri) " +
-                    "VALUES " + getFieldsForArtists(artists) +
-                    " ON CONFLICT DO NOTHING";
+            String sql = getUpdateForArtists(artists);
+            System.out.println(sql);
 
             Statement statement = conn.createStatement();
             statement.executeUpdate(sql);
@@ -38,10 +38,17 @@ public class PostgresConnection {
         }
     }
 
+    // TODO delegate this so it can be tested
+    private String getUpdateForArtists(Set<SimpleArtist> artists) {
+        return "INSERT INTO artists (id, name, href, uri) " +
+                        "VALUES " + getFieldsForArtists(artists) +
+                        " ON CONFLICT DO NOTHING";
+    }
+
     public void saveTracks(Set<Track> tracks) {
         try (Connection conn = manager.getConnection()) {
             // Save the tracks
-            String sql = "INSERT INTO tracks (id, href, name, uri) " +
+            String sql = "INSERT INTO tracks (id, name, href, uri) " +
                     "VALUES " + getFieldsForTracks(tracks) +
                     " ON CONFLICT DO NOTHING";
 
@@ -64,9 +71,10 @@ public class PostgresConnection {
             DateTime chartDate = chart.date();
             String sql = String.format("INSERT INTO chart (week, date) VALUES (%d, '%s-%s-%s')",
                                        chart.week(),
-                                       chartDate.year(),
-                                       chartDate.monthOfYear(),
-                                       chartDate.dayOfMonth());
+                                       chartDate.year().get(),
+                                       chartDate.monthOfYear().get(),
+                                       chartDate.dayOfMonth().get());
+
             statement.executeUpdate(sql);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to insert tracks!", e);
@@ -105,7 +113,7 @@ public class PostgresConnection {
     }
 
     private String getTrackAndArtistIds(Track track, SimpleArtist artist) {
-        return String.format("(%s, %s)", track.getId(), artist.getId());
+        return String.format("('%s', '%s')", track.getId(), artist.getId());
     }
 
     private String getFieldsForTracks(Set<Track> tracks) {
@@ -115,7 +123,7 @@ public class PostgresConnection {
     private String getFieldsForTrack(Track track) {
         return String.format("('%s', '%s', '%s', '%s')",
                              track.getId(),
-                             track.getName(),
+                             StringUtils.replace(track.getName(), "'", "''"),
                              track.getHref(),
                              track.getUri());
     }
@@ -127,7 +135,7 @@ public class PostgresConnection {
     private String getFieldForArtist(SimpleArtist artist) {
         return String.format("('%s', '%s', '%s', '%s')",
                              artist.getId(),
-                             artist.getName(),
+                             StringUtils.replace(artist.getName(), "'", "''"),
                              artist.getHref(),
                              artist.getUri());
     }

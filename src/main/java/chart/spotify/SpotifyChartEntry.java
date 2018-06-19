@@ -2,6 +2,8 @@ package chart.spotify;
 
 import org.immutables.value.Value;
 
+import com.google.common.collect.ImmutableList;
+import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 
 import chart.ChartEntry;
@@ -33,5 +35,18 @@ public abstract class SpotifyChartEntry implements ChartEntry {
     @Override
     public String uri() {
         return track().getUri();
+    }
+
+    public static SpotifyChartEntry from(ChartEntry entry) {
+        SimpleArtist artist = new SimpleArtist();
+        artist.setName(entry.artist());
+        Track track = new Track();
+        track.setName(entry.title());
+        track.setArtists(ImmutableList.of(artist));
+
+        return ImmutableSpotifyChartEntry.builder()
+                .from(entry)
+                .track(track)
+                .build();
     }
 }

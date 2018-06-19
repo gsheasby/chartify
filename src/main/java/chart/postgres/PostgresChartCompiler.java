@@ -76,7 +76,7 @@ public class PostgresChartCompiler implements ChartCompiler<SpotifyChart> {
 
         List<SpotifyChartEntry> dropouts = lastWeek.entries().stream()
                                                      .filter(ent -> !inFromLastWeek.contains(ent.position()))
-                                                     .map(this::toSpotifyEntry)
+                                                     .map(SpotifyChartEntry::from)
                                                      .collect(Collectors.toList());
 
         return ImmutableSpotifyChart.builder()
@@ -84,12 +84,6 @@ public class PostgresChartCompiler implements ChartCompiler<SpotifyChart> {
                 .date(lastWeek.date().plusDays(offset))
                 .entries(entries)
                 .dropouts(dropouts)
-                .build();
-    }
-
-    private SpotifyChartEntry toSpotifyEntry(ChartEntry chartEntry) {
-        return ImmutableSpotifyChartEntry.builder()
-                .from(chartEntry)
                 .build();
     }
 
