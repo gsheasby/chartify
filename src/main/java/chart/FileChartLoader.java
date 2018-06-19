@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javafx.util.Pair;
 
@@ -30,9 +29,7 @@ public class FileChartLoader {
     }
 
     public Path findFileForWeek(int week) throws IOException {
-        Path path = Paths.get(folder);
-        Stream<Path> files = Files.walk(path);
-        List<Path> chartFiles = files
+        List<Path> chartFiles = Files.walk(Paths.get(folder))
                                      .filter(file -> file.getFileName().toString().endsWith(".csv")
                                              && getWeek(file) == week)
                                      .collect(Collectors.toList());
