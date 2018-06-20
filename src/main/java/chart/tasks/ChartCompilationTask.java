@@ -6,8 +6,8 @@ import chart.Chart;
 import chart.ChartCompiler;
 import chart.ChartConfig;
 import chart.ChartPrinter;
-import chart.FileChartReader;
-import chart.SpotifyChartReader;
+import chart.csv.FileChartReader;
+import chart.spotify.SpotifyChartReader;
 import chart.csv.CsvChartCompiler;
 import chart.csv.CsvChartSaver;
 

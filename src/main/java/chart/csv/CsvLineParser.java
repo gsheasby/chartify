@@ -2,9 +2,6 @@ package chart.csv;
 
 import java.util.Optional;
 
-import chart.CsvChartEntry;
-import chart.ImmutableCsvChartEntry;
-
 // TODO handle invalid input (e.g. empty line)
 public class CsvLineParser {
     public static CsvSimpleChartEntry parse(String line) {

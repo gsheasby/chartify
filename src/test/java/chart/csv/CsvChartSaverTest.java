@@ -13,7 +13,6 @@ import org.junit.Test;
 
 import chart.Chart;
 import chart.ChartSaver;
-import chart.CsvChart;
 
 public class CsvChartSaverTest {
     String folder = "src/test/resources/temp";

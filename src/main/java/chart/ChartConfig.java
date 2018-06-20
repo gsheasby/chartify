@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import chart.postgres.PostgresConfig;
+import chart.spotify.SpotifyConfig;
 
 @JsonDeserialize(as = ImmutableChartConfig.class)
 @JsonSerialize(as = ImmutableChartConfig.class)
