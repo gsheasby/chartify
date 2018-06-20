@@ -1,4 +1,4 @@
-package chart;
+package chart.spotify;
 
 import org.immutables.value.Value;
 

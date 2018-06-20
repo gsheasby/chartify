@@ -1,4 +1,4 @@
-package chart;
+package chart.csv;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -9,10 +9,8 @@ import java.util.stream.Stream;
 
 import org.joda.time.DateTime;
 
-import chart.csv.CsvLineParser;
-import chart.csv.CsvSimpleChart;
-import chart.csv.CsvSimpleChartEntry;
-import chart.csv.ImmutableCsvSimpleChart;
+import chart.ChartReader;
+import chart.ChartUtils;
 import javafx.util.Pair;
 
 public class FileChartReader implements ChartReader<CsvChart, CsvSimpleChart> {
@@ -41,10 +39,10 @@ public class FileChartReader implements ChartReader<CsvChart, CsvSimpleChart> {
         Stream<String> lines = Files.lines(chartPath);
         List<CsvChartEntry> entries = lines.map(CsvLineParser::parseEntry).collect(Collectors.toList());
         return ImmutableCsvChart.builder()
-                             .week(week)
-                             .date(chartDate)
-                             .entries(entries)
-                             .build();
+                                .week(week)
+                                .date(chartDate)
+                                .entries(entries)
+                                .build();
     }
 
     @Override

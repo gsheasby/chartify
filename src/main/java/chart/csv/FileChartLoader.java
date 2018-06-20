@@ -1,4 +1,4 @@
-package chart;
+package chart.csv;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -1,4 +1,4 @@
-package chart;
+package chart.spotify;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -9,10 +9,8 @@ import com.google.common.collect.Lists;
 import com.wrapper.spotify.models.PlaylistTrack;
 import com.wrapper.spotify.models.Track;
 
-import chart.spotify.ImmutableSimpleSpotifyChart;
-import chart.spotify.ImmutableSimpleSpotifyChartEntry;
-import chart.spotify.SimpleSpotifyChart;
-import chart.spotify.SimpleSpotifyChartEntry;
+import chart.ChartConfig;
+import chart.SimpleChartReader;
 
 public class SpotifyChartReader implements SimpleChartReader<SimpleSpotifyChart> {
     private final int chartSize;

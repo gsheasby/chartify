@@ -13,7 +13,7 @@ import chart.ChartCompiler;
 import chart.ChartEntry;
 import chart.ChartReader;
 import chart.SimpleChartEntry;
-import chart.SpotifyChartReader;
+import chart.spotify.SpotifyChartReader;
 import chart.spotify.ImmutableSpotifyChart;
 import chart.spotify.ImmutableSpotifyChartEntry;
 import chart.spotify.SimpleSpotifyChart;

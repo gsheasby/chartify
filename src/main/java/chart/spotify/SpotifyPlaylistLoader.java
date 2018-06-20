@@ -1,4 +1,4 @@
-package chart;
+package chart.spotify;
 
 import java.io.IOException;
 import java.util.List;
@@ -8,6 +8,8 @@ import com.wrapper.spotify.exceptions.WebApiException;
 import com.wrapper.spotify.methods.PlaylistRequest;
 import com.wrapper.spotify.models.ClientCredentials;
 import com.wrapper.spotify.models.PlaylistTrack;
+
+import chart.spotify.SpotifyConfig;
 
 public class SpotifyPlaylistLoader {
     private final SpotifyConfig config;

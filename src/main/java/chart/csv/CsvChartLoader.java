@@ -7,8 +7,6 @@ import java.util.List;
 import com.google.common.collect.Lists;
 
 import chart.Chart;
-import chart.FileChartLoader;
-import chart.FileChartReader;
 import javafx.util.Pair;
 
 public class CsvChartLoader {

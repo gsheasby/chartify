@@ -1,4 +1,4 @@
-package chart;
+package chart.csv;
 
 import static org.junit.Assert.assertEquals;
 
@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import org.junit.Before;
 import org.junit.Test;
 
+import chart.csv.FileChartLoader;
 import javafx.util.Pair;
 
 public class FileChartLoaderTest {

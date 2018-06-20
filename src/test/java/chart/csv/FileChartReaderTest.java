@@ -1,4 +1,4 @@
-package chart;
+package chart.csv;
 
 import static org.junit.Assert.assertEquals;
 
@@ -7,7 +7,10 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
+import chart.SimpleChart;
+import chart.SimpleChartReader;
 import chart.csv.CsvSimpleChartEntry;
+import chart.csv.FileChartReader;
 import chart.csv.ImmutableCsvSimpleChartEntry;
 
 public class FileChartReaderTest {
