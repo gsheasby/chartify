@@ -12,7 +12,7 @@ import org.junit.Test;
 import javafx.util.Pair;
 
 public class FileChartLoaderTest {
-    private static String FOLDER = "src/test/resources";
+    private static String FOLDER = "src/test/resources/charts";
     private FileChartLoader loader;
 
     @Before

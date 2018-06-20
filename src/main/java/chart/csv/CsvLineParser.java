@@ -1,10 +1,13 @@
-package chart;
+package chart.csv;
 
 import java.util.Optional;
 
+import chart.CsvChartEntry;
+import chart.ImmutableCsvChartEntry;
+
 // TODO handle invalid input (e.g. empty line)
 public class CsvLineParser {
-    public static SimpleChartEntry parse(String line) {
+    public static CsvSimpleChartEntry parse(String line) {
         int numElements = 3;
 
         try {
@@ -13,17 +16,17 @@ public class CsvLineParser {
             int pos = Integer.parseInt(split[0]);
             String title = split[1];
             String artist = split[2];
-            return ImmutableSimpleChartEntry.builder()
-                                            .position(pos)
-                                            .title(title)
-                                            .artist(artist)
-                                            .build();
+            return ImmutableCsvSimpleChartEntry.builder()
+                                               .position(pos)
+                                               .title(title)
+                                               .artist(artist)
+                                               .build();
         } catch (ArrayIndexOutOfBoundsException | StringIndexOutOfBoundsException e) {
             throw new RuntimeException("Failed to parse line: " + line, e);
         }
     }
 
-    public static ChartEntry parseEntry(String line) {
+    public static CsvChartEntry parseEntry(String line) {
         int numElements = 8;
         String[] split = getStrings(line, numElements);
 
@@ -36,7 +39,7 @@ public class CsvLineParser {
         String id = split[5];
         String href = split[6];
         String uri = split[7];
-        return ImmutableChartEntry.builder()
+        return ImmutableCsvChartEntry.builder()
                                   .position(pos)
                                   .lastPosition(lastWeek)
                                   .weeksOnChart(weeks)

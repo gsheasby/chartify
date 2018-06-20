@@ -1,6 +1,5 @@
 package chart;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,7 +9,12 @@ import com.google.common.collect.Lists;
 import com.wrapper.spotify.models.PlaylistTrack;
 import com.wrapper.spotify.models.Track;
 
-public class SpotifyChartReader implements SimpleChartReader {
+import chart.spotify.ImmutableSimpleSpotifyChart;
+import chart.spotify.ImmutableSimpleSpotifyChartEntry;
+import chart.spotify.SimpleSpotifyChart;
+import chart.spotify.SimpleSpotifyChartEntry;
+
+public class SpotifyChartReader implements SimpleChartReader<SimpleSpotifyChart> {
     private final int chartSize;
     private final SpotifyPlaylistLoader playlistLoader;
 
@@ -20,37 +24,28 @@ public class SpotifyChartReader implements SimpleChartReader {
     }
 
     @Override
-    public SimpleChart findChart(int week) throws IOException {
+    public SimpleSpotifyChart findChart(int week) {
         List<PlaylistTrack> playlist = playlistLoader.load();
         List<Track> tracks = playlist.stream().limit(chartSize).map(PlaylistTrack::getTrack).collect(Collectors.toList());
         int position = 1;
-        List<SimpleChartEntry> entries = Lists.newArrayList();
+        List<SimpleSpotifyChartEntry> entries = Lists.newArrayList();
         for (Track track : tracks) {
-            SimpleChartEntry entry = createEntry(position, track);
+            SimpleSpotifyChartEntry entry = createEntry(position, track);
             position += 1;
             entries.add(entry);
         }
 
-        return ImmutableSimpleChart.builder()
-                .week(week)
-                .date(DateTime.now())
-                .entries(entries)
-                .build();
+        return ImmutableSimpleSpotifyChart.builder()
+                                          .week(week)
+                                          .date(DateTime.now())
+                                          .entries(entries)
+                                          .build();
     }
 
-    private SimpleChartEntry createEntry(int position, Track track) {
-        String title = track.getName();
-
-        // TODO handle multiple artists
-        String artist = track.getArtists().get(0).getName();
-
-        return ImmutableSimpleChartEntry.builder()
-                .artist(artist)
-                .title(title)
-                .position(position)
-                .id(track.getId())
-                .href(track.getHref())
-                .uri(track.getUri())
-                .build();
+    private SimpleSpotifyChartEntry createEntry(int position, Track track) {
+        return ImmutableSimpleSpotifyChartEntry.builder()
+                                               .position(position)
+                                               .track(track)
+                                               .build();
     }
 }

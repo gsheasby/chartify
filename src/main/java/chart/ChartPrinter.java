@@ -24,14 +24,14 @@ public class ChartPrinter {
                               entry.position(),
                               entry.lastPosition().get(),
                               entry.weeksOnChart(),
-                              entry.title(),
-                              entry.artist());
+                              entry.artist(),
+                              entry.title());
         } else {
             s = String.format("%02d (NE) %d %s - %s",
                               entry.position(),
                               entry.weeksOnChart(),
-                              entry.title(),
-                              entry.artist());
+                              entry.artist(),
+                              entry.title());
         }
         System.out.println(s);
     }
@@ -40,8 +40,8 @@ public class ChartPrinter {
         String s = String.format("-- (%02d) %d %s - %s",
                           entry.position(),
                           entry.weeksOnChart(),
-                          entry.title(),
-                          entry.artist());
+                          entry.artist(),
+                          entry.title());
         System.out.println(s);
     }
 }

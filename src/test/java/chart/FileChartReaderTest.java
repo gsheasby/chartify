@@ -7,8 +7,11 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
+import chart.csv.CsvSimpleChartEntry;
+import chart.csv.ImmutableCsvSimpleChartEntry;
+
 public class FileChartReaderTest {
-    private static String FOLDER = "src/test/resources";
+    private static String FOLDER = "src/test/resources/charts";
 
     private SimpleChartReader reader;
 
@@ -22,11 +25,11 @@ public class FileChartReaderTest {
         SimpleChart chart = reader.findChart(1);
         assertEquals(1, chart.entries().size());
 
-        SimpleChartEntry expected = ImmutableSimpleChartEntry.builder()
-                .position(1)
-                .title("title")
-                .artist("artist")
-                .build();
+        CsvSimpleChartEntry expected = ImmutableCsvSimpleChartEntry.builder()
+                                                                   .position(1)
+                                                                   .title("title")
+                                                                   .artist("artist")
+                                                                   .build();
         assertEquals(expected, chart.entries().get(0));
     }
 

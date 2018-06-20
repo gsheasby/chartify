@@ -25,14 +25,13 @@ public class FileChartLoader {
     }
 
     private int getWeek(Path path) {
-        return Integer.parseInt(path.getFileName().toString().split("-")[0]);
+        return Integer.parseInt(path.getFileName().toString().split("[-.]")[0]);
     }
 
     public Path findFileForWeek(int week) throws IOException {
-        Path path = Paths.get(folder);
-        String weekStr = Integer.toString(week);
-        List<Path> chartFiles = Files.walk(path)
-                                     .filter(file -> file.getFileName().toString().startsWith(weekStr))
+        List<Path> chartFiles = Files.walk(Paths.get(folder))
+                                     .filter(file -> file.getFileName().toString().endsWith(".csv")
+                                             && getWeek(file) == week)
                                      .collect(Collectors.toList());
         if (chartFiles.isEmpty()) {
             throw new IllegalArgumentException("Chart for week " + week + " not found!");

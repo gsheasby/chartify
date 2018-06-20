@@ -12,4 +12,9 @@ public abstract class PostgresConfig {
     public abstract String dbName();
     public abstract String user();
     public abstract String password();
+
+    @Value.Default
+    public int port() {
+        return 5432;
+    }
 }
