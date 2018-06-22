@@ -1,0 +1,121 @@
+package chart.postgres;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.joda.time.DateTime;
+
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.wrapper.spotify.models.SimpleArtist;
+import com.wrapper.spotify.models.Track;
+
+import chart.ChartReader;
+import chart.postgres.raw.ChartEntryRecord;
+import chart.postgres.raw.TrackArtistRecord;
+import chart.spotify.ImmutableSimpleSpotifyChart;
+import chart.spotify.ImmutableSimpleSpotifyChartEntry;
+import chart.spotify.SimpleSpotifyChart;
+import chart.spotify.SimpleSpotifyChartEntry;
+import chart.spotify.SpotifyChart;
+
+public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpotifyChart> {
+    private final PostgresConnection connection;
+
+    public PostgresChartReader(PostgresConnection connection) {
+        this.connection = connection;
+    }
+
+    @Override
+    public SpotifyChart findLatestChart() throws IOException {
+        /* TODO
+         */
+        return null;
+    }
+
+    @Override
+    public SpotifyChart findDerivedChart(int week) throws IOException {
+        return null;
+    }
+
+    @Override
+    public SimpleSpotifyChart findChart(int week) throws IOException {
+        /* TODO
+          1. (possibly a WITH query?)
+             (Query 1)
+             SELECT e.position, t.id, t.name, t.href, t.uri
+             FROM tracks t JOIN chartEntries e
+             ON t.id = e.track_id
+             WHERE e.chart_week = week --> List<ChartEntryRecord>
+           2. Get a Set<String> trackIds from this
+           3. (Query 2) SELECT track_id, artist_id FROM trackArtists
+              WHERE track_id IN (trackIds)
+              --> List<TrackArtistRecord>
+           4. (Query 3) SELECT id, name, href, uri FROM artists
+              WHERE id IN (list) --> Set<Artist>
+           5. List<TrackArtistRef> + Set<Artist> = Map<String, List<Artist>>
+           (Query 3b - not needed!) SELECT id, name, href, uri FROM tracks
+              WHERE track_id IN (trackIds) --> Set<TrackRecord>
+           6. List<ChartEntryRecord> + Map<String, List<Artist>>
+              --> List<SimpleSpotifyChartEntry>
+           7. (Query 4) SELECT date FROM chart WHERE week = week --> Date
+           8. --> SimpleSpotifyChart
+         */
+        List<ChartEntryRecord> chartEntries = connection.getChartEntries(week);
+        Set<String> trackIds = chartEntries.stream()
+                                           .map(ChartEntryRecord::track_id)
+                                           .collect(Collectors.toSet());
+        List<TrackArtistRecord> trackArtists = connection.getTrackArtists(trackIds);
+        Set<String> artistIds = trackArtists.stream()
+                .map(TrackArtistRecord::artist_id)
+                .collect(Collectors.toSet());
+        Map<String, SimpleArtist> artistsById = connection.getArtists(artistIds);
+
+        Multimap<String, SimpleArtist> artistsForTracks = getArtistsForTracks(trackArtists, artistsById);
+
+        List<SimpleSpotifyChartEntry> entries = chartEntries.stream()
+                                    .map(entry -> createSpotifyEntry(entry, artistsForTracks))
+                                    .collect(Collectors.toList());
+
+        DateTime date = connection.getChartDate(week);
+
+        return ImmutableSimpleSpotifyChart.builder()
+                .entries(entries)
+                .week(week)
+                .date(date)
+                .build();
+    }
+
+    private Multimap<String, SimpleArtist> getArtistsForTracks(List<TrackArtistRecord> trackArtists, Map<String, SimpleArtist> artistsById) {
+        Multimap<String, SimpleArtist> artistsByTrack = ArrayListMultimap.create();
+
+        for (TrackArtistRecord trackArtistRecord : trackArtists) {
+            SimpleArtist artist = artistsById.get(trackArtistRecord.artist_id()); // TODO what if null?
+            artistsByTrack.put(trackArtistRecord.track_id(), artist);
+        }
+        return artistsByTrack;
+    }
+
+    private SimpleSpotifyChartEntry createSpotifyEntry(ChartEntryRecord chartEntry, Map<String, List<SimpleArtist>> artistsForTracks) {
+        Track track = getTrackWithoutArtists(chartEntry);
+        track.setArtists(artistsForTracks.get(chartEntry.track_id()));
+        return ImmutableSimpleSpotifyChartEntry.builder()
+                                               .position(chartEntry.position())
+                                               .track(track)
+                                               .build();
+    }
+
+    private Track getTrackWithoutArtists(ChartEntryRecord chartEntry) {
+        Track track = new Track();
+        track.setId(chartEntry.track_id());
+        track.setName(chartEntry.track_name());
+        track.setHref(chartEntry.track_href());
+        track.setUri(chartEntry.track_uri());
+        return track;
+    }
+}
