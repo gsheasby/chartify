@@ -1,6 +1,7 @@
 package chart.postgres;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -9,9 +10,7 @@ import java.util.stream.Collectors;
 import org.joda.time.DateTime;
 
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 
@@ -101,9 +100,9 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
         return artistsByTrack;
     }
 
-    private SimpleSpotifyChartEntry createSpotifyEntry(ChartEntryRecord chartEntry, Map<String, List<SimpleArtist>> artistsForTracks) {
+    private SimpleSpotifyChartEntry createSpotifyEntry(ChartEntryRecord chartEntry, Multimap<String, SimpleArtist> artistsForTracks) {
         Track track = getTrackWithoutArtists(chartEntry);
-        track.setArtists(artistsForTracks.get(chartEntry.track_id()));
+        track.setArtists(new ArrayList<>(artistsForTracks.get(chartEntry.track_id())));
         return ImmutableSimpleSpotifyChartEntry.builder()
                                                .position(chartEntry.position())
                                                .track(track)
