@@ -4,15 +4,20 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 
+import chart.postgres.raw.ChartEntryRecord;
+import chart.postgres.raw.TrackArtistRecord;
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;
 
@@ -138,5 +143,25 @@ public class PostgresConnection {
                              StringUtils.replace(artist.getName(), "'", "''"),
                              artist.getHref(),
                              artist.getUri());
+    }
+
+    public List<ChartEntryRecord> getChartEntries(int week) {
+        // TODO
+        return ImmutableList.of();
+    }
+
+    public List<TrackArtistRecord> getTrackArtists(Set<String> trackIds) {
+        // TODO
+        return ImmutableList.of();
+    }
+
+    public Map<String, SimpleArtist> getArtists(Set<String> artistIds) {
+        // TODO
+        return ImmutableMap.of();
+    }
+
+    public DateTime getChartDate(int week) {
+        // TODO
+        return DateTime.now();
     }
 }
