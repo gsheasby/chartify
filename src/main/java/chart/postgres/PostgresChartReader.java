@@ -45,16 +45,6 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
     @Override
     public SimpleSpotifyChart findChart(int week) throws IOException {
         /* TODO
-          1. (possibly a WITH query?)
-             (Query 1)
-             SELECT e.position, t.id, t.name, t.href, t.uri
-             FROM tracks t JOIN chartEntries e
-             ON t.id = e.track_id
-             WHERE e.chart_week = week --> List<ChartEntryRecord>
-           2. Get a Set<String> trackIds from this
-           3. (Query 2) SELECT track_id, artist_id FROM trackArtists
-              WHERE track_id IN (trackIds)
-              --> List<TrackArtistRecord>
            4. (Query 3) SELECT id, name, href, uri FROM artists
               WHERE id IN (list) --> Set<Artist>
            5. List<TrackArtistRef> + Set<Artist> = Map<String, List<Artist>>
@@ -97,6 +87,7 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
             SimpleArtist artist = artistsById.get(trackArtistRecord.artist_id()); // TODO what if null?
             artistsByTrack.put(trackArtistRecord.track_id(), artist);
         }
+
         return artistsByTrack;
     }
 

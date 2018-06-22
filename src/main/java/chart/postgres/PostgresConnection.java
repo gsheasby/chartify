@@ -1,6 +1,7 @@
 package chart.postgres;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
@@ -11,12 +12,14 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 
 import chart.postgres.raw.ChartEntryRecord;
+import chart.postgres.raw.ImmutableChartEntryRecord;
+import chart.postgres.raw.ImmutableTrackArtistRecord;
 import chart.postgres.raw.TrackArtistRecord;
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;
@@ -146,15 +149,65 @@ public class PostgresConnection {
     }
 
     public List<ChartEntryRecord> getChartEntries(int week) {
-        // TODO
-        return ImmutableList.of();
+        // TODO possibly a WITH query?
+        String sql =  "SELECT e.position AS pos, t.id AS id, t.name AS name, t.href AS href, t.uri AS uri" +
+                "      FROM tracks t" +
+                "      JOIN chartEntries e ON t.id = e.track_id" +
+                "      WHERE e.chart_week = " + week;
+
+        try (Connection conn = manager.getConnection()) {
+            Statement statement = conn.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            List<ChartEntryRecord> results = Lists.newArrayList();
+            while (resultSet.next()) {
+                ChartEntryRecord chartEntry = ImmutableChartEntryRecord.builder()
+                        .position(resultSet.getInt("pos"))
+                        .track_id(resultSet.getString("id"))
+                        .track_name(resultSet.getString("name"))
+                        .track_href(resultSet.getString("href"))
+                        .track_uri(resultSet.getString("uri"))
+                        .build();
+                results.add(chartEntry);
+            }
+
+            return results;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to get entries!", e);
+        }
     }
 
     public List<TrackArtistRecord> getTrackArtists(Set<String> trackIds) {
-        // TODO
-        return ImmutableList.of();
+        String sql = "SELECT track_id, artist_id FROM trackArtists" +
+                "WHERE track_id IN " + getTrackIds(trackIds);
+
+        try (Connection conn = manager.getConnection()) {
+            Statement statement = conn.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            List<TrackArtistRecord> trackArtists = Lists.newArrayList();
+            while (resultSet.next()) {
+                TrackArtistRecord record = ImmutableTrackArtistRecord.builder()
+                        .track_id(resultSet.getString("track_id"))
+                        .artist_id(resultSet.getString("artist_id"))
+                        .build();
+            }
+
+            return trackArtists;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to get entries!", e);
+        }
+
     }
 
+    private String getTrackIds(Set<String> trackIds) {
+        return String.format("(%s)", trackIds.stream().collect(Collectors.joining(", ")));
+    }
+
+    /*
+           4. (Query 3) SELECT id, name, href, uri FROM artists
+              WHERE id IN (list) --> Set<Artist>
+     */
     public Map<String, SimpleArtist> getArtists(Set<String> artistIds) {
         // TODO
         return ImmutableMap.of();
