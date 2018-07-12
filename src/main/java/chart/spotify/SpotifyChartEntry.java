@@ -10,6 +10,9 @@ import chart.ChartEntry;
 
 @Value.Immutable
 public abstract class SpotifyChartEntry implements ChartEntry {
+    // ids are unique, so equality can be established using other fields
+    // Also, Track does not have a custom equals() method.
+    @Value.Auxiliary
     public abstract Track track();
 
     @Override

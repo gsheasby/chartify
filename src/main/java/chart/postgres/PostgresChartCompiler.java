@@ -68,7 +68,7 @@ public class PostgresChartCompiler implements ChartCompiler<SpotifyChart> {
             entries.add(entry);
         }
 
-        Set<Integer> inFromLastWeek = lastWeek.entries().stream()
+        Set<Integer> inFromLastWeek = entries.stream()
                                                  .map(ChartEntry::lastPosition)
                                                  .filter(Optional::isPresent)
                                                  .map(Optional::get)
