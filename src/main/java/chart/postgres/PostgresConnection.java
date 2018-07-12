@@ -48,24 +48,24 @@ public class PostgresConnection {
 
     // TODO delegate this so it can be tested
     private String getUpdateForArtists(Set<SimpleArtist> artists) {
-        return "INSERT INTO artists (id, name, href, uri) " +
-                        "VALUES " + getFieldsForArtists(artists) +
+        return "INSERT INTO artists (id, name, href, uri)" +
+                        " VALUES " + getFieldsForArtists(artists) +
                         " ON CONFLICT DO NOTHING";
     }
 
     public void saveTracks(Set<Track> tracks) {
         try (Connection conn = manager.getConnection()) {
             // Save the tracks
-            String sql = "INSERT INTO tracks (id, name, href, uri) " +
-                    "VALUES " + getFieldsForTracks(tracks) +
+            String sql = "INSERT INTO tracks (id, name, href, uri)" +
+                    " VALUES " + getFieldsForTracks(tracks) +
                     " ON CONFLICT DO NOTHING";
 
             Statement statement = conn.createStatement();
             statement.executeUpdate(sql);
 
             // Connect tracks to artists
-            String insertTrackArtists = "INSERT INTO trackArtists (track_id, artist_id) " +
-                    "VALUES " + getArtistsForTracks(tracks) +
+            String insertTrackArtists = "INSERT INTO trackArtists (track_id, artist_id)" +
+                    " VALUES " + getArtistsForTracks(tracks) +
                     " ON CONFLICT DO NOTHING";
             statement.executeUpdate(insertTrackArtists);
         } catch (SQLException e) {
@@ -91,8 +91,8 @@ public class PostgresConnection {
 
     public void saveEntries(int week, List<SpotifyChartEntry> entries) {
         try (Connection conn = manager.getConnection()) {
-            String sql = "INSERT INTO chartEntries (chart_week, position, track_id) " +
-                    "VALUES " + getFieldsForEntries(week, entries) +
+            String sql = "INSERT INTO chartEntries (chart_week, position, track_id)" +
+                    " VALUES " + getFieldsForEntries(week, entries) +
                     " ON CONFLICT DO NOTHING";
 
             Statement statement = conn.createStatement();
@@ -179,7 +179,7 @@ public class PostgresConnection {
 
     public List<TrackArtistRecord> getTrackArtists(Set<String> trackIds) {
         String sql = "SELECT track_id, artist_id FROM trackArtists" +
-                "WHERE track_id IN " + getTrackIds(trackIds);
+                "    WHERE track_id IN " + getTrackIds(trackIds);
 
         try (Connection conn = manager.getConnection()) {
             Statement statement = conn.createStatement();
