@@ -12,8 +12,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 
@@ -179,7 +179,7 @@ public class PostgresConnection {
 
     public List<TrackArtistRecord> getTrackArtists(Set<String> trackIds) {
         String sql = "SELECT track_id, artist_id FROM trackArtists" +
-                "    WHERE track_id IN " + getTrackIds(trackIds);
+                "    WHERE track_id IN " + getInClause(trackIds);
 
         try (Connection conn = manager.getConnection()) {
             Statement statement = conn.createStatement();
@@ -191,26 +191,44 @@ public class PostgresConnection {
                         .track_id(resultSet.getString("track_id"))
                         .artist_id(resultSet.getString("artist_id"))
                         .build();
+                trackArtists.add(record);
+            }
+
+            return trackArtists;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to get trackArtists!", e);
+        }
+
+    }
+
+    public Map<String, SimpleArtist> getArtists(Set<String> artistIds) {
+        String sql = "SELECT id, name, href, uri FROM artists" +
+                "    WHERE id IN " + getInClause(artistIds);
+
+        try (Connection conn = manager.getConnection()) {
+            Statement statement = conn.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            Map<String, SimpleArtist> trackArtists = Maps.newHashMapWithExpectedSize(artistIds.size());
+            while (resultSet.next()) {
+                SimpleArtist artist = new SimpleArtist();
+                String id = resultSet.getString("id");
+                artist.setId(id);
+                artist.setName(resultSet.getString("name"));
+                artist.setHref(resultSet.getString("href"));
+                artist.setUri(resultSet.getString("uri"));
+
+                trackArtists.put(id, artist);
             }
 
             return trackArtists;
         } catch (SQLException e) {
             throw new RuntimeException("Failed to get entries!", e);
         }
-
     }
 
-    private String getTrackIds(Set<String> trackIds) {
+    private String getInClause(Set<String> trackIds) {
         return String.format("(%s)", trackIds.stream().collect(Collectors.joining(", ")));
-    }
-
-    /*
-           4. (Query 3) SELECT id, name, href, uri FROM artists
-              WHERE id IN (list) --> Set<Artist>
-     */
-    public Map<String, SimpleArtist> getArtists(Set<String> artistIds) {
-        // TODO
-        return ImmutableMap.of();
     }
 
     public DateTime getChartDate(int week) {
