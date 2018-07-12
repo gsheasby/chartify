@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
@@ -154,26 +155,20 @@ public class PostgresConnection {
                 "      FROM tracks t" +
                 "      JOIN chartEntries e ON t.id = e.track_id" +
                 "      WHERE e.chart_week = " + week;
+        return executeSelectStatement(sql, this::createChartEntryRecord);
+    }
 
-        try (Connection conn = manager.getConnection()) {
-            Statement statement = conn.createStatement();
-            ResultSet resultSet = statement.executeQuery(sql);
-
-            List<ChartEntryRecord> results = Lists.newArrayList();
-            while (resultSet.next()) {
-                ChartEntryRecord chartEntry = ImmutableChartEntryRecord.builder()
-                        .position(resultSet.getInt("pos"))
-                        .track_id(resultSet.getString("id"))
-                        .track_name(resultSet.getString("name"))
-                        .track_href(resultSet.getString("href"))
-                        .track_uri(resultSet.getString("uri"))
-                        .build();
-                results.add(chartEntry);
-            }
-
-            return results;
+    private ChartEntryRecord createChartEntryRecord(ResultSet resultSet) {
+        try {
+            return ImmutableChartEntryRecord.builder()
+                                            .position(resultSet.getInt("pos"))
+                                            .track_id(resultSet.getString("id"))
+                                            .track_name(resultSet.getString("name"))
+                                            .track_href(resultSet.getString("href"))
+                                            .track_uri(resultSet.getString("uri"))
+                                            .build();
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to get entries!", e);
+            throw new RuntimeException("Failed to create chart entry record!", e);
         }
     }
 
@@ -181,24 +176,18 @@ public class PostgresConnection {
         String sql = "SELECT track_id, artist_id FROM trackArtists" +
                 "    WHERE track_id IN " + getInClause(trackIds);
 
-        try (Connection conn = manager.getConnection()) {
-            Statement statement = conn.createStatement();
-            ResultSet resultSet = statement.executeQuery(sql);
+        return executeSelectStatement(sql, this::createTrackArtistRecord);
+    }
 
-            List<TrackArtistRecord> trackArtists = Lists.newArrayList();
-            while (resultSet.next()) {
-                TrackArtistRecord record = ImmutableTrackArtistRecord.builder()
-                        .track_id(resultSet.getString("track_id"))
-                        .artist_id(resultSet.getString("artist_id"))
-                        .build();
-                trackArtists.add(record);
-            }
-
-            return trackArtists;
+    private TrackArtistRecord createTrackArtistRecord(ResultSet resultSet) {
+        try {
+            return ImmutableTrackArtistRecord.builder()
+                                             .track_id(resultSet.getString("track_id"))
+                                             .artist_id(resultSet.getString("artist_id"))
+                                             .build();
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to get trackArtists!", e);
+            throw new RuntimeException("Failed to create a trackArtistRecord!", e);
         }
-
     }
 
     public Map<String, SimpleArtist> getArtists(Set<String> artistIds) {
@@ -224,6 +213,23 @@ public class PostgresConnection {
             return trackArtists;
         } catch (SQLException e) {
             throw new RuntimeException("Failed to get entries!", e);
+        }
+    }
+
+    private <T> List<T> executeSelectStatement(String sql, Function<ResultSet, T> mapper) {
+        try (Connection conn = manager.getConnection()) {
+            Statement statement = conn.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            List<T> results = Lists.newArrayList();
+            while (resultSet.next()) {
+                T record = mapper.apply(resultSet);
+                results.add(record);
+            }
+
+            return results;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to execute select statement!", e);
         }
     }
 
