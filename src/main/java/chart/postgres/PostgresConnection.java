@@ -14,7 +14,6 @@ import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 
@@ -194,25 +193,20 @@ public class PostgresConnection {
         String sql = "SELECT id, name, href, uri FROM artists" +
                 "    WHERE id IN " + getInClause(artistIds);
 
-        try (Connection conn = manager.getConnection()) {
-            Statement statement = conn.createStatement();
-            ResultSet resultSet = statement.executeQuery(sql);
+        List<SimpleArtist> entries = executeSelectStatement(sql, this::createSimpleArtist);
+        return entries.stream().collect(Collectors.toMap(SimpleArtist::getId, artist -> artist));
+    }
 
-            Map<String, SimpleArtist> trackArtists = Maps.newHashMapWithExpectedSize(artistIds.size());
-            while (resultSet.next()) {
-                SimpleArtist artist = new SimpleArtist();
-                String id = resultSet.getString("id");
-                artist.setId(id);
-                artist.setName(resultSet.getString("name"));
-                artist.setHref(resultSet.getString("href"));
-                artist.setUri(resultSet.getString("uri"));
-
-                trackArtists.put(id, artist);
-            }
-
-            return trackArtists;
+    private SimpleArtist createSimpleArtist(ResultSet resultSet) {
+        try {
+            SimpleArtist artist = new SimpleArtist();
+            artist.setId(resultSet.getString("id"));
+            artist.setName(resultSet.getString("name"));
+            artist.setHref(resultSet.getString("href"));
+            artist.setUri(resultSet.getString("uri"));
+            return artist;
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to get entries!", e);
+            throw new RuntimeException("Failed to create artist!", e);
         }
     }
 
