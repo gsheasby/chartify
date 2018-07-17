@@ -44,10 +44,6 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
 
     @Override
     public SimpleSpotifyChart findChart(int week) throws IOException {
-        /* TODO
-           7. (Query 4) SELECT date FROM chart WHERE week = week --> Date
-           8. --> SimpleSpotifyChart
-         */
         List<ChartEntryRecord> chartEntries = connection.getChartEntries(week);
         Set<String> trackIds = chartEntries.stream()
                                            .map(ChartEntryRecord::track_id)

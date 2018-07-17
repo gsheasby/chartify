@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -232,7 +233,17 @@ public class PostgresConnection {
     }
 
     public DateTime getChartDate(int week) {
-        // TODO
+        String sql = "SELECT date FROM chart WHERE week = " + week; // TODO use "where week = ?"
+        try (Connection conn = manager.getConnection()) {
+            Statement statement = conn.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+            if (resultSet.next()) {
+                Date date = resultSet.getDate("date");
+                return new DateTime(date.toInstant());
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to get chart date!");
+        }
         return DateTime.now();
     }
 }
