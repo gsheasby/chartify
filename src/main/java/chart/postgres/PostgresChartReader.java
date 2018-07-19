@@ -94,7 +94,8 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
         return getArtistsForTracks(trackArtists, artistsById);
     }
 
-    private Multimap<String, SimpleArtist> getArtistsForTracks(List<TrackArtistRecord> trackArtists, Map<String, SimpleArtist> artistsById) {
+    private Multimap<String, SimpleArtist> getArtistsForTracks(List<TrackArtistRecord> trackArtists,
+                                                               Map<String, SimpleArtist> artistsById) {
         Multimap<String, SimpleArtist> artistsByTrack = ArrayListMultimap.create();
 
         for (TrackArtistRecord trackArtistRecord : trackArtists) {
@@ -128,7 +129,8 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
                 .build();
     }
 
-    private SimpleSpotifyChartEntry createSimpleSpotifyEntry(ChartEntryRecord chartEntry, Multimap<String, SimpleArtist> artistsForTracks) {
+    private SimpleSpotifyChartEntry createSimpleSpotifyEntry(ChartEntryRecord chartEntry,
+                                                             Multimap<String, SimpleArtist> artistsForTracks) {
         Track track = getTrackWithoutArtists(chartEntry);
         track.setArtists(new ArrayList<>(artistsForTracks.get(chartEntry.track_id())));
         return ImmutableSimpleSpotifyChartEntry.builder()
