@@ -4,10 +4,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import com.google.common.base.Preconditions;
-import com.wrapper.spotify.exceptions.WebApiException;
 
 import chart.ChartConfig;
-import chart.ChartPrinter;
 import chart.csv.CsvChart;
 import chart.csv.FileChartReader;
 import chart.postgres.PostgresChartSaver;
@@ -15,7 +13,7 @@ import chart.spotify.SpotifyAugmentor;
 import chart.spotify.SpotifyChart;
 
 public class ChartImporterTask {
-    public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException, WebApiException {
+    public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
         if (args.length < 2) {
             System.out.println("Usage: ChartImporterTask <fromWeek> <toWeek>");
             System.exit(1);
