@@ -293,6 +293,18 @@ public class PostgresConnection {
         return executeSelectSingleStatement(sql, this::getDateTime, DateTime.now());
     }
 
+    public int getLatestWeek() {
+        String sql = "SELECT max(week) AS latest FROM chart";
+        Function<ResultSet, Integer> mapper = resultSet -> {
+            try {
+                return resultSet.getInt("latest");
+            } catch (SQLException e) {
+                throw new RuntimeException("Failed to get latest week!");
+            }
+        };
+        return executeSelectSingleStatement(sql, mapper, 0);
+    }
+
     private <T> T executeSelectSingleStatement(String sql, Function<ResultSet, T> mapper, T defaultResult) {
         try (Connection conn = manager.getConnection()) {
             Statement statement = conn.createStatement();

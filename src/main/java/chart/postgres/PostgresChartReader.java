@@ -36,9 +36,8 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
 
     @Override
     public SpotifyChart findLatestChart() throws IOException {
-        /* TODO
-         */
-        return null;
+        int latestWeek = connection.getLatestWeek();
+        return findDerivedChart(latestWeek);
     }
 
     @Override
