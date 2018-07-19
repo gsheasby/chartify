@@ -1,7 +1,8 @@
 package chart.spotify;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -66,8 +67,10 @@ public class SpotifyAugmentorTest {
                                                                .lastPosition(LAST_POSITION)
                                                                .build();
 
-        SpotifyConfig config = mock(SpotifyConfig.class);
-        SpotifyChartEntry entry = new SpotifyAugmentor(config).from(csvChartEntry);
+        SpotifyApi api = mock(SpotifyApi.class);
+        when(api.getTrack(ID)).thenReturn(canonicalTrack());
+
+        SpotifyChartEntry entry = new SpotifyAugmentor(api).from(csvChartEntry);
 
         assertEquals(expected, entry);
     }
