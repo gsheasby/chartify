@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -24,6 +25,7 @@ import chart.postgres.raw.ImmutableTrackArtistRecord;
 import chart.postgres.raw.TrackArtistRecord;
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;
+import javafx.util.Pair;
 
 public class PostgresConnection {
     private final PostgresConnectionManager manager;
@@ -149,6 +151,60 @@ public class PostgresConnection {
                              artist.getUri());
     }
 
+    public Optional<Integer> getPosition(String trackId, int week) {
+        String sql = "SELECT e.position AS lastPos" +
+                "     FROM chartEntries e" +
+                "     WHERE e.track_id = " + trackId +
+                "     AND e.chart_week = " + week;
+        Function<ResultSet, Optional<Integer>> mapper = resultSet -> {
+            try {
+                return Optional.of(resultSet.getInt("lastPos"));
+            } catch (SQLException e) {
+                throw new RuntimeException("Couldn't get last position!");
+            }
+        };
+        return executeSelectSingleStatement(sql, mapper, Optional.empty());
+    }
+
+    public Map<String, Integer> getPositions(Set<String> trackIds, int week) {
+        String sql = "SELECT e.track_id AS id, e.position AS lastPos" +
+                "     FROM chartEntries e" +
+                "     WHERE e.chart_week = " + week +
+                "     AND e.track_id IN " + getInClause(trackIds);
+        Function<ResultSet, Pair<String, Integer>> mapper = resultSet -> {
+            try {
+                String id = resultSet.getString("id");
+                Integer lastPos = resultSet.getInt("lastPos");
+                return new Pair<>(id, lastPos);
+            } catch (SQLException e) {
+                throw new RuntimeException("Couldn't extract chart entry!");
+            }
+        };
+
+        List<Pair<String, Integer>> entries = executeSelectStatement(sql, mapper);
+        return entries.stream().collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+    }
+
+    public Map<String, Integer> getWeeksOnChart(Set<String> trackIds, int upToWeek) {
+        String sql = "SELECT e.track_id AS id, COUNT(e.track_id) AS weeks" +
+                "     FROM chartEntries e" +
+                "     WHERE e.track_id IN " + getInClause(trackIds) +
+                "     AND e.chart_week <= " + upToWeek +
+                "     GROUP BY e.track_id";
+        Function<ResultSet, Pair<String, Integer>> mapper = resultSet -> {
+            try {
+                String id = resultSet.getString("id");
+                Integer weeks = resultSet.getInt("weeks");
+                return new Pair<>(id, weeks);
+            } catch (SQLException e) {
+                throw new RuntimeException("Couldn't extract chart entry!");
+            }
+        };
+
+        List<Pair<String, Integer>> entries = executeSelectStatement(sql, mapper);
+        return entries.stream().collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+    }
+
     public List<ChartEntryRecord> getChartEntries(int week) {
         // TODO possibly a WITH query?
         String sql =  "SELECT e.position AS pos, t.id AS id, t.name AS name, t.href AS href, t.uri AS uri" +
@@ -228,8 +284,8 @@ public class PostgresConnection {
         }
     }
 
-    private String getInClause(Set<String> trackIds) {
-        return String.format("(%s)", trackIds.stream().collect(Collectors.joining(", ")));
+    private String getInClause(Set<String> ids) {
+        return String.format("(%s)", ids.stream().collect(Collectors.joining(", ")));
     }
 
     public DateTime getChartDate(int week) {
