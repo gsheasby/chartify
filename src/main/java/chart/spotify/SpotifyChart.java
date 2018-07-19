@@ -13,4 +13,13 @@ public abstract class SpotifyChart implements Chart {
 
     @Override
     public abstract List<SpotifyChartEntry> dropouts();
+
+    public static SpotifyChart from(Chart chart) {
+        return ImmutableSpotifyChart.builder()
+                             .date(chart.date())
+                             .week(chart.week())
+                             .entries(SpotifyChartEntry.fromList(chart.entries()))
+                             .dropouts(SpotifyChartEntry.fromList(chart.dropouts()))
+                             .build();
+    }
 }
