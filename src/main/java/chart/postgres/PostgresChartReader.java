@@ -99,7 +99,12 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
         Multimap<String, SimpleArtist> artistsByTrack = ArrayListMultimap.create();
 
         for (TrackArtistRecord trackArtistRecord : trackArtists) {
-            SimpleArtist artist = artistsById.get(trackArtistRecord.artist_id()); // TODO what if null?
+            String artistId = trackArtistRecord.artist_id();
+            if (!artistsById.containsKey(artistId)) {
+                continue;
+            }
+
+            SimpleArtist artist = artistsById.get(artistId);
             artistsByTrack.put(trackArtistRecord.track_id(), artist);
         }
 
