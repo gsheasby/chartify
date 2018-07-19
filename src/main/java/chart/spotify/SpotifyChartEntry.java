@@ -2,6 +2,7 @@ package chart.spotify;
 
 import org.immutables.value.Value;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
@@ -40,12 +41,34 @@ public abstract class SpotifyChartEntry implements ChartEntry {
         return track().getUri();
     }
 
+    @Override
+    public boolean equals(Object another) {
+        if (this == another) return true;
+        return another instanceof ImmutableSpotifyChartEntry
+                && equalTo((ImmutableSpotifyChartEntry) another);
+    }
+
+    private boolean equalTo(ImmutableSpotifyChartEntry another) {
+        return position().equals(another.position())
+                && Objects.equal(lastPosition(), another.lastPosition())
+                && weeksOnChart().equals(another.weeksOnChart())
+                && title().equalsIgnoreCase(another.title())
+                && artist().equalsIgnoreCase(another.artist())
+                && id().equals(another.id())
+                && href().equals(another.href())
+                && uri().equals(another.uri());
+    }
+
+    @Deprecated // Doesn't contain artist ID - use SpotifyAugmentor to look it up
     public static SpotifyChartEntry from(ChartEntry entry) {
         SimpleArtist artist = new SimpleArtist();
         artist.setName(entry.artist());
         Track track = new Track();
         track.setName(entry.title());
         track.setArtists(ImmutableList.of(artist));
+        track.setId(entry.id());
+        track.setHref(entry.href());
+        track.setUri(entry.uri());
 
         return ImmutableSpotifyChartEntry.builder()
                 .from(entry)

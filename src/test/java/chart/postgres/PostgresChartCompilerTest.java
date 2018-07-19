@@ -82,6 +82,9 @@ public class PostgresChartCompilerTest {
         Track track = new Track();
         track.setName(title);
         track.setArtists(ImmutableList.of(artist));
+        track.setId("id");
+        track.setHref("href");
+        track.setUri("uri");
         return track;
     }
 }
