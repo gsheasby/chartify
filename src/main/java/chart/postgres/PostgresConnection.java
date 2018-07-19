@@ -1,20 +1,31 @@
 package chart.postgres;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 
+import com.google.common.collect.Lists;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 
+import chart.postgres.raw.ChartEntryRecord;
+import chart.postgres.raw.ImmutableChartEntryRecord;
+import chart.postgres.raw.ImmutableTrackArtistRecord;
+import chart.postgres.raw.TrackArtistRecord;
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;
+import javafx.util.Pair;
 
 public class PostgresConnection {
     private final PostgresConnectionManager manager;
@@ -40,24 +51,24 @@ public class PostgresConnection {
 
     // TODO delegate this so it can be tested
     private String getUpdateForArtists(Set<SimpleArtist> artists) {
-        return "INSERT INTO artists (id, name, href, uri) " +
-                        "VALUES " + getFieldsForArtists(artists) +
+        return "INSERT INTO artists (id, name, href, uri)" +
+                        " VALUES " + getFieldsForArtists(artists) +
                         " ON CONFLICT DO NOTHING";
     }
 
     public void saveTracks(Set<Track> tracks) {
         try (Connection conn = manager.getConnection()) {
             // Save the tracks
-            String sql = "INSERT INTO tracks (id, name, href, uri) " +
-                    "VALUES " + getFieldsForTracks(tracks) +
+            String sql = "INSERT INTO tracks (id, name, href, uri)" +
+                    " VALUES " + getFieldsForTracks(tracks) +
                     " ON CONFLICT DO NOTHING";
 
             Statement statement = conn.createStatement();
             statement.executeUpdate(sql);
 
             // Connect tracks to artists
-            String insertTrackArtists = "INSERT INTO trackArtists (track_id, artist_id) " +
-                    "VALUES " + getArtistsForTracks(tracks) +
+            String insertTrackArtists = "INSERT INTO trackArtists (track_id, artist_id)" +
+                    " VALUES " + getArtistsForTracks(tracks) +
                     " ON CONFLICT DO NOTHING";
             statement.executeUpdate(insertTrackArtists);
         } catch (SQLException e) {
@@ -83,8 +94,8 @@ public class PostgresConnection {
 
     public void saveEntries(int week, List<SpotifyChartEntry> entries) {
         try (Connection conn = manager.getConnection()) {
-            String sql = "INSERT INTO chartEntries (chart_week, position, track_id) " +
-                    "VALUES " + getFieldsForEntries(week, entries) +
+            String sql = "INSERT INTO chartEntries (chart_week, position, track_id)" +
+                    " VALUES " + getFieldsForEntries(week, entries) +
                     " ON CONFLICT DO NOTHING";
 
             Statement statement = conn.createStatement();
@@ -138,5 +149,183 @@ public class PostgresConnection {
                              StringUtils.replace(artist.getName(), "'", "''"),
                              artist.getHref(),
                              artist.getUri());
+    }
+
+    public Optional<Integer> getPosition(String trackId, int week) {
+        String sql = "SELECT e.position AS lastPos" +
+                "     FROM chartEntries e" +
+                "     WHERE e.track_id = " + trackId +
+                "     AND e.chart_week = " + week;
+        Function<ResultSet, Optional<Integer>> mapper = resultSet -> {
+            try {
+                return Optional.of(resultSet.getInt("lastPos"));
+            } catch (SQLException e) {
+                throw new RuntimeException("Couldn't get last position!");
+            }
+        };
+        return executeSelectSingleStatement(sql, mapper, Optional.empty());
+    }
+
+    public Map<String, Integer> getPositions(Set<String> trackIds, int week) {
+        String sql = "SELECT e.track_id AS id, e.position AS lastPos" +
+                "     FROM chartEntries e" +
+                "     WHERE e.chart_week = " + week +
+                "     AND e.track_id IN " + getInClause(trackIds);
+        Function<ResultSet, Pair<String, Integer>> mapper = resultSet -> {
+            try {
+                String id = resultSet.getString("id");
+                Integer lastPos = resultSet.getInt("lastPos");
+                return new Pair<>(id, lastPos);
+            } catch (SQLException e) {
+                throw new RuntimeException("Couldn't extract chart entry!");
+            }
+        };
+
+        List<Pair<String, Integer>> entries = executeSelectStatement(sql, mapper);
+        return entries.stream().collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+    }
+
+    public Map<String, Integer> getWeeksOnChart(Set<String> trackIds, int upToWeek) {
+        String sql = "SELECT e.track_id AS id, COUNT(e.track_id) AS weeks" +
+                "     FROM chartEntries e" +
+                "     WHERE e.track_id IN " + getInClause(trackIds) +
+                "     AND e.chart_week <= " + upToWeek +
+                "     GROUP BY e.track_id";
+        Function<ResultSet, Pair<String, Integer>> mapper = resultSet -> {
+            try {
+                String id = resultSet.getString("id");
+                Integer weeks = resultSet.getInt("weeks");
+                return new Pair<>(id, weeks);
+            } catch (SQLException e) {
+                throw new RuntimeException("Couldn't extract chart entry!");
+            }
+        };
+
+        List<Pair<String, Integer>> entries = executeSelectStatement(sql, mapper);
+        return entries.stream().collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+    }
+
+    public List<ChartEntryRecord> getChartEntries(int week) {
+        // TODO possibly a WITH query?
+        String sql =  "SELECT e.position AS pos, t.id AS id, t.name AS name, t.href AS href, t.uri AS uri" +
+                "      FROM tracks t" +
+                "      JOIN chartEntries e ON t.id = e.track_id" +
+                "      WHERE e.chart_week = " + week;
+        return executeSelectStatement(sql, this::createChartEntryRecord);
+    }
+
+    private ChartEntryRecord createChartEntryRecord(ResultSet resultSet) {
+        try {
+            return ImmutableChartEntryRecord.builder()
+                                            .position(resultSet.getInt("pos"))
+                                            .track_id(resultSet.getString("id"))
+                                            .track_name(resultSet.getString("name"))
+                                            .track_href(resultSet.getString("href"))
+                                            .track_uri(resultSet.getString("uri"))
+                                            .build();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to create chart entry record!", e);
+        }
+    }
+
+    public List<TrackArtistRecord> getTrackArtists(Set<String> trackIds) {
+        String sql = "SELECT track_id, artist_id FROM trackArtists" +
+                "    WHERE track_id IN " + getInClause(trackIds);
+
+        return executeSelectStatement(sql, this::createTrackArtistRecord);
+    }
+
+    private TrackArtistRecord createTrackArtistRecord(ResultSet resultSet) {
+        try {
+            return ImmutableTrackArtistRecord.builder()
+                                             .track_id(resultSet.getString("track_id"))
+                                             .artist_id(resultSet.getString("artist_id"))
+                                             .build();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to create a trackArtistRecord!", e);
+        }
+    }
+
+    public Map<String, SimpleArtist> getArtists(Set<String> artistIds) {
+        String sql = "SELECT id, name, href, uri FROM artists" +
+                "    WHERE id IN " + getInClause(artistIds);
+
+        List<SimpleArtist> entries = executeSelectStatement(sql, this::createSimpleArtist);
+        return entries.stream().collect(Collectors.toMap(SimpleArtist::getId, artist -> artist));
+    }
+
+    private SimpleArtist createSimpleArtist(ResultSet resultSet) {
+        try {
+            SimpleArtist artist = new SimpleArtist();
+            artist.setId(resultSet.getString("id"));
+            artist.setName(resultSet.getString("name"));
+            artist.setHref(resultSet.getString("href"));
+            artist.setUri(resultSet.getString("uri"));
+            return artist;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to create artist!", e);
+        }
+    }
+
+    private <T> List<T> executeSelectStatement(String sql, Function<ResultSet, T> mapper) {
+        try (Connection conn = manager.getConnection()) {
+            Statement statement = conn.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            List<T> results = Lists.newArrayList();
+            while (resultSet.next()) {
+                T record = mapper.apply(resultSet);
+                results.add(record);
+            }
+
+            return results;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to execute select statement!", e);
+        }
+    }
+
+    private String getInClause(Set<String> ids) {
+        return String.format("(%s)", ids.stream()
+                                        .map(id -> String.format("'%s'", id))
+                                        .collect(Collectors.joining(", ")));
+    }
+
+    public DateTime getChartDate(int week) {
+        String sql = "SELECT date FROM chart WHERE week = " + week; // TODO use "where week = ?"
+        return executeSelectSingleStatement(sql, this::getDateTime, DateTime.now());
+    }
+
+    public int getLatestWeek() {
+        String sql = "SELECT max(week) AS latest FROM chart";
+        Function<ResultSet, Integer> mapper = resultSet -> {
+            try {
+                return resultSet.getInt("latest");
+            } catch (SQLException e) {
+                throw new RuntimeException("Failed to get latest week!");
+            }
+        };
+        return executeSelectSingleStatement(sql, mapper, 0);
+    }
+
+    private <T> T executeSelectSingleStatement(String sql, Function<ResultSet, T> mapper, T defaultResult) {
+        try (Connection conn = manager.getConnection()) {
+            Statement statement = conn.createStatement();
+            ResultSet resultSet = statement.executeQuery(sql);
+            if (resultSet.next()) {
+                return mapper.apply(resultSet);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to execute select statement!", e);
+        }
+        return defaultResult;
+    }
+
+    private DateTime getDateTime(ResultSet resultSet) {
+        try {
+            Date date = resultSet.getDate("date");
+            return DateTime.parse(date.toString());
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to get chart date!");
+        }
     }
 }

@@ -7,8 +7,8 @@ import chart.ChartCompiler;
 import chart.ChartConfig;
 import chart.ChartPrinter;
 import chart.csv.FileChartReader;
-import chart.spotify.SpotifyChartReader;
 import chart.postgres.PostgresChartCompiler;
+import chart.spotify.SpotifyChartReader;
 
 public class ChartPreviewTask {
     public static void main(String[] args) throws IOException {
