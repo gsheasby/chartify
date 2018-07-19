@@ -18,8 +18,8 @@ public abstract class SpotifyChart implements Chart {
         return ImmutableSpotifyChart.builder()
                              .date(chart.date())
                              .week(chart.week())
-                             .entries(augmentor.fromList(chart.entries()))
-                             .dropouts(augmentor.fromList(chart.dropouts()))
+                             .entries(augmentor.augmentList(chart.entries()))
+                             .dropouts(augmentor.augmentList(chart.dropouts()))
                              .build();
     }
 }

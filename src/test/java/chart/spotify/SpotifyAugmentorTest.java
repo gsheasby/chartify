@@ -47,7 +47,7 @@ public class SpotifyAugmentorTest {
     }
 
     @Test
-    public void fromKeepsAllProperties() {
+    public void augmentKeepsAllProperties() {
         CsvChartEntry csvChartEntry = ImmutableCsvChartEntry.builder()
                                                             .position(POSITION)
                                                             .weeksOnChart(WEEKS)
@@ -70,7 +70,7 @@ public class SpotifyAugmentorTest {
         SpotifyApi api = mock(SpotifyApi.class);
         when(api.getTrack(ID)).thenReturn(canonicalTrack());
 
-        SpotifyChartEntry entry = new SpotifyAugmentor(api).from(csvChartEntry);
+        SpotifyChartEntry entry = new SpotifyAugmentor(api).augment(csvChartEntry);
 
         assertEquals(expected, entry);
     }

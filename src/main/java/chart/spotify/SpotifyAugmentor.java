@@ -1,7 +1,7 @@
 package chart.spotify;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.wrapper.spotify.models.Track;
@@ -21,15 +21,11 @@ public class SpotifyAugmentor {
         this.api = api;
     }
 
-    public List<SpotifyChartEntry> fromList(List<? extends ChartEntry> chartEntries) {
-        List<SpotifyChartEntry> list = new ArrayList<>();
-        for (ChartEntry chartEntry : chartEntries) {
-            list.add(from(chartEntry));
-        }
-        return list;
+    public List<SpotifyChartEntry> augmentList(List<? extends ChartEntry> chartEntries) {
+        return chartEntries.stream().map(this::augment).collect(Collectors.toList());
     }
 
-    public SpotifyChartEntry from(ChartEntry entry) {
+    public SpotifyChartEntry augment(ChartEntry entry) {
         Track track = api.getTrack(entry.id());
 
         return ImmutableSpotifyChartEntry.builder()
