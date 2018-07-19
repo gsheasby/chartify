@@ -17,16 +17,16 @@ import com.wrapper.spotify.models.ClientCredentials;
 import com.wrapper.spotify.models.Playlist;
 import com.wrapper.spotify.models.Track;
 
-public class SpotifyApi {
+class SpotifyApi {
     private final Api api;
     private final SpotifyConfig config;
 
-    public static SpotifyApi create(SpotifyConfig config) {
+    static SpotifyApi create(SpotifyConfig config) {
         Api api = getApi(config);
         return new SpotifyApi(api, config);
     }
 
-    public SpotifyApi(Api api, SpotifyConfig config) {
+    private SpotifyApi(Api api, SpotifyConfig config) {
         this.api = api;
         this.config = config;
     }
@@ -41,7 +41,7 @@ public class SpotifyApi {
     }
 
     List<Track> getTracks(List<String> trackIds) {
-        List<List<String>> lists = Lists.partition(trackIds, 50);// Spotify API limits us to 50 trackIds per request
+        List<List<String>> lists = Lists.partition(trackIds, 50); // Spotify API limits us to 50 trackIds per request
         return lists.stream().map(this::requestTracks).flatMap(List::stream).collect(Collectors.toList());
     }
 
