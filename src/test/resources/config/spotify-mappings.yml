@@ -1,0 +1,6 @@
+clientId: foo
+clientSecret: bar
+userName: baz
+playlistId: qux
+mappings:
+  wasd345: { id: "abcd123", title: "Song, Title", artist: "The People" }
