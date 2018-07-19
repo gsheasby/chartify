@@ -285,7 +285,9 @@ public class PostgresConnection {
     }
 
     private String getInClause(Set<String> ids) {
-        return String.format("(%s)", ids.stream().collect(Collectors.joining(", ")));
+        return String.format("(%s)", ids.stream()
+                                        .map(id -> String.format("'%s'", id))
+                                        .collect(Collectors.joining(", ")));
     }
 
     public DateTime getChartDate(int week) {
