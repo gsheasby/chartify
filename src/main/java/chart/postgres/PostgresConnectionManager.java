@@ -93,7 +93,8 @@ public class PostgresConnectionManager {
 
         statement.executeUpdate("CREATE TABLE trackArtists (" +
                                         "track_id varchar(256) REFERENCES tracks," +
-                                        "artist_id varchar(256) REFERENCES artists" +
+                                        "artist_id varchar(256) REFERENCES artists," +
+                                        "CONSTRAINT track_artist PRIMARY KEY(track_id, artist_id)" +
                                         ");");
 
         statement.executeUpdate("CREATE TABLE chart (" +
