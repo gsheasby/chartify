@@ -22,7 +22,7 @@ public class SpotifyChartReader implements SimpleChartReader<SimpleSpotifyChart>
     public SpotifyChartReader(ChartConfig config) {
         this.chartSize = config.chartSize();
         this.spotifyConfig = config.spotifyConfig();
-        this.playlistLoader = new SpotifyPlaylistLoader(config.spotifyConfig());
+        this.playlistLoader = SpotifyPlaylistLoader.create(config.spotifyConfig());
     }
 
     @Override
