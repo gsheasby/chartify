@@ -1,6 +1,7 @@
 package chart.postgres;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,6 +17,11 @@ public class PostgresChartSaver implements ChartSaver<SpotifyChart> {
 
     public PostgresChartSaver(PostgresConnection connection) {
         this.connection = connection;
+    }
+
+    public static PostgresChartSaver create(PostgresConfig postgresConfig) throws SQLException, ClassNotFoundException {
+        PostgresConnection connection = PostgresConnection.create(postgresConfig);
+        return new PostgresChartSaver(connection);
     }
 
     @Override

@@ -34,6 +34,11 @@ public class PostgresConnection {
         this.manager = manager;
     }
 
+    public static PostgresConnection create(PostgresConfig postgresConfig) throws SQLException, ClassNotFoundException {
+        PostgresConnectionManager manager = PostgresConnectionManager.create(postgresConfig);
+        return new PostgresConnection(manager);
+    }
+
     // TODO does this abstraction make sense?
     // TODO - what if a new artist has an ID that isn't its spotify ID? Maybe do a lookup for artists when importing from CSV
     // TODO better exception handling
