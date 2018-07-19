@@ -1,6 +1,5 @@
 package chart.postgres;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
@@ -26,7 +25,7 @@ public class PostgresChartSaver implements ChartSaver<SpotifyChart> {
     }
 
     @Override
-    public void saveChart(SpotifyChart chart) throws IOException {
+    public void saveChart(SpotifyChart chart) {
         Set<SimpleArtist> artists = chart.entries().stream()
                                          .map(entry -> entry.track().getArtists())
                                          .flatMap(List::stream)
