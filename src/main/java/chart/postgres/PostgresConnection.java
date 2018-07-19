@@ -45,7 +45,6 @@ public class PostgresConnection {
     public void saveArtists(Set<SimpleArtist> artists) {
         try (Connection conn = manager.getConnection()) {
             String sql = getUpdateForArtists(artists);
-            System.out.println(sql);
 
             Statement statement = conn.createStatement();
             statement.executeUpdate(sql);
@@ -93,7 +92,7 @@ public class PostgresConnection {
 
             statement.executeUpdate(sql);
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to insert tracks!", e);
+            throw new RuntimeException("Failed to save chart!", e);
         }
     }
 

@@ -33,7 +33,7 @@ public class SpotifyApi {
         try {
             return request.get();
         } catch (IOException | WebApiException e) {
-            throw new RuntimeException("Couldn't get track", e);
+            throw new RuntimeException("Couldn't get track with ID " + trackId, e);
         }
     }
 
