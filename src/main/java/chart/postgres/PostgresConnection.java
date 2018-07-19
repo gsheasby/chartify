@@ -321,7 +321,7 @@ public class PostgresConnection {
     private DateTime getDateTime(ResultSet resultSet) {
         try {
             Date date = resultSet.getDate("date");
-            return new DateTime(date.toInstant());
+            return DateTime.parse(date.toString());
         } catch (SQLException e) {
             throw new RuntimeException("Failed to get chart date!");
         }
