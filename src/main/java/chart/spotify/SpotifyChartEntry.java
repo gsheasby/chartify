@@ -1,8 +1,5 @@
 package chart.spotify;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.immutables.value.Value;
 
 import com.google.common.base.Objects;
@@ -62,12 +59,7 @@ public abstract class SpotifyChartEntry implements ChartEntry {
                 && uri().equals(another.uri());
     }
 
-    public static List<SpotifyChartEntry> fromList(List<? extends ChartEntry> chartEntries) {
-        return chartEntries.stream()
-                           .map(SpotifyChartEntry::from)
-                           .collect(Collectors.toList());
-    }
-
+    @Deprecated // Doesn't contain artist ID - use SpotifyAugmentor to look it up
     public static SpotifyChartEntry from(ChartEntry entry) {
         SimpleArtist artist = new SimpleArtist();
         artist.setName(entry.artist());

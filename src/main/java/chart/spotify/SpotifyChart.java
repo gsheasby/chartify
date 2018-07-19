@@ -14,12 +14,12 @@ public abstract class SpotifyChart implements Chart {
     @Override
     public abstract List<SpotifyChartEntry> dropouts();
 
-    public static SpotifyChart from(Chart chart) {
+    public static SpotifyChart augment(Chart chart, SpotifyAugmentor augmentor) {
         return ImmutableSpotifyChart.builder()
                              .date(chart.date())
                              .week(chart.week())
-                             .entries(SpotifyChartEntry.fromList(chart.entries()))
-                             .dropouts(SpotifyChartEntry.fromList(chart.dropouts()))
+                             .entries(augmentor.fromList(chart.entries()))
+                             .dropouts(augmentor.fromList(chart.dropouts()))
                              .build();
     }
 }
