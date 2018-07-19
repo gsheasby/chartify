@@ -234,16 +234,28 @@ public class PostgresConnection {
 
     public DateTime getChartDate(int week) {
         String sql = "SELECT date FROM chart WHERE week = " + week; // TODO use "where week = ?"
+        return executeSelectSingleStatement(sql, this::getDateTime, DateTime.now());
+    }
+
+    private <T> T executeSelectSingleStatement(String sql, Function<ResultSet, T> mapper, T defaultResult) {
         try (Connection conn = manager.getConnection()) {
             Statement statement = conn.createStatement();
             ResultSet resultSet = statement.executeQuery(sql);
             if (resultSet.next()) {
-                Date date = resultSet.getDate("date");
-                return new DateTime(date.toInstant());
+                return mapper.apply(resultSet);
             }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to execute select statement!", e);
+        }
+        return defaultResult;
+    }
+
+    private DateTime getDateTime(ResultSet resultSet) {
+        try {
+            Date date = resultSet.getDate("date");
+            return new DateTime(date.toInstant());
         } catch (SQLException e) {
             throw new RuntimeException("Failed to get chart date!");
         }
-        return DateTime.now();
     }
 }
