@@ -119,6 +119,7 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
         track.setArtists(new ArrayList<>(artistsForTracks.get(trackId)));
         return ImmutableSpotifyChartEntry.builder()
                 .track(track)
+                .position(chartEntry.position())
                 .lastPosition(lastPositions.containsKey(trackId)
                                       ? Optional.of(lastPositions.get(trackId))
                                       : Optional.empty())
