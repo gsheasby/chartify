@@ -17,6 +17,11 @@ public abstract class SpotifyChartEntry implements ChartEntry {
     @Value.Auxiliary
     public abstract Track track();
 
+    @Value.Default
+    public boolean isYoutube() {
+        return false;
+    }
+
     @Override
     public String title() {
         return track().getName();
@@ -53,6 +58,7 @@ public abstract class SpotifyChartEntry implements ChartEntry {
                           .add("id", id())
                           .add("href", href())
                           .add("url", uri())
+                          .add("isYoutube", isYoutube())
                           .toString();
     }
 
@@ -63,6 +69,7 @@ public abstract class SpotifyChartEntry implements ChartEntry {
         h += (h << 5) + Objects.hashCode(lastPosition());
         h += (h << 5) + weeksOnChart().hashCode();
         h += (h << 5) + track().hashCode();
+        h += (h << 5) + (isYoutube() ? 1 : 0);
         return h;
     }
 
@@ -81,7 +88,8 @@ public abstract class SpotifyChartEntry implements ChartEntry {
                 && artist().equalsIgnoreCase(another.artist())
                 && id().equals(another.id())
                 && href().equals(another.href())
-                && uri().equals(another.uri());
+                && uri().equals(another.uri())
+                && isYoutube() == another.isYoutube();
     }
 
     @Deprecated // Doesn't contain artist ID - use SpotifyAugmentor to look it up
