@@ -81,7 +81,7 @@ public class PostgresConnection {
             Statement statement = conn.createStatement();
 
             // Save the tracks
-            String insertTracks = "INSERT INTO tracks (id, name, href, uri)" +
+            String insertTracks = "INSERT INTO tracks (id, name, href, uri, is_youtube)" +
                     " VALUES " + getTrackFieldsForEntries(entries) +
                     " ON CONFLICT DO NOTHING";
 
