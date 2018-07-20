@@ -1,6 +1,5 @@
 package chart.postgres;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,13 +34,13 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
     }
 
     @Override
-    public SpotifyChart findLatestChart() throws IOException {
+    public SpotifyChart findLatestChart() {
         int latestWeek = connection.getLatestWeek();
         return findDerivedChart(latestWeek);
     }
 
     @Override
-    public SpotifyChart findDerivedChart(int week) throws IOException {
+    public SpotifyChart findDerivedChart(int week) {
         List<ChartEntryRecord> chartEntries = connection.getChartEntries(week);
         Set<String> trackIds = getTrackIds(chartEntries);
         Map<String, Integer> lastPositions = connection.getPositions(trackIds, week - 1);
@@ -62,7 +61,7 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
     }
 
     @Override
-    public SimpleSpotifyChart findChart(int week) throws IOException {
+    public SimpleSpotifyChart findChart(int week) {
         List<ChartEntryRecord> chartEntries = connection.getChartEntries(week);
         Set<String> trackIds = getTrackIds(chartEntries);
         Multimap<String, SimpleArtist> artistsForTracks = getArtistsForTracks(trackIds);
