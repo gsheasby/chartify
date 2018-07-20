@@ -44,7 +44,7 @@ public class PostgresConnection {
     // TODO does this abstraction make sense?
     // TODO - what if a new artist has an ID that isn't its spotify ID? Maybe do a lookup for artists when importing from CSV
     // TODO better exception handling
-    public void saveArtists(Set<SimpleArtist> artists) {
+    public void saveArtists(Set<ArtistRecord> artists) {
         try (Connection conn = manager.getConnection()) {
             String sql = getUpdateForArtists(artists);
 
@@ -56,8 +56,8 @@ public class PostgresConnection {
     }
 
     // TODO delegate this so it can be tested
-    private String getUpdateForArtists(Set<SimpleArtist> artists) {
-        return "INSERT INTO artists (id, name, href, uri)" +
+    private String getUpdateForArtists(Set<ArtistRecord> artists) {
+        return "INSERT INTO artists (id, name, href, uri, is_youtube)" +
                         " VALUES " + getFieldsForArtists(artists) +
                         " ON CONFLICT DO NOTHING";
     }
@@ -143,16 +143,17 @@ public class PostgresConnection {
         return String.format("('%s', '%s')", track.getId(), artist.getId());
     }
 
-    private String getFieldsForArtists(Set<SimpleArtist> artists) {
+    private String getFieldsForArtists(Set<ArtistRecord> artists) {
         return artists.stream().map(this::getFieldForArtist).collect(Collectors.joining(", "));
     }
 
-    private String getFieldForArtist(SimpleArtist artist) {
-        return String.format("('%s', '%s', '%s', '%s')",
-                             artist.getId(),
-                             StringUtils.replace(artist.getName(), "'", "''"),
-                             artist.getHref(),
-                             artist.getUri());
+    private String getFieldForArtist(ArtistRecord artist) {
+        return String.format("('%s', '%s', '%s', '%s', %s)",
+                             artist.id(),
+                             StringUtils.replace(artist.name(), "'", "''"),
+                             artist.href(),
+                             artist.uri(),
+                             artist.is_youtube());
     }
 
     public Optional<Integer> getPosition(String trackId, int week) {

@@ -25,4 +25,14 @@ public abstract class ArtistRecord {
         artist.setUri(uri());
         return artist;
     }
+
+    public static ArtistRecord from(SimpleArtist artist, boolean isYoutube) {
+        return ImmutableArtistRecord.builder()
+                .id(artist.getId())
+                .name(artist.getName())
+                .href(artist.getHref())
+                .uri(artist.getUri())
+                .is_youtube(isYoutube)
+                .build();
+    }
 }
