@@ -60,26 +60,6 @@ public class PostgresConnection {
                         " ON CONFLICT DO NOTHING";
     }
 
-    public void saveTracks(Set<Track> tracks) {
-        try (Connection conn = manager.getConnection()) {
-            // Save the tracks
-            String sql = "INSERT INTO tracks (id, name, href, uri)" +
-                    " VALUES " + getFieldsForTracks(tracks) +
-                    " ON CONFLICT DO NOTHING";
-
-            Statement statement = conn.createStatement();
-            statement.executeUpdate(sql);
-
-            // Connect tracks to artists
-            String insertTrackArtists = "INSERT INTO trackArtists (track_id, artist_id)" +
-                    " VALUES " + getArtistsForTracks(tracks) +
-                    " ON CONFLICT DO NOTHING";
-            statement.executeUpdate(insertTrackArtists);
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to insert tracks!", e);
-        }
-    }
-
     public void saveMetadata(SpotifyChart chart) {
         try (Connection conn = manager.getConnection()) {
             Statement statement = conn.createStatement();
@@ -98,15 +78,45 @@ public class PostgresConnection {
 
     public void saveEntries(int week, List<SpotifyChartEntry> entries) {
         try (Connection conn = manager.getConnection()) {
+            Statement statement = conn.createStatement();
+
+            // Save the tracks
+            String insertTracks = "INSERT INTO tracks (id, name, href, uri)" +
+                    " VALUES " + getTrackFieldsForEntries(entries) +
+                    " ON CONFLICT DO NOTHING";
+
+            statement.executeUpdate(insertTracks);
+
+            // Connect tracks to artists
+            Set<Track> tracks = entries.stream().map(SpotifyChartEntry::track).collect(Collectors.toSet());
+            String insertTrackArtists = "INSERT INTO trackArtists (track_id, artist_id)" +
+                    " VALUES " + getArtistsForTracks(tracks) +
+                    " ON CONFLICT DO NOTHING";
+            statement.executeUpdate(insertTrackArtists);
+
+            // Insert entries
             String sql = "INSERT INTO chartEntries (chart_week, position, track_id)" +
                     " VALUES " + getFieldsForEntries(week, entries) +
                     " ON CONFLICT DO NOTHING";
 
-            Statement statement = conn.createStatement();
             statement.executeUpdate(sql);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to insert tracks!", e);
         }
+    }
+
+    private String getTrackFieldsForEntries(List<SpotifyChartEntry> entries) {
+        return entries.stream().map(this::getTrackFieldsForEntry).collect(Collectors.joining(", "));
+    }
+
+    private String getTrackFieldsForEntry(SpotifyChartEntry entry) {
+        Track track = entry.track();
+        return String.format("('%s', '%s', '%s', '%s', %s)",
+                             track.getId(),
+                             StringUtils.replace(track.getName(), "'", "''"),
+                             track.getHref(),
+                             track.getUri(),
+                             entry.isYoutube());
     }
 
     private String getFieldsForEntries(int week, List<SpotifyChartEntry> entries) {
@@ -129,18 +139,6 @@ public class PostgresConnection {
 
     private String getTrackAndArtistIds(Track track, SimpleArtist artist) {
         return String.format("('%s', '%s')", track.getId(), artist.getId());
-    }
-
-    private String getFieldsForTracks(Set<Track> tracks) {
-        return tracks.stream().map(this::getFieldsForTrack).collect(Collectors.joining(", "));
-    }
-
-    private String getFieldsForTrack(Track track) {
-        return String.format("('%s', '%s', '%s', '%s')",
-                             track.getId(),
-                             StringUtils.replace(track.getName(), "'", "''"),
-                             track.getHref(),
-                             track.getUri());
     }
 
     private String getFieldsForArtists(Set<SimpleArtist> artists) {
