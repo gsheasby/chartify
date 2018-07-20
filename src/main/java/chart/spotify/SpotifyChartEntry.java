@@ -2,6 +2,7 @@ package chart.spotify;
 
 import org.immutables.value.Value;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.wrapper.spotify.models.SimpleArtist;
@@ -39,6 +40,30 @@ public abstract class SpotifyChartEntry implements ChartEntry {
     @Override
     public String uri() {
         return track().getUri();
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                          .add("position", position())
+                          .add("lastPosition", lastPosition())
+                          .add("weeksOnChart", weeksOnChart())
+                          .add("title", title())
+                          .add("artist", artist())
+                          .add("id", id())
+                          .add("href", href())
+                          .add("url", uri())
+                          .toString();
+    }
+
+    @Override
+    public int hashCode() {
+        int h = 5381;
+        h += (h << 5) + position().hashCode();
+        h += (h << 5) + Objects.hashCode(lastPosition());
+        h += (h << 5) + weeksOnChart().hashCode();
+        h += (h << 5) + track().hashCode();
+        return h;
     }
 
     @Override
