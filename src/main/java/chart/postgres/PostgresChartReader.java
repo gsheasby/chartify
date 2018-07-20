@@ -15,6 +15,7 @@ import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 
 import chart.ChartReader;
+import chart.postgres.raw.ArtistRecord;
 import chart.postgres.raw.ChartEntryRecord;
 import chart.postgres.raw.TrackArtistRecord;
 import chart.spotify.ImmutableSimpleSpotifyChart;
@@ -88,13 +89,13 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
         Set<String> artistIds = trackArtists.stream()
                                             .map(TrackArtistRecord::artist_id)
                                             .collect(Collectors.toSet());
-        Map<String, SimpleArtist> artistsById = connection.getArtists(artistIds);
+        Map<String, ArtistRecord> artistsById = connection.getArtists(artistIds);
 
         return getArtistsForTracks(trackArtists, artistsById);
     }
 
     private Multimap<String, SimpleArtist> getArtistsForTracks(List<TrackArtistRecord> trackArtists,
-                                                               Map<String, SimpleArtist> artistsById) {
+                                                               Map<String, ArtistRecord> artistsById) {
         Multimap<String, SimpleArtist> artistsByTrack = ArrayListMultimap.create();
 
         for (TrackArtistRecord trackArtistRecord : trackArtists) {
@@ -103,8 +104,8 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
                 continue;
             }
 
-            SimpleArtist artist = artistsById.get(artistId);
-            artistsByTrack.put(trackArtistRecord.track_id(), artist);
+            // TODO information is squashed here - not a big deal for now as is_youtube artists only go with is_youtube tracks
+            artistsByTrack.put(trackArtistRecord.track_id(), artistsById.get(artistId).simpleArtist());
         }
 
         return artistsByTrack;

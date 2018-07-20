@@ -19,7 +19,9 @@ import com.google.common.collect.Lists;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 
+import chart.postgres.raw.ArtistRecord;
 import chart.postgres.raw.ChartEntryRecord;
+import chart.postgres.raw.ImmutableArtistRecord;
 import chart.postgres.raw.ImmutableChartEntryRecord;
 import chart.postgres.raw.ImmutableTrackArtistRecord;
 import chart.postgres.raw.TrackArtistRecord;
@@ -250,22 +252,23 @@ public class PostgresConnection {
         }
     }
 
-    public Map<String, SimpleArtist> getArtists(Set<String> artistIds) {
-        String sql = "SELECT id, name, href, uri FROM artists" +
+    public Map<String, ArtistRecord> getArtists(Set<String> artistIds) {
+        String sql = "SELECT id, name, href, uri, is_youtube FROM artists" +
                 "    WHERE id IN " + getInClause(artistIds);
 
-        List<SimpleArtist> entries = executeSelectStatement(sql, this::createSimpleArtist);
-        return entries.stream().collect(Collectors.toMap(SimpleArtist::getId, artist -> artist));
+        List<ArtistRecord> entries = executeSelectStatement(sql, this::createSimpleArtist);
+        return entries.stream().collect(Collectors.toMap(ArtistRecord::id, artist -> artist));
     }
 
-    private SimpleArtist createSimpleArtist(ResultSet resultSet) {
+    private ArtistRecord createSimpleArtist(ResultSet resultSet) {
         try {
-            SimpleArtist artist = new SimpleArtist();
-            artist.setId(resultSet.getString("id"));
-            artist.setName(resultSet.getString("name"));
-            artist.setHref(resultSet.getString("href"));
-            artist.setUri(resultSet.getString("uri"));
-            return artist;
+            return ImmutableArtistRecord.builder()
+                    .id(resultSet.getString("id"))
+                    .name(resultSet.getString("name"))
+                    .href(resultSet.getString("href"))
+                    .uri(resultSet.getString("uri"))
+                    .is_youtube(resultSet.getBoolean("is_youtube"))
+                    .build();
         } catch (SQLException e) {
             throw new RuntimeException("Failed to create artist!", e);
         }
