@@ -1,6 +1,5 @@
 package chart.spotify;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,19 +28,15 @@ public class SpotifyAugmentor {
     }
 
     public List<SpotifyChartEntry> augmentList(List<? extends ChartEntry> chartEntries) {
-        Collection<YoutubeMapping> youtubeMappings = config.mappings().values();
-        Set<String> allMappedIds = youtubeMappings.stream().map(YoutubeMapping::id).collect(Collectors.toSet());
-
         Map<Boolean, List<String>> partitionedTracks = chartEntries
                 .stream()
                 .map(ChartEntry::id)
-                .collect(Collectors.partitioningBy(allMappedIds::contains));
+                .collect(Collectors.partitioningBy(getMappedIds()::contains));
 
         List<String> trackIds = partitionedTracks.get(false);
         List<Track> spotifyTracks = api.getTracks(trackIds);
         Preconditions.checkState(trackIds.size() == spotifyTracks.size(), "Some tracks were not returned!");
 
-        // Recover tracks from mapping
         List<Track> tracks = partitionedTracks.get(true)
                 .stream()
                 .map(this::getYoutubeTrack)
@@ -54,9 +49,7 @@ public class SpotifyAugmentor {
     }
 
     public SpotifyChartEntry augment(ChartEntry entry) {
-        Collection<YoutubeMapping> youtubeMappings = config.mappings().values();
-        Set<String> allMappedIds = youtubeMappings.stream().map(YoutubeMapping::id).collect(Collectors.toSet());
-        Track track = allMappedIds.contains(entry.id())
+        Track track = getMappedIds().contains(entry.id())
                 ? getYoutubeTrack(entry.id())
                 : api.getTrack(entry.id());
 
@@ -66,9 +59,12 @@ public class SpotifyAugmentor {
                                          .build();
     }
 
+    private Set<String> getMappedIds() {
+        return config.mappings().values().stream().map(YoutubeMapping::id).collect(Collectors.toSet());
+    }
+
     private Track getYoutubeTrack(String id) {
-        Collection<YoutubeMapping> youtubeMappings = config.mappings().values();
-        Optional<YoutubeMapping> mappingForId = youtubeMappings
+        Optional<YoutubeMapping> mappingForId = config.mappings().values()
                 .stream()
                 .filter(mapping -> mapping.id().equals(id))
                 .findFirst();

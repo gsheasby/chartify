@@ -29,6 +29,7 @@ public class SpotifyAugmentorTest {
     private static final String ID = "id";
     private static final String HREF = "href";
     private static final String URI = "uri";
+    private static final String YOUTUBE_TITLE = "youtube song";
 
     private SimpleArtist artist;
     private Track track;
@@ -78,30 +79,11 @@ public class SpotifyAugmentorTest {
 
     @Test
     public void augmentListAppliesYoutubeMapping() {
-        String youtubeSong = "youtube song";
-        YoutubeMapping mapping = ImmutableYoutubeMapping.builder()
-                                                        .id(ID)
-                                                        .title(youtubeSong)
-                                                        .artist(artist.getName())
-                                                        .build();
-        when(config.mappings()).thenReturn(Maps.newHashMap(ImmutableMap.of("bad-id", mapping)));
+        setUpYoutubeMapping();
         when(api.getTracks(ImmutableList.of(ID))).thenReturn(ImmutableList.of());
         when(api.getTracks(ImmutableList.of())).thenReturn(ImmutableList.of());
 
-        Track youtubeTrack = new Track();
-        String href = "http://www.youtube.com/watch?v=" + ID;
-        youtubeTrack.setId(ID);
-        youtubeTrack.setName(youtubeSong);
-        youtubeTrack.setArtists(ImmutableList.of(artist));
-        youtubeTrack.setHref(href);
-        youtubeTrack.setUri(href);
-
-        SpotifyChartEntry expected = ImmutableSpotifyChartEntry.builder()
-                .track(youtubeTrack)
-                .position(POSITION)
-                .weeksOnChart(WEEKS)
-                .lastPosition(LAST_POSITION)
-                .build();
+        SpotifyChartEntry expected = getYoutubeEntry();
         CsvChartEntry entry = defaultEntry();
         List<SpotifyChartEntry> spotifyChartEntries = augmentor.augmentList(ImmutableList.of(entry));
 
@@ -110,33 +92,40 @@ public class SpotifyAugmentorTest {
 
     @Test
     public void augmentAppliesYoutubeMapping() {
-        String youtubeSong = "youtube song";
-        YoutubeMapping mapping = ImmutableYoutubeMapping.builder()
-                                                        .id(ID)
-                                                        .title(youtubeSong)
-                                                        .artist(artist.getName())
-                                                        .build();
-        when(config.mappings()).thenReturn(Maps.newHashMap(ImmutableMap.of("bad-id", mapping)));
+        setUpYoutubeMapping();
         when(api.getTrack(ID)).thenThrow(new RuntimeException("uh oh"));
 
-        Track youtubeTrack = new Track();
-        String href = "http://www.youtube.com/watch?v=" + ID;
-        youtubeTrack.setId(ID);
-        youtubeTrack.setName(youtubeSong);
-        youtubeTrack.setArtists(ImmutableList.of(artist));
-        youtubeTrack.setHref(href);
-        youtubeTrack.setUri(href);
-
-        SpotifyChartEntry expected = ImmutableSpotifyChartEntry.builder()
-                                                               .track(youtubeTrack)
-                                                               .position(POSITION)
-                                                               .weeksOnChart(WEEKS)
-                                                               .lastPosition(LAST_POSITION)
-                                                               .build();
+        SpotifyChartEntry expected = getYoutubeEntry();
         CsvChartEntry entry = defaultEntry();
         SpotifyChartEntry spotifyChartEntry = augmentor.augment(entry);
 
         assertEquals(expected, spotifyChartEntry);
+    }
+
+    private SpotifyChartEntry getYoutubeEntry() {
+        Track youtubeTrack = new Track();
+        String href = "http://www.youtube.com/watch?v=" + ID;
+        youtubeTrack.setId(ID);
+        youtubeTrack.setName(YOUTUBE_TITLE);
+        youtubeTrack.setArtists(ImmutableList.of(artist));
+        youtubeTrack.setHref(href);
+        youtubeTrack.setUri(href);
+
+        return ImmutableSpotifyChartEntry.builder()
+                                         .track(youtubeTrack)
+                                         .position(POSITION)
+                                         .weeksOnChart(WEEKS)
+                                         .lastPosition(LAST_POSITION)
+                                         .build();
+    }
+
+    private void setUpYoutubeMapping() {
+        YoutubeMapping mapping = ImmutableYoutubeMapping.builder()
+                                                        .id(ID)
+                                                        .title(YOUTUBE_TITLE)
+                                                        .artist(artist.getName())
+                                                        .build();
+        when(config.mappings()).thenReturn(Maps.newHashMap(ImmutableMap.of("bad-id", mapping)));
     }
 
     private CsvChartEntry defaultEntry() {
