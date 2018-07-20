@@ -13,7 +13,6 @@ import chart.spotify.SpotifyAugmentor;
 import chart.spotify.SpotifyChart;
 
 public class ChartImporterTask {
-    // TODO - augment youtube-based tracks
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
         if (args.length < 2) {
             System.out.println("Usage: ChartImporterTask <fromWeek> <toWeek>");
