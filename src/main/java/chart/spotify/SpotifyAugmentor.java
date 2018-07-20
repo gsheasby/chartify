@@ -43,7 +43,8 @@ public class SpotifyAugmentor {
                 .collect(Collectors.toList());
         tracks.addAll(spotifyTracks);
 
-        Map<String, Track> tracksById = tracks.stream().collect(Collectors.toMap(Track::getId, track -> track));
+        Map<String, Track> tracksById = tracks.stream()
+                                              .collect(Collectors.toMap(Track::getId, track -> track));
 
         return chartEntries.stream().map(e -> enrich(e, tracksById)).collect(Collectors.toList());
     }
