@@ -4,10 +4,15 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 
@@ -27,6 +32,9 @@ public class SpotifyAugmentorTest {
 
     private SimpleArtist artist;
     private Track track;
+    private SpotifyApi api;
+    private SpotifyConfig config;
+    private SpotifyAugmentor augmentor;
 
     @Before
     public void setUp() {
@@ -34,6 +42,10 @@ public class SpotifyAugmentorTest {
         artist.setName(ARTIST);
 
         track = canonicalTrack();
+
+        api = mock(SpotifyApi.class);
+        config = mock(SpotifyConfig.class);
+        augmentor = new SpotifyAugmentor(api, config);
     }
 
     private Track canonicalTrack() {
@@ -48,17 +60,7 @@ public class SpotifyAugmentorTest {
 
     @Test
     public void augmentKeepsAllProperties() {
-        CsvChartEntry csvChartEntry = ImmutableCsvChartEntry.builder()
-                                                            .position(POSITION)
-                                                            .weeksOnChart(WEEKS)
-                                                            .lastPosition(LAST_POSITION)
-                                                            .artist(ARTIST)
-                                                            .title(TITLE)
-                                                            .id(ID)
-                                                            .href(HREF)
-                                                            .uri(URI)
-                                                            .build();
-
+        CsvChartEntry csvChartEntry = defaultEntry();
 
         SpotifyChartEntry expected = ImmutableSpotifyChartEntry.builder()
                                                                .track(track)
@@ -67,11 +69,55 @@ public class SpotifyAugmentorTest {
                                                                .lastPosition(LAST_POSITION)
                                                                .build();
 
-        SpotifyApi api = mock(SpotifyApi.class);
         when(api.getTrack(ID)).thenReturn(canonicalTrack());
 
-        SpotifyChartEntry entry = new SpotifyAugmentor(api).augment(csvChartEntry);
+        SpotifyChartEntry entry = augmentor.augment(csvChartEntry);
 
         assertEquals(expected, entry);
+    }
+
+    @Test
+    public void augmentListAppliesYoutubeMapping() {
+        String youtubeSong = "youtube song";
+        YoutubeMapping mapping = ImmutableYoutubeMapping.builder()
+                                                        .id(ID)
+                                                        .title(youtubeSong)
+                                                        .artist(artist.getName())
+                                                        .build();
+        when(config.mappings()).thenReturn(Maps.newHashMap(ImmutableMap.of("bad-id", mapping)));
+        when(api.getTracks(ImmutableList.of(ID))).thenReturn(ImmutableList.of());
+        when(api.getTracks(ImmutableList.of())).thenReturn(ImmutableList.of());
+
+        Track youtubeTrack = new Track();
+        String href = "http://www.youtube.com/watch?v=" + ID;
+        youtubeTrack.setId(ID);
+        youtubeTrack.setName(youtubeSong);
+        youtubeTrack.setArtists(ImmutableList.of(artist));
+        youtubeTrack.setHref(href);
+        youtubeTrack.setUri(href);
+
+        SpotifyChartEntry expected = ImmutableSpotifyChartEntry.builder()
+                .track(youtubeTrack)
+                .position(POSITION)
+                .weeksOnChart(WEEKS)
+                .lastPosition(LAST_POSITION)
+                .build();
+        CsvChartEntry entry = defaultEntry();
+        List<SpotifyChartEntry> spotifyChartEntries = augmentor.augmentList(ImmutableList.of(entry));
+
+        assertEquals(expected, Iterables.getOnlyElement(spotifyChartEntries));
+    }
+
+    private CsvChartEntry defaultEntry() {
+        return ImmutableCsvChartEntry.builder()
+                                     .position(POSITION)
+                                     .weeksOnChart(WEEKS)
+                                     .lastPosition(LAST_POSITION)
+                                     .artist(ARTIST)
+                                     .title(TITLE)
+                                     .id(ID)
+                                     .href(HREF)
+                                     .uri(URI)
+                                     .build();
     }
 }
