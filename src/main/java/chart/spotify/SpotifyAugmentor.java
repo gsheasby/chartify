@@ -53,6 +53,19 @@ public class SpotifyAugmentor {
         return chartEntries.stream().map(e -> enrich(e, tracksById)).collect(Collectors.toList());
     }
 
+    public SpotifyChartEntry augment(ChartEntry entry) {
+        Collection<YoutubeMapping> youtubeMappings = config.mappings().values();
+        Set<String> allMappedIds = youtubeMappings.stream().map(YoutubeMapping::id).collect(Collectors.toSet());
+        Track track = allMappedIds.contains(entry.id())
+                ? getYoutubeTrack(entry.id())
+                : api.getTrack(entry.id());
+
+        return ImmutableSpotifyChartEntry.builder()
+                                         .from(entry)
+                                         .track(track)
+                                         .build();
+    }
+
     private Track getYoutubeTrack(String id) {
         Collection<YoutubeMapping> youtubeMappings = config.mappings().values();
         Optional<YoutubeMapping> mappingForId = youtubeMappings
@@ -62,15 +75,6 @@ public class SpotifyAugmentor {
         Preconditions.checkArgument(mappingForId.isPresent(), "Mapping for id {} not found!", id);
         YoutubeMapping mapping = mappingForId.get();
         return mapping.getMappedTrack();
-    }
-
-    public SpotifyChartEntry augment(ChartEntry entry) {
-        Track track = api.getTrack(entry.id());
-
-        return ImmutableSpotifyChartEntry.builder()
-                                         .from(entry)
-                                         .track(track)
-                                         .build();
     }
 
     private SpotifyChartEntry enrich(ChartEntry entry, Map<String, Track> tracksById) {

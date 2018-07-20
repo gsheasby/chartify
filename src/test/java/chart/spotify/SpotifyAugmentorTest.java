@@ -108,6 +108,37 @@ public class SpotifyAugmentorTest {
         assertEquals(expected, Iterables.getOnlyElement(spotifyChartEntries));
     }
 
+    @Test
+    public void augmentAppliesYoutubeMapping() {
+        String youtubeSong = "youtube song";
+        YoutubeMapping mapping = ImmutableYoutubeMapping.builder()
+                                                        .id(ID)
+                                                        .title(youtubeSong)
+                                                        .artist(artist.getName())
+                                                        .build();
+        when(config.mappings()).thenReturn(Maps.newHashMap(ImmutableMap.of("bad-id", mapping)));
+        when(api.getTrack(ID)).thenThrow(new RuntimeException("uh oh"));
+
+        Track youtubeTrack = new Track();
+        String href = "http://www.youtube.com/watch?v=" + ID;
+        youtubeTrack.setId(ID);
+        youtubeTrack.setName(youtubeSong);
+        youtubeTrack.setArtists(ImmutableList.of(artist));
+        youtubeTrack.setHref(href);
+        youtubeTrack.setUri(href);
+
+        SpotifyChartEntry expected = ImmutableSpotifyChartEntry.builder()
+                                                               .track(youtubeTrack)
+                                                               .position(POSITION)
+                                                               .weeksOnChart(WEEKS)
+                                                               .lastPosition(LAST_POSITION)
+                                                               .build();
+        CsvChartEntry entry = defaultEntry();
+        SpotifyChartEntry spotifyChartEntry = augmentor.augment(entry);
+
+        assertEquals(expected, spotifyChartEntry);
+    }
+
     private CsvChartEntry defaultEntry() {
         return ImmutableCsvChartEntry.builder()
                                      .position(POSITION)
