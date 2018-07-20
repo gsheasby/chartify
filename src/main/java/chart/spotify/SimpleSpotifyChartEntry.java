@@ -10,6 +10,11 @@ import chart.SimpleChartEntry;
 public abstract class SimpleSpotifyChartEntry implements SimpleChartEntry {
     public abstract Track track();
 
+    @Value.Default
+    public boolean isYoutube() {
+        return false;
+    }
+
     @Override
     public String title() {
         return track().getName();

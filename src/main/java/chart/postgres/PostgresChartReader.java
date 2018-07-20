@@ -136,6 +136,7 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
         return ImmutableSimpleSpotifyChartEntry.builder()
                                                .position(chartEntry.position())
                                                .track(track)
+                                               .isYoutube(chartEntry.is_youtube())
                                                .build();
     }
 

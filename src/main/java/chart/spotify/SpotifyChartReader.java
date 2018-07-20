@@ -48,11 +48,13 @@ public class SpotifyChartReader implements SimpleChartReader<SimpleSpotifyChart>
             return ImmutableSimpleSpotifyChartEntry.builder()
                                                    .position(position)
                                                    .track(mappedTrack)
+                                                   .isYoutube(true)
                                                    .build();
         } else {
             return ImmutableSimpleSpotifyChartEntry.builder()
                                                    .position(position)
                                                    .track(track)
+                                                   .isYoutube(false)
                                                    .build();
         }
     }
