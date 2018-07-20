@@ -9,4 +9,9 @@ public abstract class ChartEntryRecord {
     public abstract String track_name();
     public abstract String track_href();
     public abstract String track_uri();
+
+    @Value.Default
+    public boolean is_youtube() {
+        return false;
+    }
 }

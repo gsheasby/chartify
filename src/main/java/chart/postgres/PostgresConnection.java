@@ -211,7 +211,8 @@ public class PostgresConnection {
 
     public List<ChartEntryRecord> getChartEntries(int week) {
         // TODO possibly a WITH query?
-        String sql =  "SELECT e.position AS pos, t.id AS id, t.name AS name, t.href AS href, t.uri AS uri" +
+        String sql =  "SELECT e.position AS pos, t.id AS id, t.name AS name," +
+                " t.href AS href, t.uri AS uri, t.is_youtube AS is_youtube" +
                 "      FROM tracks t" +
                 "      JOIN chartEntries e ON t.id = e.track_id" +
                 "      WHERE e.chart_week = " + week;
@@ -226,6 +227,7 @@ public class PostgresConnection {
                                             .track_name(resultSet.getString("name"))
                                             .track_href(resultSet.getString("href"))
                                             .track_uri(resultSet.getString("uri"))
+                                            .is_youtube(resultSet.getBoolean("is_youtube"))
                                             .build();
         } catch (SQLException e) {
             throw new RuntimeException("Failed to create chart entry record!", e);

@@ -126,6 +126,7 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
                                       : Optional.empty())
                  // by construction, the 0 shouldn't happen in practice
                 .weeksOnChart(weeksOnChart.getOrDefault(trackId, 0))
+                .isYoutube(chartEntry.is_youtube())
                 .build();
     }
 
