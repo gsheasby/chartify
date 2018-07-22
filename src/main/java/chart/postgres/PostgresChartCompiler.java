@@ -64,6 +64,7 @@ public class PostgresChartCompiler implements ChartCompiler<SpotifyChart> {
                     .position(simpleEntry.position())
                     .lastPosition(lastPos.map(ChartEntry::position))
                     .weeksOnChart(weeksOnChart)
+                    .isYoutube(simpleEntry.isYoutube())
                     .build();
             entries.add(entry);
         }

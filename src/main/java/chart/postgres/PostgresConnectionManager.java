@@ -81,14 +81,16 @@ public class PostgresConnectionManager {
                                         "id varchar(256) CONSTRAINT artistid PRIMARY KEY," +
                                         "name varchar(256) NOT NULL," +
                                         "href varchar(512)," +
-                                        "uri varchar(256)" +
+                                        "uri varchar(256)," +
+                                        "is_youtube boolean DEFAULT FALSE" +
                                         ");");
 
         statement.executeUpdate("CREATE TABLE tracks (" +
                                         "id varchar(256) CONSTRAINT trackid PRIMARY KEY," +
                                         "name varchar(256) NOT NULL," +
                                         "href varchar(512)," +
-                                        "uri varchar(256)" +
+                                        "uri varchar(256)," +
+                                        "is_youtube boolean DEFAULT FALSE" +
                                         ");");
 
         statement.executeUpdate("CREATE TABLE trackArtists (" +

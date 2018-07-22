@@ -4,10 +4,15 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 
@@ -24,9 +29,13 @@ public class SpotifyAugmentorTest {
     private static final String ID = "id";
     private static final String HREF = "href";
     private static final String URI = "uri";
+    private static final String YOUTUBE_TITLE = "youtube song";
 
     private SimpleArtist artist;
     private Track track;
+    private SpotifyApi api;
+    private SpotifyConfig config;
+    private SpotifyAugmentor augmentor;
 
     @Before
     public void setUp() {
@@ -34,6 +43,10 @@ public class SpotifyAugmentorTest {
         artist.setName(ARTIST);
 
         track = canonicalTrack();
+
+        api = mock(SpotifyApi.class);
+        config = mock(SpotifyConfig.class);
+        augmentor = new SpotifyAugmentor(api, config);
     }
 
     private Track canonicalTrack() {
@@ -48,30 +61,101 @@ public class SpotifyAugmentorTest {
 
     @Test
     public void augmentKeepsAllProperties() {
-        CsvChartEntry csvChartEntry = ImmutableCsvChartEntry.builder()
-                                                            .position(POSITION)
-                                                            .weeksOnChart(WEEKS)
-                                                            .lastPosition(LAST_POSITION)
-                                                            .artist(ARTIST)
-                                                            .title(TITLE)
-                                                            .id(ID)
-                                                            .href(HREF)
-                                                            .uri(URI)
-                                                            .build();
+        CsvChartEntry csvChartEntry = canonicalCsvEntry();
+        SpotifyChartEntry expected = canonicalEntry();
 
-
-        SpotifyChartEntry expected = ImmutableSpotifyChartEntry.builder()
-                                                               .track(track)
-                                                               .position(POSITION)
-                                                               .weeksOnChart(WEEKS)
-                                                               .lastPosition(LAST_POSITION)
-                                                               .build();
-
-        SpotifyApi api = mock(SpotifyApi.class);
         when(api.getTrack(ID)).thenReturn(canonicalTrack());
 
-        SpotifyChartEntry entry = new SpotifyAugmentor(api).augment(csvChartEntry);
+        SpotifyChartEntry entry = augmentor.augment(csvChartEntry);
 
         assertEquals(expected, entry);
+    }
+
+    @Test
+    public void augmentListKeepsAllProperties() {
+        CsvChartEntry csvChartEntry = canonicalCsvEntry();
+        SpotifyChartEntry expected = canonicalEntry();
+
+        when(api.getTracks(ImmutableList.of(ID)))
+                .thenReturn(ImmutableList.of(canonicalTrack()));
+
+        SpotifyChartEntry entry = Iterables.getOnlyElement(
+                augmentor.augmentList(ImmutableList.of(csvChartEntry)));
+
+        assertEquals(expected, entry);
+    }
+
+    @Test
+    public void augmentListAppliesYoutubeMapping() {
+        setUpYoutubeMapping();
+        when(api.getTracks(ImmutableList.of(ID))).thenReturn(ImmutableList.of());
+        when(api.getTracks(ImmutableList.of())).thenReturn(ImmutableList.of());
+
+        SpotifyChartEntry expected = getYoutubeEntry();
+        CsvChartEntry entry = canonicalCsvEntry();
+        List<SpotifyChartEntry> spotifyChartEntries = augmentor.augmentList(ImmutableList.of(entry));
+
+        assertEquals(expected, Iterables.getOnlyElement(spotifyChartEntries));
+    }
+
+    @Test
+    public void augmentAppliesYoutubeMapping() {
+        setUpYoutubeMapping();
+        when(api.getTrack(ID)).thenThrow(new RuntimeException("uh oh"));
+
+        SpotifyChartEntry expected = getYoutubeEntry();
+        CsvChartEntry entry = canonicalCsvEntry();
+        SpotifyChartEntry spotifyChartEntry = augmentor.augment(entry);
+
+        assertEquals(expected, spotifyChartEntry);
+    }
+
+    private SpotifyChartEntry canonicalEntry() {
+        return ImmutableSpotifyChartEntry.builder()
+                                         .track(track)
+                                         .position(POSITION)
+                                         .weeksOnChart(WEEKS)
+                                         .lastPosition(LAST_POSITION)
+                                         .build();
+    }
+
+    private SpotifyChartEntry getYoutubeEntry() {
+        Track youtubeTrack = new Track();
+        String href = "http://www.youtube.com/watch?v=" + ID;
+        youtubeTrack.setId(ID);
+        youtubeTrack.setName(YOUTUBE_TITLE);
+        youtubeTrack.setArtists(ImmutableList.of(artist));
+        youtubeTrack.setHref(href);
+        youtubeTrack.setUri(href);
+
+        return ImmutableSpotifyChartEntry.builder()
+                                         .track(youtubeTrack)
+                                         .position(POSITION)
+                                         .weeksOnChart(WEEKS)
+                                         .lastPosition(LAST_POSITION)
+                                         .isYoutube(true)
+                                         .build();
+    }
+
+    private void setUpYoutubeMapping() {
+        YoutubeMapping mapping = ImmutableYoutubeMapping.builder()
+                                                        .id(ID)
+                                                        .title(YOUTUBE_TITLE)
+                                                        .artist(artist.getName())
+                                                        .build();
+        when(config.mappings()).thenReturn(Maps.newHashMap(ImmutableMap.of("bad-id", mapping)));
+    }
+
+    private CsvChartEntry canonicalCsvEntry() {
+        return ImmutableCsvChartEntry.builder()
+                                     .position(POSITION)
+                                     .weeksOnChart(WEEKS)
+                                     .lastPosition(LAST_POSITION)
+                                     .artist(ARTIST)
+                                     .title(TITLE)
+                                     .id(ID)
+                                     .href(HREF)
+                                     .uri(URI)
+                                     .build();
     }
 }

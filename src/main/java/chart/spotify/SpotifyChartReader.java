@@ -5,10 +5,8 @@ import java.util.stream.Collectors;
 
 import org.joda.time.DateTime;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.wrapper.spotify.models.PlaylistTrack;
-import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 
 import chart.ChartConfig;
@@ -46,32 +44,18 @@ public class SpotifyChartReader implements SimpleChartReader<SimpleSpotifyChart>
 
     private SimpleSpotifyChartEntry createEntry(int position, Track track) {
         if (spotifyConfig.mappings().containsKey(track.getId())) {
-            Track mappedTrack = getMappedTrack(spotifyConfig.mappings().get(track.getId()));
+            Track mappedTrack = spotifyConfig.mappings().get(track.getId()).getMappedTrack();
             return ImmutableSimpleSpotifyChartEntry.builder()
                                                    .position(position)
                                                    .track(mappedTrack)
+                                                   .isYoutube(true)
                                                    .build();
         } else {
             return ImmutableSimpleSpotifyChartEntry.builder()
                                                    .position(position)
                                                    .track(track)
+                                                   .isYoutube(false)
                                                    .build();
         }
-    }
-
-    private Track getMappedTrack(YoutubeMapping youtubeMapping) {
-        Track mappedTrack = new Track();
-        mappedTrack.setId(youtubeMapping.id());
-        mappedTrack.setName(youtubeMapping.title());
-        String href = "http://www.youtube.com/watch?v=" + youtubeMapping.id();
-        mappedTrack.setHref(href);
-        mappedTrack.setUri(href);
-
-        SimpleArtist artist = new SimpleArtist();
-        artist.setName(youtubeMapping.artist());
-        artist.setId(youtubeMapping.id());
-        mappedTrack.setArtists(ImmutableList.of(artist));
-
-        return mappedTrack;
     }
 }

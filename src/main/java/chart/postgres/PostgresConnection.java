@@ -19,7 +19,9 @@ import com.google.common.collect.Lists;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 
+import chart.postgres.raw.ArtistRecord;
 import chart.postgres.raw.ChartEntryRecord;
+import chart.postgres.raw.ImmutableArtistRecord;
 import chart.postgres.raw.ImmutableChartEntryRecord;
 import chart.postgres.raw.ImmutableTrackArtistRecord;
 import chart.postgres.raw.TrackArtistRecord;
@@ -42,7 +44,7 @@ public class PostgresConnection {
     // TODO does this abstraction make sense?
     // TODO - what if a new artist has an ID that isn't its spotify ID? Maybe do a lookup for artists when importing from CSV
     // TODO better exception handling
-    public void saveArtists(Set<SimpleArtist> artists) {
+    public void saveArtists(Set<ArtistRecord> artists) {
         try (Connection conn = manager.getConnection()) {
             String sql = getUpdateForArtists(artists);
 
@@ -54,30 +56,10 @@ public class PostgresConnection {
     }
 
     // TODO delegate this so it can be tested
-    private String getUpdateForArtists(Set<SimpleArtist> artists) {
-        return "INSERT INTO artists (id, name, href, uri)" +
+    private String getUpdateForArtists(Set<ArtistRecord> artists) {
+        return "INSERT INTO artists (id, name, href, uri, is_youtube)" +
                         " VALUES " + getFieldsForArtists(artists) +
                         " ON CONFLICT DO NOTHING";
-    }
-
-    public void saveTracks(Set<Track> tracks) {
-        try (Connection conn = manager.getConnection()) {
-            // Save the tracks
-            String sql = "INSERT INTO tracks (id, name, href, uri)" +
-                    " VALUES " + getFieldsForTracks(tracks) +
-                    " ON CONFLICT DO NOTHING";
-
-            Statement statement = conn.createStatement();
-            statement.executeUpdate(sql);
-
-            // Connect tracks to artists
-            String insertTrackArtists = "INSERT INTO trackArtists (track_id, artist_id)" +
-                    " VALUES " + getArtistsForTracks(tracks) +
-                    " ON CONFLICT DO NOTHING";
-            statement.executeUpdate(insertTrackArtists);
-        } catch (SQLException e) {
-            throw new RuntimeException("Failed to insert tracks!", e);
-        }
     }
 
     public void saveMetadata(SpotifyChart chart) {
@@ -98,15 +80,45 @@ public class PostgresConnection {
 
     public void saveEntries(int week, List<SpotifyChartEntry> entries) {
         try (Connection conn = manager.getConnection()) {
+            Statement statement = conn.createStatement();
+
+            // Save the tracks
+            String insertTracks = "INSERT INTO tracks (id, name, href, uri, is_youtube)" +
+                    " VALUES " + getTrackFieldsForEntries(entries) +
+                    " ON CONFLICT DO NOTHING";
+
+            statement.executeUpdate(insertTracks);
+
+            // Connect tracks to artists
+            Set<Track> tracks = entries.stream().map(SpotifyChartEntry::track).collect(Collectors.toSet());
+            String insertTrackArtists = "INSERT INTO trackArtists (track_id, artist_id)" +
+                    " VALUES " + getArtistsForTracks(tracks) +
+                    " ON CONFLICT DO NOTHING";
+            statement.executeUpdate(insertTrackArtists);
+
+            // Insert entries
             String sql = "INSERT INTO chartEntries (chart_week, position, track_id)" +
                     " VALUES " + getFieldsForEntries(week, entries) +
                     " ON CONFLICT DO NOTHING";
 
-            Statement statement = conn.createStatement();
             statement.executeUpdate(sql);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to insert tracks!", e);
         }
+    }
+
+    private String getTrackFieldsForEntries(List<SpotifyChartEntry> entries) {
+        return entries.stream().map(this::getTrackFieldsForEntry).collect(Collectors.joining(", "));
+    }
+
+    private String getTrackFieldsForEntry(SpotifyChartEntry entry) {
+        Track track = entry.track();
+        return String.format("('%s', '%s', '%s', '%s', %s)",
+                             track.getId(),
+                             StringUtils.replace(track.getName(), "'", "''"),
+                             track.getHref(),
+                             track.getUri(),
+                             entry.isYoutube());
     }
 
     private String getFieldsForEntries(int week, List<SpotifyChartEntry> entries) {
@@ -131,28 +143,17 @@ public class PostgresConnection {
         return String.format("('%s', '%s')", track.getId(), artist.getId());
     }
 
-    private String getFieldsForTracks(Set<Track> tracks) {
-        return tracks.stream().map(this::getFieldsForTrack).collect(Collectors.joining(", "));
-    }
-
-    private String getFieldsForTrack(Track track) {
-        return String.format("('%s', '%s', '%s', '%s')",
-                             track.getId(),
-                             StringUtils.replace(track.getName(), "'", "''"),
-                             track.getHref(),
-                             track.getUri());
-    }
-
-    private String getFieldsForArtists(Set<SimpleArtist> artists) {
+    private String getFieldsForArtists(Set<ArtistRecord> artists) {
         return artists.stream().map(this::getFieldForArtist).collect(Collectors.joining(", "));
     }
 
-    private String getFieldForArtist(SimpleArtist artist) {
-        return String.format("('%s', '%s', '%s', '%s')",
-                             artist.getId(),
-                             StringUtils.replace(artist.getName(), "'", "''"),
-                             artist.getHref(),
-                             artist.getUri());
+    private String getFieldForArtist(ArtistRecord artist) {
+        return String.format("('%s', '%s', '%s', '%s', %s)",
+                             artist.id(),
+                             StringUtils.replace(artist.name(), "'", "''"),
+                             artist.href(),
+                             artist.uri(),
+                             artist.is_youtube());
     }
 
     public Optional<Integer> getPosition(String trackId, int week) {
@@ -211,7 +212,8 @@ public class PostgresConnection {
 
     public List<ChartEntryRecord> getChartEntries(int week) {
         // TODO possibly a WITH query?
-        String sql =  "SELECT e.position AS pos, t.id AS id, t.name AS name, t.href AS href, t.uri AS uri" +
+        String sql =  "SELECT e.position AS pos, t.id AS id, t.name AS name," +
+                " t.href AS href, t.uri AS uri, t.is_youtube AS is_youtube" +
                 "      FROM tracks t" +
                 "      JOIN chartEntries e ON t.id = e.track_id" +
                 "      WHERE e.chart_week = " + week;
@@ -226,6 +228,7 @@ public class PostgresConnection {
                                             .track_name(resultSet.getString("name"))
                                             .track_href(resultSet.getString("href"))
                                             .track_uri(resultSet.getString("uri"))
+                                            .is_youtube(resultSet.getBoolean("is_youtube"))
                                             .build();
         } catch (SQLException e) {
             throw new RuntimeException("Failed to create chart entry record!", e);
@@ -250,22 +253,23 @@ public class PostgresConnection {
         }
     }
 
-    public Map<String, SimpleArtist> getArtists(Set<String> artistIds) {
-        String sql = "SELECT id, name, href, uri FROM artists" +
+    public Map<String, ArtistRecord> getArtists(Set<String> artistIds) {
+        String sql = "SELECT id, name, href, uri, is_youtube FROM artists" +
                 "    WHERE id IN " + getInClause(artistIds);
 
-        List<SimpleArtist> entries = executeSelectStatement(sql, this::createSimpleArtist);
-        return entries.stream().collect(Collectors.toMap(SimpleArtist::getId, artist -> artist));
+        List<ArtistRecord> entries = executeSelectStatement(sql, this::createSimpleArtist);
+        return entries.stream().collect(Collectors.toMap(ArtistRecord::id, artist -> artist));
     }
 
-    private SimpleArtist createSimpleArtist(ResultSet resultSet) {
+    private ArtistRecord createSimpleArtist(ResultSet resultSet) {
         try {
-            SimpleArtist artist = new SimpleArtist();
-            artist.setId(resultSet.getString("id"));
-            artist.setName(resultSet.getString("name"));
-            artist.setHref(resultSet.getString("href"));
-            artist.setUri(resultSet.getString("uri"));
-            return artist;
+            return ImmutableArtistRecord.builder()
+                    .id(resultSet.getString("id"))
+                    .name(resultSet.getString("name"))
+                    .href(resultSet.getString("href"))
+                    .uri(resultSet.getString("uri"))
+                    .is_youtube(resultSet.getBoolean("is_youtube"))
+                    .build();
         } catch (SQLException e) {
             throw new RuntimeException("Failed to create artist!", e);
         }
