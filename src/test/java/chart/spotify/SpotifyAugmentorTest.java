@@ -61,18 +61,26 @@ public class SpotifyAugmentorTest {
 
     @Test
     public void augmentKeepsAllProperties() {
-        CsvChartEntry csvChartEntry = defaultEntry();
-
-        SpotifyChartEntry expected = ImmutableSpotifyChartEntry.builder()
-                                                               .track(track)
-                                                               .position(POSITION)
-                                                               .weeksOnChart(WEEKS)
-                                                               .lastPosition(LAST_POSITION)
-                                                               .build();
+        CsvChartEntry csvChartEntry = canonicalCsvEntry();
+        SpotifyChartEntry expected = canonicalEntry();
 
         when(api.getTrack(ID)).thenReturn(canonicalTrack());
 
         SpotifyChartEntry entry = augmentor.augment(csvChartEntry);
+
+        assertEquals(expected, entry);
+    }
+
+    @Test
+    public void augmentListKeepsAllProperties() {
+        CsvChartEntry csvChartEntry = canonicalCsvEntry();
+        SpotifyChartEntry expected = canonicalEntry();
+
+        when(api.getTracks(ImmutableList.of(ID)))
+                .thenReturn(ImmutableList.of(canonicalTrack()));
+
+        SpotifyChartEntry entry = Iterables.getOnlyElement(
+                augmentor.augmentList(ImmutableList.of(csvChartEntry)));
 
         assertEquals(expected, entry);
     }
@@ -84,7 +92,7 @@ public class SpotifyAugmentorTest {
         when(api.getTracks(ImmutableList.of())).thenReturn(ImmutableList.of());
 
         SpotifyChartEntry expected = getYoutubeEntry();
-        CsvChartEntry entry = defaultEntry();
+        CsvChartEntry entry = canonicalCsvEntry();
         List<SpotifyChartEntry> spotifyChartEntries = augmentor.augmentList(ImmutableList.of(entry));
 
         assertEquals(expected, Iterables.getOnlyElement(spotifyChartEntries));
@@ -96,10 +104,19 @@ public class SpotifyAugmentorTest {
         when(api.getTrack(ID)).thenThrow(new RuntimeException("uh oh"));
 
         SpotifyChartEntry expected = getYoutubeEntry();
-        CsvChartEntry entry = defaultEntry();
+        CsvChartEntry entry = canonicalCsvEntry();
         SpotifyChartEntry spotifyChartEntry = augmentor.augment(entry);
 
         assertEquals(expected, spotifyChartEntry);
+    }
+
+    private SpotifyChartEntry canonicalEntry() {
+        return ImmutableSpotifyChartEntry.builder()
+                                         .track(track)
+                                         .position(POSITION)
+                                         .weeksOnChart(WEEKS)
+                                         .lastPosition(LAST_POSITION)
+                                         .build();
     }
 
     private SpotifyChartEntry getYoutubeEntry() {
@@ -116,6 +133,7 @@ public class SpotifyAugmentorTest {
                                          .position(POSITION)
                                          .weeksOnChart(WEEKS)
                                          .lastPosition(LAST_POSITION)
+                                         .isYoutube(true)
                                          .build();
     }
 
@@ -128,7 +146,7 @@ public class SpotifyAugmentorTest {
         when(config.mappings()).thenReturn(Maps.newHashMap(ImmutableMap.of("bad-id", mapping)));
     }
 
-    private CsvChartEntry defaultEntry() {
+    private CsvChartEntry canonicalCsvEntry() {
         return ImmutableCsvChartEntry.builder()
                                      .position(POSITION)
                                      .weeksOnChart(WEEKS)

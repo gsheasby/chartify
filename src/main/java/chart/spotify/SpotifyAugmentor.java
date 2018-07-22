@@ -1,9 +1,11 @@
 package chart.spotify;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -37,26 +39,32 @@ public class SpotifyAugmentor {
         List<Track> spotifyTracks = api.getTracks(trackIds);
         Preconditions.checkState(trackIds.size() == spotifyTracks.size(), "Some tracks were not returned!");
 
-        List<Track> tracks = partitionedTracks.get(true)
-                .stream()
-                .map(this::getYoutubeTrack)
-                .collect(Collectors.toList());
+        List<String> youtubeTracks = partitionedTracks.get(true);
+        List<Track> tracks = youtubeTracks
+                                              .stream()
+                                              .map(this::getYoutubeTrack)
+                                              .collect(Collectors.toList());
         tracks.addAll(spotifyTracks);
 
         Map<String, Track> tracksById = tracks.stream()
                                               .collect(Collectors.toMap(Track::getId, track -> track));
 
-        return chartEntries.stream().map(e -> enrich(e, tracksById)).collect(Collectors.toList());
+        Set<String> youtubeTrackIds = new HashSet<>(youtubeTracks);
+        return chartEntries.stream()
+                           .map(e -> enrich(e, tracksById, youtubeTrackIds::contains))
+                           .collect(Collectors.toList());
     }
 
     public SpotifyChartEntry augment(ChartEntry entry) {
-        Track track = getMappedIds().contains(entry.id())
+        boolean isYoutube = getMappedIds().contains(entry.id());
+        Track track = isYoutube
                 ? getYoutubeTrack(entry.id())
                 : api.getTrack(entry.id());
 
         return ImmutableSpotifyChartEntry.builder()
                                          .from(entry)
                                          .track(track)
+                                         .isYoutube(isYoutube)
                                          .build();
     }
 
@@ -74,12 +82,15 @@ public class SpotifyAugmentor {
         return mapping.getMappedTrack();
     }
 
-    private SpotifyChartEntry enrich(ChartEntry entry, Map<String, Track> tracksById) {
+    private SpotifyChartEntry enrich(ChartEntry entry,
+                                     Map<String, Track> tracksById,
+                                     Predicate<String> isYoutube) {
         Track track = tracksById.get(entry.id());
 
         return ImmutableSpotifyChartEntry.builder()
                                          .from(entry)
                                          .track(track)
+                                         .isYoutube(isYoutube.test(entry.id()))
                                          .build();
     }
 }
