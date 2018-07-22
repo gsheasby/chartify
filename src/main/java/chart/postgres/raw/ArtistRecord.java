@@ -16,6 +16,7 @@ public abstract class ArtistRecord {
         return false;
     }
 
+    @Value.Auxiliary
     @Value.Derived
     public SimpleArtist simpleArtist() {
         SimpleArtist artist = new SimpleArtist();

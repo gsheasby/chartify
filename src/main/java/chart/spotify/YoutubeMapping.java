@@ -27,6 +27,8 @@ public abstract class YoutubeMapping {
         SimpleArtist artist = new SimpleArtist();
         artist.setName(artist());
         artist.setId(id());
+        artist.setHref("");
+        artist.setUri("");
         mappedTrack.setArtists(ImmutableList.of(artist));
 
         return mappedTrack;
