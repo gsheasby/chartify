@@ -1,19 +1,29 @@
 package chart;
 
+import java.util.List;
+
 public class ChartPrinter {
-    public static void print(Chart chart) {
+    public void print(Chart chart) {
         System.out.println(String.format("Week %d: %s",
                                          chart.week(),
                                          chart.date().toString("EEEE, MMMM dd, yyyy")));
         System.out.println();
 
-        for (ChartEntry entry : chart.entries()) {
-            printEntry(entry);
-        }
+        printEntries(chart.entries());
         System.out.println();
 
-        for (ChartEntry entry : chart.dropouts()) {
+        printDropouts(chart.dropouts());
+    }
+
+    private void printDropouts(List<? extends ChartEntry> dropouts) {
+        for (ChartEntry entry : dropouts) {
             printDropout(entry);
+        }
+    }
+
+    private void printEntries(List<? extends ChartEntry> entries) {
+        for (ChartEntry entry : entries) {
+            printEntry(entry);
         }
     }
 

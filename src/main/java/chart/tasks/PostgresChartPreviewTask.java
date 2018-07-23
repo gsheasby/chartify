@@ -25,6 +25,6 @@ public class PostgresChartPreviewTask {
         ChartCompiler compiler = new PostgresChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart();
 
-        ChartPrinter.print(chart);
+        new ChartPrinter().print(chart);
     }
 }

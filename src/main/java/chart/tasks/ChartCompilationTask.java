@@ -20,7 +20,7 @@ public class ChartCompilationTask {
         FileChartReader derivedReader = new FileChartReader(config.csvDestination());
         ChartCompiler compiler = new CsvChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart();
-        ChartPrinter.print(chart);
+        new ChartPrinter().print(chart);
 
 //        try {
 //            PostgresChartCompiler postgresCompiler = new PostgresChartCompiler(reader, derivedReader);
