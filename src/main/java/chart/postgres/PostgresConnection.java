@@ -20,6 +20,8 @@ import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 
 import chart.postgres.raw.ArtistRecord;
+import chart.postgres.raw.ChartEntryRecord;
+import chart.postgres.raw.ImmutableChartEntryRecord;
 import chart.postgres.raw.TrackPositionRecord;
 import chart.postgres.raw.ImmutableArtistRecord;
 import chart.postgres.raw.ImmutableTrackPositionRecord;
@@ -218,6 +220,25 @@ public class PostgresConnection {
                 "      JOIN chartEntries e ON t.id = e.track_id" +
                 "      WHERE e.chart_week = " + week;
         return executeSelectStatement(sql, this::createChartEntryRecord);
+    }
+
+    public List<ChartEntryRecord> getChartEntries(Set<String> trackIds, int upToWeek) {
+        String sql = "SELECT chart_week, position, track_id" +
+                "     FROM chartEntries e" +
+                "     WHERE track_id IN " + getInClause(trackIds) +
+                "     AND chart_week <= " + upToWeek;
+        Function<ResultSet, ChartEntryRecord> mapper = resultSet -> {
+            try {
+                return ImmutableChartEntryRecord.builder()
+                        .chart_week(resultSet.getInt("chart_week"))
+                        .position(resultSet.getInt("position"))
+                        .track_id(resultSet.getString("trackId"))
+                        .build();
+            } catch (SQLException e) {
+                throw new RuntimeException("Couldn't extract chart entry!");
+            }
+        };
+        return executeSelectStatement(sql, mapper);
     }
 
     private TrackPositionRecord createChartEntryRecord(ResultSet resultSet) {
