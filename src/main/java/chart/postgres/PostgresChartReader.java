@@ -16,7 +16,7 @@ import com.wrapper.spotify.models.Track;
 
 import chart.ChartReader;
 import chart.postgres.raw.ArtistRecord;
-import chart.postgres.raw.ChartEntryRecord;
+import chart.postgres.raw.TrackPositionRecord;
 import chart.postgres.raw.TrackArtistRecord;
 import chart.spotify.ImmutableSimpleSpotifyChart;
 import chart.spotify.ImmutableSimpleSpotifyChartEntry;
@@ -42,13 +42,13 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
 
     @Override
     public SpotifyChart findDerivedChart(int week) {
-        List<ChartEntryRecord> chartEntries = connection.getChartEntries(week);
-        Set<String> trackIds = getTrackIds(chartEntries);
+        List<TrackPositionRecord> trackPositions = connection.getTrackPositions(week);
+        Set<String> trackIds = getTrackIds(trackPositions);
         Map<String, Integer> lastPositions = connection.getPositions(trackIds, week - 1);
         Map<String, Integer> weeksOnChart = connection.getWeeksOnChart(trackIds, week);
         Multimap<String, SimpleArtist> artistsForTracks = getArtistsForTracks(trackIds);
 
-        List<SpotifyChartEntry> entries = chartEntries.stream()
+        List<SpotifyChartEntry> entries = trackPositions.stream()
                 .map(entry -> createSpotifyEntry(entry, lastPositions, weeksOnChart, artistsForTracks))
                 .collect(Collectors.toList());
 
@@ -63,11 +63,11 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
 
     @Override
     public SimpleSpotifyChart findChart(int week) {
-        List<ChartEntryRecord> chartEntries = connection.getChartEntries(week);
-        Set<String> trackIds = getTrackIds(chartEntries);
+        List<TrackPositionRecord> trackPositions = connection.getTrackPositions(week);
+        Set<String> trackIds = getTrackIds(trackPositions);
         Multimap<String, SimpleArtist> artistsForTracks = getArtistsForTracks(trackIds);
 
-        List<SimpleSpotifyChartEntry> entries = chartEntries.stream()
+        List<SimpleSpotifyChartEntry> entries = trackPositions.stream()
                                     .map(entry -> createSimpleSpotifyEntry(entry, artistsForTracks))
                                     .collect(Collectors.toList());
 
@@ -80,8 +80,8 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
                 .build();
     }
 
-    private Set<String> getTrackIds(List<ChartEntryRecord> chartEntries) {
-        return chartEntries.stream().map(ChartEntryRecord::track_id).collect(Collectors.toSet());
+    private Set<String> getTrackIds(List<TrackPositionRecord> chartEntries) {
+        return chartEntries.stream().map(TrackPositionRecord::track_id).collect(Collectors.toSet());
     }
 
     private Multimap<String, SimpleArtist> getArtistsForTracks(Set<String> trackIds) {
@@ -111,7 +111,7 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
         return artistsByTrack;
     }
 
-    private SpotifyChartEntry createSpotifyEntry(ChartEntryRecord chartEntry,
+    private SpotifyChartEntry createSpotifyEntry(TrackPositionRecord chartEntry,
                                                  Map<String,Integer> lastPositions,
                                                  Map<String,Integer> weeksOnChart,
                                                  Multimap<String,SimpleArtist> artistsForTracks) {
@@ -130,7 +130,7 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
                 .build();
     }
 
-    private SimpleSpotifyChartEntry createSimpleSpotifyEntry(ChartEntryRecord chartEntry,
+    private SimpleSpotifyChartEntry createSimpleSpotifyEntry(TrackPositionRecord chartEntry,
                                                              Multimap<String, SimpleArtist> artistsForTracks) {
         Track track = getTrackWithoutArtists(chartEntry);
         track.setArtists(new ArrayList<>(artistsForTracks.get(chartEntry.track_id())));
@@ -141,7 +141,7 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
                                                .build();
     }
 
-    private Track getTrackWithoutArtists(ChartEntryRecord chartEntry) {
+    private Track getTrackWithoutArtists(TrackPositionRecord chartEntry) {
         Track track = new Track();
         track.setId(chartEntry.track_id());
         track.setName(chartEntry.track_name());

@@ -20,9 +20,9 @@ import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 
 import chart.postgres.raw.ArtistRecord;
-import chart.postgres.raw.ChartEntryRecord;
+import chart.postgres.raw.TrackPositionRecord;
 import chart.postgres.raw.ImmutableArtistRecord;
-import chart.postgres.raw.ImmutableChartEntryRecord;
+import chart.postgres.raw.ImmutableTrackPositionRecord;
 import chart.postgres.raw.ImmutableTrackArtistRecord;
 import chart.postgres.raw.TrackArtistRecord;
 import chart.spotify.SpotifyChart;
@@ -210,7 +210,7 @@ public class PostgresConnection {
         return entries.stream().collect(Collectors.toMap(Pair::getKey, Pair::getValue));
     }
 
-    public List<ChartEntryRecord> getChartEntries(int week) {
+    public List<TrackPositionRecord> getTrackPositions(int week) {
         // TODO possibly a WITH query?
         String sql =  "SELECT e.position AS pos, t.id AS id, t.name AS name," +
                 " t.href AS href, t.uri AS uri, t.is_youtube AS is_youtube" +
@@ -220,16 +220,16 @@ public class PostgresConnection {
         return executeSelectStatement(sql, this::createChartEntryRecord);
     }
 
-    private ChartEntryRecord createChartEntryRecord(ResultSet resultSet) {
+    private TrackPositionRecord createChartEntryRecord(ResultSet resultSet) {
         try {
-            return ImmutableChartEntryRecord.builder()
-                                            .position(resultSet.getInt("pos"))
-                                            .track_id(resultSet.getString("id"))
-                                            .track_name(resultSet.getString("name"))
-                                            .track_href(resultSet.getString("href"))
-                                            .track_uri(resultSet.getString("uri"))
-                                            .is_youtube(resultSet.getBoolean("is_youtube"))
-                                            .build();
+            return ImmutableTrackPositionRecord.builder()
+                                               .position(resultSet.getInt("pos"))
+                                               .track_id(resultSet.getString("id"))
+                                               .track_name(resultSet.getString("name"))
+                                               .track_href(resultSet.getString("href"))
+                                               .track_uri(resultSet.getString("uri"))
+                                               .is_youtube(resultSet.getBoolean("is_youtube"))
+                                               .build();
         } catch (SQLException e) {
             throw new RuntimeException("Failed to create chart entry record!", e);
         }
