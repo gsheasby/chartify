@@ -16,8 +16,11 @@ import com.wrapper.spotify.models.Track;
 
 import chart.ChartReader;
 import chart.postgres.raw.ArtistRecord;
+import chart.postgres.raw.ChartEntryRecord;
 import chart.postgres.raw.TrackPositionRecord;
 import chart.postgres.raw.TrackArtistRecord;
+import chart.spotify.ChartPosition;
+import chart.spotify.ImmutableChartPosition;
 import chart.spotify.ImmutableSimpleSpotifyChart;
 import chart.spotify.ImmutableSimpleSpotifyChartEntry;
 import chart.spotify.ImmutableSpotifyChart;
@@ -48,8 +51,11 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
         Map<String, Integer> weeksOnChart = connection.getWeeksOnChart(trackIds, week);
         Multimap<String, SimpleArtist> artistsForTracks = getArtistsForTracks(trackIds);
 
+        List<ChartEntryRecord> chartEntries = connection.getChartEntries(trackIds, week);
+        Multimap<String, ChartPosition> chartRuns = convertToChartRuns(chartEntries);
+
         List<SpotifyChartEntry> entries = trackPositions.stream()
-                .map(entry -> createSpotifyEntry(entry, lastPositions, weeksOnChart, artistsForTracks))
+                .map(entry -> createSpotifyEntry(entry, lastPositions, weeksOnChart, artistsForTracks, chartRuns))
                 .collect(Collectors.toList());
 
         DateTime date = connection.getChartDate(week);
@@ -59,6 +65,21 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
                 .week(week)
                 .date(date)
                 .build();
+    }
+
+    private Multimap<String, ChartPosition> convertToChartRuns(List<ChartEntryRecord> chartEntries) {
+        Multimap<String, ChartPosition> chartRuns = ArrayListMultimap.create();
+
+        for (ChartEntryRecord record : chartEntries) {
+            String trackId = record.track_id();
+            ChartPosition chartPosition = ImmutableChartPosition.builder()
+                    .week(record.chart_week())
+                    .position(record.position())
+                    .build();
+            chartRuns.put(trackId, chartPosition);
+        }
+
+        return chartRuns;
     }
 
     @Override
@@ -112,9 +133,10 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
     }
 
     private SpotifyChartEntry createSpotifyEntry(TrackPositionRecord chartEntry,
-                                                 Map<String,Integer> lastPositions,
-                                                 Map<String,Integer> weeksOnChart,
-                                                 Multimap<String,SimpleArtist> artistsForTracks) {
+                                                 Map<String, Integer> lastPositions,
+                                                 Map<String, Integer> weeksOnChart,
+                                                 Multimap<String, SimpleArtist> artistsForTracks,
+                                                 Multimap<String, ChartPosition> chartRuns) {
         Track track = getTrackWithoutArtists(chartEntry);
         String trackId = chartEntry.track_id();
         track.setArtists(new ArrayList<>(artistsForTracks.get(trackId)));
@@ -127,6 +149,7 @@ public class PostgresChartReader implements ChartReader<SpotifyChart, SimpleSpot
                  // by construction, the 0 shouldn't happen in practice
                 .weeksOnChart(weeksOnChart.getOrDefault(trackId, 0))
                 .isYoutube(chartEntry.is_youtube())
+                .chartRun(chartRuns.get(trackId))
                 .build();
     }
 

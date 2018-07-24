@@ -1,10 +1,13 @@
 package chart.spotify;
 
+import java.util.Set;
+
 import org.immutables.value.Value;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 
@@ -45,6 +48,12 @@ public abstract class SpotifyChartEntry implements ChartEntry {
     @Override
     public String uri() {
         return track().getUri();
+    }
+
+    @Value.Auxiliary
+    @Value.Default
+    public Set<ChartPosition> chartRun() {
+        return ImmutableSet.of();
     }
 
     @Override
