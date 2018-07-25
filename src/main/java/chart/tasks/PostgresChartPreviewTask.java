@@ -7,7 +7,6 @@ import chart.Chart;
 import chart.ChartCompiler;
 import chart.ChartConfig;
 import chart.ChartPrinter;
-import chart.ChartReader;
 import chart.postgres.PostgresChartCompiler;
 import chart.postgres.PostgresChartReader;
 import chart.postgres.PostgresConnection;
@@ -21,7 +20,7 @@ public class PostgresChartPreviewTask {
         SpotifyChartReader reader = new SpotifyChartReader(config);
         PostgresConnectionManager manager = PostgresConnectionManager.create(config.postgresConfig());
         PostgresConnection connection = new PostgresConnection(manager);
-        ChartReader derivedReader = new PostgresChartReader(connection);
+        PostgresChartReader derivedReader = new PostgresChartReader(connection);
         ChartCompiler compiler = new PostgresChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart();
 

@@ -6,8 +6,8 @@ import chart.Chart;
 import chart.ChartCompiler;
 import chart.ChartConfig;
 import chart.ChartPrinter;
+import chart.csv.CsvChartCompiler;
 import chart.csv.FileChartReader;
-import chart.postgres.PostgresChartCompiler;
 import chart.spotify.SpotifyChartReader;
 
 public class ChartPreviewTask {
@@ -16,7 +16,7 @@ public class ChartPreviewTask {
 
         SpotifyChartReader reader = new SpotifyChartReader(config);
         FileChartReader derivedReader = new FileChartReader(config.csvDestination());
-        ChartCompiler compiler = new PostgresChartCompiler(reader, derivedReader);
+        ChartCompiler compiler = new CsvChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart();
 
         new ChartPrinter().print(chart);
