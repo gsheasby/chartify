@@ -232,10 +232,10 @@ public class PostgresConnection {
                 return ImmutableChartEntryRecord.builder()
                         .chart_week(resultSet.getInt("chart_week"))
                         .position(resultSet.getInt("position"))
-                        .track_id(resultSet.getString("trackId"))
+                        .track_id(resultSet.getString("track_id"))
                         .build();
             } catch (SQLException e) {
-                throw new RuntimeException("Couldn't extract chart entry!");
+                throw new RuntimeException("Couldn't extract chart entry!", e);
             }
         };
         return executeSelectStatement(sql, mapper);
