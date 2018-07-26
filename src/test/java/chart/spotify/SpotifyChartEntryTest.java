@@ -1,6 +1,5 @@
 package chart.spotify;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 import org.junit.Before;
@@ -9,9 +8,6 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
-
-import chart.csv.CsvChartEntry;
-import chart.csv.ImmutableCsvChartEntry;
 
 public class SpotifyChartEntryTest {
     private static final int POSITION = 1;
@@ -83,31 +79,5 @@ public class SpotifyChartEntryTest {
                 .track(trackWithDifferentUri)
                 .build();
         assertNotEquals("uri should have been different", canonical, differentHref);
-    }
-
-    @Test
-    public void fromKeepsAllProperties() {
-        CsvChartEntry csvChartEntry = ImmutableCsvChartEntry.builder()
-                .position(POSITION)
-                .weeksOnChart(WEEKS)
-                .lastPosition(LAST_POSITION)
-                .artist(ARTIST)
-                .title(TITLE)
-                .id(ID)
-                .href(HREF)
-                .uri(URI)
-                .build();
-
-
-        SpotifyChartEntry expected = ImmutableSpotifyChartEntry.builder()
-                .track(track)
-                .position(POSITION)
-                .weeksOnChart(WEEKS)
-                .lastPosition(LAST_POSITION)
-                .build();
-
-        SpotifyChartEntry entry = SpotifyChartEntry.from(csvChartEntry);
-
-        assertEquals(expected, entry);
     }
 }
