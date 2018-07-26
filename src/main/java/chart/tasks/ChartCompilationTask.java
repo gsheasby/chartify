@@ -2,10 +2,10 @@ package chart.tasks;
 
 import java.io.IOException;
 
+import chart.BasicChartPrinter;
 import chart.Chart;
 import chart.ChartCompiler;
 import chart.ChartConfig;
-import chart.ChartPrinter;
 import chart.csv.FileChartReader;
 import chart.spotify.SpotifyChartReader;
 import chart.csv.CsvChartCompiler;
@@ -20,7 +20,7 @@ public class ChartCompilationTask {
         FileChartReader derivedReader = new FileChartReader(config.csvDestination());
         ChartCompiler compiler = new CsvChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart();
-        new ChartPrinter().print(chart);
+        new BasicChartPrinter().print(chart);
 
 //        try {
 //            PostgresChartCompiler postgresCompiler = new PostgresChartCompiler(reader, derivedReader);
