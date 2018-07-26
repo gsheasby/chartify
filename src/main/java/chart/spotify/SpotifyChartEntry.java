@@ -6,9 +6,7 @@ import org.immutables.value.Value;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 
 import chart.ChartEntry;
@@ -99,22 +97,5 @@ public abstract class SpotifyChartEntry implements ChartEntry {
                 && href().equals(another.href())
                 && uri().equals(another.uri())
                 && isYoutube() == another.isYoutube();
-    }
-
-    @Deprecated // Doesn't contain artist ID - use SpotifyAugmentor to look it up
-    public static SpotifyChartEntry from(ChartEntry entry) {
-        SimpleArtist artist = new SimpleArtist();
-        artist.setName(entry.artist());
-        Track track = new Track();
-        track.setName(entry.title());
-        track.setArtists(ImmutableList.of(artist));
-        track.setId(entry.id());
-        track.setHref(entry.href());
-        track.setUri(entry.uri());
-
-        return ImmutableSpotifyChartEntry.builder()
-                .from(entry)
-                .track(track)
-                .build();
     }
 }
