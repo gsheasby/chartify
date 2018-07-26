@@ -86,7 +86,6 @@ public class PostgresChartCompiler implements ChartCompiler<SpotifyChart> {
 
         List<SpotifyChartEntry> dropouts = lastWeek.entries().stream()
                                                      .filter(ent -> !inFromLastWeek.contains(ent.position()))
-                                                     .map(SpotifyChartEntry::from)
                                                      .collect(Collectors.toList());
 
         return ImmutableSpotifyChart.builder()
