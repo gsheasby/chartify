@@ -1,40 +1,34 @@
 package chart.tasks;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 import chart.BasicChartPrinter;
-import chart.Chart;
-import chart.ChartCompiler;
 import chart.ChartConfig;
-import chart.csv.FileChartReader;
-import chart.spotify.SpotifyChartReader;
-import chart.csv.CsvChartCompiler;
+import chart.DualChartSaver;
 import chart.csv.CsvChartSaver;
+import chart.postgres.PostgresChartCompiler;
+import chart.postgres.PostgresChartReader;
+import chart.postgres.PostgresChartSaver;
+import chart.postgres.PostgresConnection;
+import chart.postgres.PostgresConnectionManager;
+import chart.spotify.SpotifyChart;
+import chart.spotify.SpotifyChartReader;
 
 public class ChartCompilationTask {
-
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
         ChartConfig config = TaskUtils.getConfig();
+        PostgresConnectionManager manager = PostgresConnectionManager.create(config.postgresConfig());
+        PostgresConnection connection = new PostgresConnection(manager);
 
+        PostgresChartReader postgresChartReader = new PostgresChartReader(connection);
         SpotifyChartReader reader = new SpotifyChartReader(config);
-        FileChartReader derivedReader = new FileChartReader(config.csvDestination());
-        ChartCompiler compiler = new CsvChartCompiler(reader, derivedReader);
-        Chart chart = compiler.compileChart();
+        PostgresChartCompiler postgresCompiler = new PostgresChartCompiler(reader, postgresChartReader);
+        SpotifyChart chart = postgresCompiler.compileChart();
+
+        CsvChartSaver csvChartSaver = new CsvChartSaver(config.csvDestination());
+        PostgresChartSaver chartSaver = new PostgresChartSaver(connection);
         new BasicChartPrinter().print(chart);
-
-//        try {
-//            PostgresChartCompiler postgresCompiler = new PostgresChartCompiler(reader, derivedReader);
-//            SpotifyChart spotifyChart = postgresCompiler.compileChart();
-//            PostgresConnectionManager manager = PostgresConnectionManager.create(config.postgresConfig());
-//            PostgresConnection connection = new PostgresConnection(manager);
-//            PostgresChartSaver chartSaver = new PostgresChartSaver(connection);
-//            chartSaver.saveChart(spotifyChart);
-//
-//        } catch (SQLException | ClassNotFoundException e) {
-//            e.printStackTrace();
-//        }
-
-        new CsvChartSaver(config.csvDestination()).saveChart(chart);
-
+        new DualChartSaver(csvChartSaver, chartSaver).saveChart(chart);
     }
 }
