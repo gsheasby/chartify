@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import chart.ChartConfig;
+import chart.ChartFormatter;
 import chart.postgres.PostgresChartCompiler;
 import chart.postgres.PostgresChartPrinter;
 import chart.postgres.PostgresChartReader;
@@ -23,6 +24,6 @@ public class PostgresChartPreviewTask {
         PostgresChartCompiler compiler = new PostgresChartCompiler(reader, derivedReader);
         SpotifyChart chart = compiler.compileChart();
 
-        new PostgresChartPrinter().print(chart);
+        new PostgresChartPrinter(new ChartFormatter()).print(chart);
     }
 }
