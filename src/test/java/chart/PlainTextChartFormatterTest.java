@@ -58,20 +58,33 @@ public class PlainTextChartFormatterTest {
 
     @Test
     public void lastPositionFormat() {
+        SpotifyChartEntry entry = threeWeeks();
+
+        String expected = "05 (07) 3 artist - title [10, 7, 5]";
+        String line = formatter.getLine(entry);
+        assertEquals(expected, line);
+    }
+
+    @Test
+    public void dropoutFormat() {
+        SpotifyChartEntry entry = threeWeeks();
+
+        String expected = "-- (05) 3 artist - title [10, 7, 5]";
+        String line = formatter.getDropoutText(entry);
+        assertEquals(expected, line);
+    }
+
+    private SpotifyChartEntry threeWeeks() {
         Iterable<ChartPosition> run = ImmutableList.of(
                 pos(1, 10), pos(2, 7), pos(3, 5)
         );
-        SpotifyChartEntry entry = SpotifyChartEntry.builder()
+        return SpotifyChartEntry.builder()
                                                    .track(track)
                                                    .position(5)
                                                    .lastPosition(7)
                                                    .weeksOnChart(3)
                                                    .chartRun(run)
                                                    .build();
-
-        String expected = "05 (07) 3 artist - title [10, 7, 5]";
-        String line = formatter.getLine(entry);
-        assertEquals(expected, line);
     }
 
     private ChartPosition pos(int week, int position) {
