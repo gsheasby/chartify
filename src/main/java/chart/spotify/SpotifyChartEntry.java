@@ -98,4 +98,8 @@ public abstract class SpotifyChartEntry implements ChartEntry {
                 && uri().equals(another.uri())
                 && isYoutube() == another.isYoutube();
     }
+
+    public static ImmutableSpotifyChartEntry.Builder builder() {
+        return ImmutableSpotifyChartEntry.builder();
+    }
 }
