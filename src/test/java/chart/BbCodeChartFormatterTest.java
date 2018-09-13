@@ -5,16 +5,24 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import org.joda.time.DateTime;
+import org.junit.Before;
 import org.junit.Test;
 
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;
 
 public class BbCodeChartFormatterTest {
+    private ChartFormatter delegate;
+    private BbCodeChartFormatter formatter;
+
+    @Before
+    public void setUp() {
+        delegate = mock(ChartFormatter.class);
+        formatter = new BbCodeChartFormatter(delegate);
+    }
+
     @Test
     public void getsHeaderFromDelegate() {
-        ChartFormatter delegate = mock(ChartFormatter.class);
-        BbCodeChartFormatter formatter = new BbCodeChartFormatter(delegate);
         SpotifyChart chart = SpotifyChart.builder()
                                          .week(5)
                                          .date(DateTime.now())
@@ -27,8 +35,6 @@ public class BbCodeChartFormatterTest {
 
     @Test
     public void getsLineFromDelegate() {
-        ChartFormatter delegate = mock(ChartFormatter.class);
-        BbCodeChartFormatter formatter = new BbCodeChartFormatter(delegate);
         SpotifyChartEntry entry = ChartTestUtils.newEntry();
 
         formatter.getLine(entry);
