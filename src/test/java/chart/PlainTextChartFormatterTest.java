@@ -79,12 +79,12 @@ public class PlainTextChartFormatterTest {
                 pos(1, 10), pos(2, 7), pos(3, 5)
         );
         return SpotifyChartEntry.builder()
-                                                   .track(track)
-                                                   .position(5)
-                                                   .lastPosition(7)
-                                                   .weeksOnChart(3)
-                                                   .chartRun(run)
-                                                   .build();
+                                .track(track)
+                                .position(5)
+                                .lastPosition(7)
+                                .weeksOnChart(3)
+                                .chartRun(run)
+                                .build();
     }
 
     private ChartPosition pos(int week, int position) {
