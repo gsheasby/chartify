@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
-import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 
 import chart.spotify.ChartPosition;
@@ -16,18 +15,12 @@ import chart.spotify.SpotifyChartEntry;
 
 public class PlainTextChartFormatterTest {
     private ChartFormatter formatter;
-    private SimpleArtist artist;
     private Track track;
 
     @Before
     public void setUp() {
         formatter = new PlainTextChartFormatter();
-
-        artist = new SimpleArtist();
-        artist.setName("artist");
-        track = new Track();
-        track.setName("title");
-        track.setArtists(ImmutableList.of(artist));
+        track = ChartTestUtils.track();
     }
 
     @Test
@@ -45,11 +38,7 @@ public class PlainTextChartFormatterTest {
 
     @Test
     public void newEntryFormat() {
-        SpotifyChartEntry entry = SpotifyChartEntry.builder()
-                .position(1)
-                .weeksOnChart(1)
-                .track(track)
-                .build();
+        SpotifyChartEntry entry = ChartTestUtils.newEntry();
 
         String expected = "01 (NE) 1 artist - title";
         String line = formatter.getLine(entry);
