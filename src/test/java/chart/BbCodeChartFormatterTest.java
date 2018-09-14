@@ -55,10 +55,18 @@ public class BbCodeChartFormatterTest {
 
     @Test
     public void numberOneShouldBeBold() {
-        SpotifyChartEntry entry = ChartTestUtils.numberOne();
-        String numberOne = "number one";
-        when(delegate.getLine(entry)).thenReturn(numberOne);
-        String expected = "[b]" + numberOne + "[/b]";
+        assertGetLineReturnsBold(ChartTestUtils.numberOne());
+    }
+
+    @Test
+    public void newEntryShouldBeBold() {
+        assertGetLineReturnsBold(ChartTestUtils.newEntry());
+    }
+
+    private void assertGetLineReturnsBold(SpotifyChartEntry entry) {
+        String foo = "foo";
+        when(delegate.getLine(entry)).thenReturn(foo);
+        String expected = "[b]" + foo + "[/b]";
 
         String formettedLine = formatter.getLine(entry);
         assertEquals(expected, formettedLine);

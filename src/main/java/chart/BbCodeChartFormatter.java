@@ -18,15 +18,19 @@ public class BbCodeChartFormatter implements ChartFormatter {
     @Override
     public String getLine(SpotifyChartEntry entry) {
         String rawLine = delegate.getLine(entry);
-        if (entry.position() == 1) {
-            return "[b]" + rawLine + "[/b]";
-        } else {
-            return rawLine;
-        }
+        return shouldBeInBold(entry) ? bold(rawLine) : rawLine;
     }
 
     @Override
     public String getDropoutText(SpotifyChartEntry entry) {
         return delegate.getDropoutText(entry);
+    }
+
+    private boolean shouldBeInBold(SpotifyChartEntry entry) {
+        return entry.position() == 1 || !entry.lastPosition().isPresent();
+    }
+
+    private String bold(String rawLine) {
+        return "[b]" + rawLine + "[/b]";
     }
 }
