@@ -27,7 +27,9 @@ public class BbCodeChartFormatter implements ChartFormatter {
     }
 
     private boolean shouldBeInBold(SpotifyChartEntry entry) {
-        return entry.position() == 1 || !entry.lastPosition().isPresent();
+        return entry.position() == 1
+                || !entry.lastPosition().isPresent()
+                || (entry.position() < entry.lastPosition().get() && entry.lastPosition().get() > 30);
     }
 
     private String bold(String rawLine) {

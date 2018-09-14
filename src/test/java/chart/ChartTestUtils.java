@@ -17,12 +17,16 @@ public class ChartTestUtils {
     }
 
     static SpotifyChartEntry numberOne() {
+        return entry(1, 5);
+    }
+
+    static SpotifyChartEntry entry(int position, int lastPosition) {
         return SpotifyChartEntry.builder()
-                                .position(1)
-                                .lastPosition(5)
+                                .position(position)
+                                .lastPosition(lastPosition)
                                 .weeksOnChart(2)
                                 .track(track())
-                                .chartRun(ImmutableList.of(pos(1, 5), pos(2, 1)))
+                                .chartRun(ImmutableList.of(pos(111, lastPosition), pos(112, position)))
                                 .build();
     }
 

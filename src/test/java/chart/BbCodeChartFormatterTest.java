@@ -63,6 +63,25 @@ public class BbCodeChartFormatterTest {
         assertGetLineReturnsBold(ChartTestUtils.newEntry());
     }
 
+    @Test
+    public void riserOutsideTopThirtyShouldBeBold() {
+        assertGetLineReturnsBold(ChartTestUtils.entry(33, 42));
+    }
+
+    @Test
+    public void riserInsideTopThirtyShouldNotBeBold() {
+        String foo = "foo";
+        SpotifyChartEntry entry = ChartTestUtils.entry(13, 14);
+        when(delegate.getLine(entry)).thenReturn(foo);
+        String formettedLine = formatter.getLine(entry);
+        assertEquals(foo, formettedLine);
+    }
+
+    @Test
+    public void riserIntoTopThirtyShouldBeBold() {
+        assertGetLineReturnsBold(ChartTestUtils.entry(13, 42));
+    }
+
     private void assertGetLineReturnsBold(SpotifyChartEntry entry) {
         String foo = "foo";
         when(delegate.getLine(entry)).thenReturn(foo);
