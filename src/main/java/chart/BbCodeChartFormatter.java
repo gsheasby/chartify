@@ -22,6 +22,6 @@ public class BbCodeChartFormatter implements ChartFormatter {
 
     @Override
     public String getDropoutText(SpotifyChartEntry entry) {
-        return null;
+        return delegate.getDropoutText(entry);
     }
 }
