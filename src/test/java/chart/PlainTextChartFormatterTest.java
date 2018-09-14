@@ -34,7 +34,7 @@ public class PlainTextChartFormatterTest {
     public void newEntryFormat() {
         SpotifyChartEntry entry = ChartTestUtils.newEntry();
 
-        String expected = "01 (NE) 1 artist - title";
+        String expected = "11 (NE) 1 artist - title";
         String line = formatter.getLine(entry);
         assertEquals(expected, line);
     }

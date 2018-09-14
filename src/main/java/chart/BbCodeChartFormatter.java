@@ -17,7 +17,12 @@ public class BbCodeChartFormatter implements ChartFormatter {
 
     @Override
     public String getLine(SpotifyChartEntry entry) {
-        return delegate.getLine(entry);
+        String rawLine = delegate.getLine(entry);
+        if (entry.position() == 1) {
+            return "[b]" + rawLine + "[/b]";
+        } else {
+            return rawLine;
+        }
     }
 
     @Override

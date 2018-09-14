@@ -10,19 +10,20 @@ import chart.spotify.SpotifyChartEntry;
 public class ChartTestUtils {
     static SpotifyChartEntry newEntry() {
         return SpotifyChartEntry.builder()
-                                .position(1)
+                                .position(11)
                                 .weeksOnChart(1)
                                 .track(track())
                                 .build();
     }
 
-    static Track track() {
-        SimpleArtist artist = new SimpleArtist();
-        artist.setName("artist");
-        Track track = new Track();
-        track.setName("title");
-        track.setArtists(ImmutableList.of(artist));
-        return track;
+    static SpotifyChartEntry numberOne() {
+        return SpotifyChartEntry.builder()
+                                .position(1)
+                                .lastPosition(5)
+                                .weeksOnChart(2)
+                                .track(track())
+                                .chartRun(ImmutableList.of(pos(1, 5), pos(2, 1)))
+                                .build();
     }
 
     static SpotifyChartEntry threeWeeks() {
@@ -36,6 +37,15 @@ public class ChartTestUtils {
                                 .weeksOnChart(3)
                                 .chartRun(run)
                                 .build();
+    }
+
+    static Track track() {
+        SimpleArtist artist = new SimpleArtist();
+        artist.setName("artist");
+        Track track = new Track();
+        track.setName("title");
+        track.setArtists(ImmutableList.of(artist));
+        return track;
     }
 
     private static ChartPosition pos(int week, int position) {

@@ -1,8 +1,10 @@
 package chart;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.joda.time.DateTime;
 import org.junit.Before;
@@ -49,5 +51,16 @@ public class BbCodeChartFormatterTest {
         formatter.getDropoutText(entry);
 
         verify(delegate, times(1)).getDropoutText(entry);
+    }
+
+    @Test
+    public void numberOneShouldBeBold() {
+        SpotifyChartEntry entry = ChartTestUtils.numberOne();
+        String numberOne = "number one";
+        when(delegate.getLine(entry)).thenReturn(numberOne);
+        String expected = "[b]" + numberOne + "[/b]";
+
+        String formettedLine = formatter.getLine(entry);
+        assertEquals(expected, formettedLine);
     }
 }
