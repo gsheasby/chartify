@@ -1,8 +1,13 @@
 package chart.postgres;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import com.google.common.base.Preconditions;
+
+import chart.ChartEntry;
 import chart.ChartFormatter;
 import chart.ChartPrinter;
 import chart.spotify.SpotifyChart;
@@ -27,16 +32,31 @@ public class PostgresChartPrinter implements ChartPrinter<SpotifyChart> {
             if (entry.position() <= CUTOFF) {
                 printEntry(entry);
             } else if (wasInLastWeek(entry)) {
-                dropouts.add(entry);
+                dropouts.add(entryToDropout(entry));
             } else if (isBubbler(entry)) {
                 printBubbler(entry);
             }
         }
         System.out.println();
 
+        dropouts.sort(Comparator.comparing(ChartEntry::position));
         for (SpotifyChartEntry dropout : dropouts) {
             printDropout(dropout);
         }
+    }
+
+    private SpotifyChartEntry entryToDropout(SpotifyChartEntry entry) {
+        Preconditions.checkArgument(entry.lastPosition().isPresent(),
+                                    "Dropout must have been in last week!");
+
+        return SpotifyChartEntry.builder()
+                .from(entry)
+                .weeksOnChart(entry.weeksOnChart() - 1)
+                .position(entry.lastPosition().get())
+                .chartRun(entry.chartRun().stream()
+                          .filter(pos -> pos.position() <= CUTOFF)
+                          .collect(Collectors.toList()))
+                .build();
     }
 
     private boolean wasInLastWeek(SpotifyChartEntry entry) {
