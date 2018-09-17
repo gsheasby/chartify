@@ -9,4 +9,6 @@ public interface ChartFormatter {
     String getLine(SpotifyChartEntry entry);
 
     String getDropoutText(SpotifyChartEntry entry);
+
+    String getBubbler(SpotifyChartEntry entry);
 }

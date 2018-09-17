@@ -49,6 +49,15 @@ public class PlainTextChartFormatterTest {
     }
 
     @Test
+    public void bubblerFormat() {
+        SpotifyChartEntry entry = ChartTestUtils.threeWeeks();
+
+        String expected = "-- (--) 3 artist - title";
+        String line = formatter.getBubbler(entry);
+        assertEquals(expected, line);
+    }
+
+    @Test
     public void dropoutFormat() {
         SpotifyChartEntry entry = ChartTestUtils.threeWeeks();
 

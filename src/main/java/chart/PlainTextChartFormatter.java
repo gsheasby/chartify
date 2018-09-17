@@ -47,6 +47,14 @@ public class PlainTextChartFormatter implements ChartFormatter {
                                  getRun(entry.chartRun()));
     }
 
+    @Override
+    public String getBubbler(SpotifyChartEntry entry) {
+        return String.format("-- (--) %d %s - %s",
+                             entry.weeksOnChart(),
+                             entry.artist(),
+                             entry.title());
+    }
+
     private static String getRun(Set<ChartPosition> chartPositions) {
         return chartPositions.stream()
                 .sorted(Comparator.comparingInt(ChartPosition::week))

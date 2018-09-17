@@ -73,8 +73,8 @@ public class BbCodeChartFormatterTest {
         String foo = "foo";
         SpotifyChartEntry entry = ChartTestUtils.entry(13, 14);
         when(delegate.getLine(entry)).thenReturn(foo);
-        String formettedLine = formatter.getLine(entry);
-        assertEquals(foo, formettedLine);
+        String formattedLine = formatter.getLine(entry);
+        assertEquals(foo, formattedLine);
     }
 
     @Test
@@ -82,12 +82,24 @@ public class BbCodeChartFormatterTest {
         assertGetLineReturnsBold(ChartTestUtils.entry(13, 42));
     }
 
+    @Test
+    public void getsBubblerTextFromDelegate() {
+        String foo = "foo";
+        SpotifyChartEntry entry = ChartTestUtils.entry(63, 64);
+        when(delegate.getBubbler(entry)).thenReturn(foo);
+
+        String formattedLine = formatter.getBubbler(entry);
+
+        assertEquals(foo, formattedLine);
+        verify(delegate, times(1)).getBubbler(entry);
+    }
+
     private void assertGetLineReturnsBold(SpotifyChartEntry entry) {
         String foo = "foo";
         when(delegate.getLine(entry)).thenReturn(foo);
         String expected = "[b]" + foo + "[/b]";
 
-        String formettedLine = formatter.getLine(entry);
-        assertEquals(expected, formettedLine);
+        String formattedLine = formatter.getLine(entry);
+        assertEquals(expected, formattedLine);
     }
 }

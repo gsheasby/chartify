@@ -26,6 +26,11 @@ public class BbCodeChartFormatter implements ChartFormatter {
         return delegate.getDropoutText(entry);
     }
 
+    @Override
+    public String getBubbler(SpotifyChartEntry entry) {
+        return delegate.getBubbler(entry);
+    }
+
     private boolean shouldBeInBold(SpotifyChartEntry entry) {
         return entry.position() == 1
                 || !entry.lastPosition().isPresent()
