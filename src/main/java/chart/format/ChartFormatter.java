@@ -1,4 +1,4 @@
-package chart;
+package chart.format;
 
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;

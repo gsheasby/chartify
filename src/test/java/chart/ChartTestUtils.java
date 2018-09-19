@@ -8,7 +8,7 @@ import chart.spotify.ChartPosition;
 import chart.spotify.SpotifyChartEntry;
 
 public class ChartTestUtils {
-    static SpotifyChartEntry newEntry() {
+    public static SpotifyChartEntry newEntry() {
         return SpotifyChartEntry.builder()
                                 .position(11)
                                 .weeksOnChart(1)
@@ -30,7 +30,7 @@ public class ChartTestUtils {
                                 .build();
     }
 
-    static SpotifyChartEntry threeWeeks() {
+    public static SpotifyChartEntry threeWeeks() {
         Iterable<ChartPosition> run = ImmutableList.of(
                 pos(1, 10), pos(2, 7), pos(3, 5)
         );
@@ -43,7 +43,7 @@ public class ChartTestUtils {
                                 .build();
     }
 
-    static Track track() {
+    private static Track track() {
         SimpleArtist artist = new SimpleArtist();
         artist.setName("artist");
         Track track = new Track();

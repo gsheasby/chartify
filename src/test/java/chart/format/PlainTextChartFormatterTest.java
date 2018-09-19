@@ -1,4 +1,4 @@
-package chart;
+package chart.format;
 
 import static org.junit.Assert.assertEquals;
 
@@ -6,6 +6,7 @@ import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 
+import chart.ChartTestUtils;
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;
 

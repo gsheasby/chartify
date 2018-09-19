@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import com.google.common.base.Preconditions;
 
 import chart.ChartEntry;
-import chart.ChartFormatter;
+import chart.format.ChartFormatter;
 import chart.ChartPrinter;
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;

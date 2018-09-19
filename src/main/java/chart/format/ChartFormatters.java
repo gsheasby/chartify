@@ -1,4 +1,4 @@
-package chart;
+package chart.format;
 
 public class ChartFormatters {
     private ChartFormatters() {

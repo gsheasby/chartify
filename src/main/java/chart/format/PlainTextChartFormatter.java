@@ -1,4 +1,4 @@
-package chart;
+package chart.format;
 
 import java.util.Comparator;
 import java.util.Set;

@@ -10,6 +10,8 @@ import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 
+import chart.format.BbCodeChartFormatter;
+import chart.format.ChartFormatter;
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;
 

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import chart.ChartConfig;
-import chart.ChartFormatters;
+import chart.format.ChartFormatters;
 import chart.postgres.PostgresChartCompiler;
 import chart.postgres.PostgresChartPrinter;
 import chart.postgres.PostgresChartReader;
