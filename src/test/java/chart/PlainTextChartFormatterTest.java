@@ -14,7 +14,7 @@ public class PlainTextChartFormatterTest {
 
     @Before
     public void setUp() {
-        formatter = new PlainTextChartFormatter();
+        formatter = new PlainTextChartFormatter(true);
     }
 
     @Test

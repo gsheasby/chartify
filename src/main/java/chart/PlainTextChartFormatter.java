@@ -13,11 +13,7 @@ import chart.spotify.SpotifyChartEntry;
 public class PlainTextChartFormatter implements ChartFormatter {
     private final boolean printRunsForSongsInChart;
 
-    public PlainTextChartFormatter() {
-        this(true);
-    }
-
-    public PlainTextChartFormatter(boolean printRunsForSongsInChart) {
+    PlainTextChartFormatter(boolean printRunsForSongsInChart) {
         this.printRunsForSongsInChart = printRunsForSongsInChart;
     }
 
