@@ -4,11 +4,23 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.google.common.base.Preconditions;
+
 import chart.spotify.ChartPosition;
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;
 
 public class PlainTextChartFormatter implements ChartFormatter {
+    private final boolean printRunsForSongsInChart;
+
+    public PlainTextChartFormatter() {
+        this(true);
+    }
+
+    public PlainTextChartFormatter(boolean printRunsForSongsInChart) {
+        this.printRunsForSongsInChart = printRunsForSongsInChart;
+    }
+
     @Override
     public String getHeader(SpotifyChart chart) {
         return String.format("Week %d: %s",
@@ -18,23 +30,31 @@ public class PlainTextChartFormatter implements ChartFormatter {
 
     @Override
     public String getLine(SpotifyChartEntry entry) {
-        String s;
-        if (entry.lastPosition().isPresent()) {
-            s = String.format("%02d (%02d) %d %s - %s [%s]",
-                              entry.position(),
-                              entry.lastPosition().get(),
-                              entry.weeksOnChart(),
-                              entry.artist(),
-                              entry.title(),
-                              getRun(entry.chartRun()));
-        } else {
-            s = String.format("%02d (NE) %d %s - %s",
-                              entry.position(),
-                              entry.weeksOnChart(),
-                              entry.artist(),
-                              entry.title());
-        }
-        return s;
+        return entry.lastPosition().isPresent()
+                ? getLineForEntryFromLastWeek(entry)
+                : String.format("%02d (NE) %d %s - %s",
+                                entry.position(),
+                                entry.weeksOnChart(),
+                                entry.artist(),
+                                entry.title());
+    }
+
+    private String getLineForEntryFromLastWeek(SpotifyChartEntry entry) {
+        Preconditions.checkArgument(entry.lastPosition().isPresent(), "Expected lastPosition to be present!");
+        return printRunsForSongsInChart
+                ? String.format("%02d (%02d) %d %s - %s [%s]",
+                                entry.position(),
+                                entry.lastPosition().get(),
+                                entry.weeksOnChart(),
+                                entry.artist(),
+                                entry.title(),
+                                getRun(entry.chartRun()))
+                : String.format("%02d (%02d) %d %s - %s",
+                                entry.position(),
+                                entry.lastPosition().get(),
+                                entry.weeksOnChart(),
+                                entry.artist(),
+                                entry.title());
     }
 
     @Override

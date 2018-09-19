@@ -49,6 +49,16 @@ public class PlainTextChartFormatterTest {
     }
 
     @Test
+    public void lastPositionFormatWhenOmittingChartRun() {
+        ChartFormatter noRunFormatter = new PlainTextChartFormatter(false);
+        SpotifyChartEntry entry = ChartTestUtils.threeWeeks();
+
+        String expected = "05 (07) 3 artist - title";
+        String line = noRunFormatter.getLine(entry);
+        assertEquals(expected, line);
+    }
+
+    @Test
     public void bubblerFormat() {
         SpotifyChartEntry entry = ChartTestUtils.threeWeeks();
 
