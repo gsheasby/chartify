@@ -6,4 +6,8 @@ import org.immutables.value.Value;
 public abstract class ChartPosition {
     public abstract int week();
     public abstract int position();
+
+    public static ImmutableChartPosition.Builder builder() {
+        return ImmutableChartPosition.builder();
+    }
 }

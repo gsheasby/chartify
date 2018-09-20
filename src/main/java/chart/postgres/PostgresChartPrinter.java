@@ -1,67 +1,85 @@
 package chart.postgres;
 
+import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
+import com.google.common.base.Preconditions;
+
+import chart.ChartEntry;
+import chart.format.ChartFormatter;
 import chart.ChartPrinter;
-import chart.spotify.ChartPosition;
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;
 
 public class PostgresChartPrinter implements ChartPrinter<SpotifyChart> {
+    private static final int CUTOFF = 60;
+
+    private final ChartFormatter formatter;
+
+    public PostgresChartPrinter(ChartFormatter formatter) {
+        this.formatter = formatter;
+    }
 
     @Override
     public void print(SpotifyChart chart) {
-        System.out.println(String.format("Week %d: %s",
-                                         chart.week(),
-                                         chart.date().toString("EEEE, MMMM dd, yyyy")));
+        printChartHeader(chart);
         System.out.println();
 
+        List<SpotifyChartEntry> dropouts = new ArrayList<>(chart.dropouts());
         for (SpotifyChartEntry entry : chart.entries()) {
-            printEntry(entry);
+            if (entry.position() <= CUTOFF) {
+                printEntry(entry);
+            } else if (wasInLastWeek(entry)) {
+                dropouts.add(entryToDropout(entry));
+            } else if (isBubbler(entry)) {
+                printBubbler(entry);
+            }
         }
         System.out.println();
 
-        for (SpotifyChartEntry dropout : chart.dropouts()) {
+        dropouts.sort(Comparator.comparing(ChartEntry::position));
+        for (SpotifyChartEntry dropout : dropouts) {
             printDropout(dropout);
         }
     }
 
-    private static void printEntry(SpotifyChartEntry entry) {
-        String s;
-        if (entry.lastPosition().isPresent()) {
-            s = String.format("%02d (%02d) %d %s - %s [%s]",
-                              entry.position(),
-                              entry.lastPosition().get(),
-                              entry.weeksOnChart(),
-                              entry.artist(),
-                              entry.title(),
-                              getRun(entry.chartRun()));
-        } else {
-            s = String.format("%02d (NE) %d %s - %s",
-                              entry.position(),
-                              entry.weeksOnChart(),
-                              entry.artist(),
-                              entry.title());
-        }
-        System.out.println(s);
+    private void printChartHeader(SpotifyChart chart) {
+        System.out.println(formatter.getHeader(chart));
     }
 
-    private static void printDropout(SpotifyChartEntry entry) {
-        String s = String.format("-- (%02d) %d %s - %s [%s]",
-                                 entry.position(),
-                                 entry.weeksOnChart(),
-                                 entry.artist(),
-                                 entry.title(),
-                                 getRun(entry.chartRun()));
-        System.out.println(s);
+    private void printEntry(SpotifyChartEntry entry) {
+        System.out.println(formatter.getLine(entry));
     }
 
-    private static String getRun(Set<ChartPosition> chartPositions) {
-        return chartPositions.stream()
-                .sorted(Comparator.comparingInt(ChartPosition::week))
-                .map(pos -> Integer.toString(pos.position()))
-                .collect(Collectors.joining(", "));
+    private boolean wasInLastWeek(SpotifyChartEntry entry) {
+        return entry.lastPosition().isPresent() && entry.lastPosition().get() <= CUTOFF;
+    }
+
+    private SpotifyChartEntry entryToDropout(SpotifyChartEntry entry) {
+        Preconditions.checkArgument(entry.lastPosition().isPresent(),
+                                    "Dropout must have been in last week!");
+
+        return SpotifyChartEntry.builder()
+                .from(entry)
+                .weeksOnChart(entry.weeksOnChart() - 1)
+                .position(entry.lastPosition().get())
+                .chartRun(entry.chartRun().stream()
+                          .filter(pos -> pos.position() <= CUTOFF)
+                          .collect(Collectors.toList()))
+                .build();
+    }
+
+    private boolean isBubbler(SpotifyChartEntry entry) {
+        return entry.chartRun().stream().noneMatch(pos -> pos.position() <= CUTOFF);
+    }
+
+    private void printBubbler(SpotifyChartEntry entry) {
+        System.out.println(formatter.getBubbler(entry));
+    }
+
+    private void printDropout(SpotifyChartEntry entry) {
+        System.out.println(formatter.getDropoutText(entry));
     }
 }

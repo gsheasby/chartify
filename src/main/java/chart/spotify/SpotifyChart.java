@@ -22,4 +22,8 @@ public abstract class SpotifyChart implements Chart {
                              .dropouts(augmentor.augmentList(chart.dropouts()))
                              .build();
     }
+
+    public static ImmutableSpotifyChart.Builder builder() {
+        return ImmutableSpotifyChart.builder();
+    }
 }

@@ -3,11 +3,12 @@ package chart.tasks;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import chart.BasicChartPrinter;
 import chart.ChartConfig;
+import chart.format.ChartFormatters;
 import chart.DualChartSaver;
 import chart.csv.CsvChartSaver;
 import chart.postgres.PostgresChartCompiler;
+import chart.postgres.PostgresChartPrinter;
 import chart.postgres.PostgresChartReader;
 import chart.postgres.PostgresChartSaver;
 import chart.postgres.PostgresConnection;
@@ -28,7 +29,7 @@ public class ChartCompilationTask {
 
         CsvChartSaver csvChartSaver = new CsvChartSaver(config.csvDestination());
         PostgresChartSaver chartSaver = new PostgresChartSaver(connection);
-        new BasicChartPrinter().print(chart);
+        new PostgresChartPrinter(ChartFormatters.forum()).print(chart);
         new DualChartSaver(csvChartSaver, chartSaver).saveChart(chart);
     }
 }
