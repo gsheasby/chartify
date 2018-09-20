@@ -45,6 +45,18 @@ public class PostgresChartPrinter implements ChartPrinter<SpotifyChart> {
         }
     }
 
+    private void printChartHeader(SpotifyChart chart) {
+        System.out.println(formatter.getHeader(chart));
+    }
+
+    private void printEntry(SpotifyChartEntry entry) {
+        System.out.println(formatter.getLine(entry));
+    }
+
+    private boolean wasInLastWeek(SpotifyChartEntry entry) {
+        return entry.lastPosition().isPresent() && entry.lastPosition().get() <= CUTOFF;
+    }
+
     private SpotifyChartEntry entryToDropout(SpotifyChartEntry entry) {
         Preconditions.checkArgument(entry.lastPosition().isPresent(),
                                     "Dropout must have been in last week!");
@@ -59,20 +71,8 @@ public class PostgresChartPrinter implements ChartPrinter<SpotifyChart> {
                 .build();
     }
 
-    private boolean wasInLastWeek(SpotifyChartEntry entry) {
-        return entry.lastPosition().isPresent() && entry.lastPosition().get() <= CUTOFF;
-    }
-
     private boolean isBubbler(SpotifyChartEntry entry) {
         return entry.chartRun().stream().noneMatch(pos -> pos.position() <= CUTOFF);
-    }
-
-    private void printChartHeader(SpotifyChart chart) {
-        System.out.println(formatter.getHeader(chart));
-    }
-
-    private void printEntry(SpotifyChartEntry entry) {
-        System.out.println(formatter.getLine(entry));
     }
 
     private void printBubbler(SpotifyChartEntry entry) {

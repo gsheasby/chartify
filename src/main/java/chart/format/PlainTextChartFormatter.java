@@ -20,8 +20,8 @@ public class PlainTextChartFormatter implements ChartFormatter {
     @Override
     public String getHeader(SpotifyChart chart) {
         return String.format("Week %d: %s",
-                                         chart.week(),
-                                         chart.date().toString("EEEE, MMMM dd, yyyy"));
+                             chart.week(),
+                             chart.date().toString("EEEE, MMMM dd, yyyy"));
     }
 
     @Override
