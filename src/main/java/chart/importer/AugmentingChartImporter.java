@@ -4,6 +4,7 @@ import chart.ChartConfig;
 import chart.csv.CsvChart;
 import chart.csv.FileChartReader;
 import chart.postgres.PostgresChartSaver;
+import chart.spotify.IdLookupAugmentor;
 import chart.spotify.SpotifyAugmentor;
 import chart.spotify.SpotifyChart;
 
@@ -24,7 +25,7 @@ public class AugmentingChartImporter {
     public static AugmentingChartImporter create(ChartConfig config) throws SQLException, ClassNotFoundException {
         FileChartReader reader = new FileChartReader(config.csvDestination());
         PostgresChartSaver saver = PostgresChartSaver.create(config.postgresConfig());
-        SpotifyAugmentor augmentor = SpotifyAugmentor.create(config.spotifyConfig());
+        SpotifyAugmentor augmentor = IdLookupAugmentor.create(config.spotifyConfig());
         return new AugmentingChartImporter(reader, saver, augmentor);
     }
 

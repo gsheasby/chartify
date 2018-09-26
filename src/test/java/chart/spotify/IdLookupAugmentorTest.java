@@ -1,25 +1,23 @@
 package chart.spotify;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-
+import chart.csv.CsvChartEntry;
+import chart.csv.ImmutableCsvChartEntry;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
+import org.junit.Before;
+import org.junit.Test;
 
-import chart.csv.CsvChartEntry;
-import chart.csv.ImmutableCsvChartEntry;
+import java.util.List;
 
-public class SpotifyAugmentorTest {
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+public class IdLookupAugmentorTest {
     // TODO lots of stuff copied from SpotifyChartEntryTest
     private static final int POSITION = 1;
     private static final int WEEKS = 2;
@@ -35,7 +33,7 @@ public class SpotifyAugmentorTest {
     private Track track;
     private SpotifyApi api;
     private SpotifyConfig config;
-    private SpotifyAugmentor augmentor;
+    private IdLookupAugmentor augmentor;
 
     @Before
     public void setUp() {
@@ -46,7 +44,7 @@ public class SpotifyAugmentorTest {
 
         api = mock(SpotifyApi.class);
         config = mock(SpotifyConfig.class);
-        augmentor = new SpotifyAugmentor(api, config);
+        augmentor = new IdLookupAugmentor(api, config);
     }
 
     private Track canonicalTrack() {
