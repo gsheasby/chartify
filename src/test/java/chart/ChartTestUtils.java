@@ -8,6 +8,12 @@ import chart.spotify.ChartPosition;
 import chart.spotify.SpotifyChartEntry;
 
 public class ChartTestUtils {
+    public static final String ARTIST = "Artist";
+    public static final String TITLE = "Title";
+    public static final String ID = "id";
+    public static final String HREF = "href";
+    public static final String URI = "uri";
+
     public static SpotifyChartEntry newEntry() {
         return SpotifyChartEntry.builder()
                                 .position(11)
@@ -43,12 +49,15 @@ public class ChartTestUtils {
                                 .build();
     }
 
-    private static Track track() {
+    public static Track track() {
         SimpleArtist artist = new SimpleArtist();
         artist.setName("artist");
         Track track = new Track();
         track.setName("title");
         track.setArtists(ImmutableList.of(artist));
+        track.setId(ID);
+        track.setHref(HREF);
+        track.setUri(URI);
         return track;
     }
 

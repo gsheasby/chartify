@@ -1,5 +1,6 @@
 package chart.spotify;
 
+import chart.ChartTestUtils;
 import chart.csv.CsvChartEntry;
 import chart.csv.ImmutableCsvChartEntry;
 import com.google.common.collect.ImmutableList;
@@ -18,15 +19,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class IdLookupAugmentorTest {
-    // TODO lots of stuff copied from SpotifyChartEntryTest
     private static final int POSITION = 1;
     private static final int WEEKS = 2;
     private static final int LAST_POSITION = 3;
-    private static final String ARTIST = "Artist";
-    private static final String TITLE = "Title";
-    private static final String ID = "id";
-    private static final String HREF = "href";
-    private static final String URI = "uri";
     private static final String YOUTUBE_TITLE = "youtube song";
 
     private SimpleArtist artist;
@@ -38,23 +33,13 @@ public class IdLookupAugmentorTest {
     @Before
     public void setUp() {
         artist = new SimpleArtist();
-        artist.setName(ARTIST);
+        artist.setName(ChartTestUtils.ARTIST);
 
-        track = canonicalTrack();
+        track = ChartTestUtils.track();
 
         api = mock(SpotifyApi.class);
         config = mock(SpotifyConfig.class);
         augmentor = new IdLookupAugmentor(api, config);
-    }
-
-    private Track canonicalTrack() {
-        Track canonical = new Track();
-        canonical.setName(TITLE);
-        canonical.setArtists(ImmutableList.of(artist));
-        canonical.setId(ID);
-        canonical.setHref(HREF);
-        canonical.setUri(URI);
-        return canonical;
     }
 
     @Test
@@ -62,7 +47,7 @@ public class IdLookupAugmentorTest {
         CsvChartEntry csvChartEntry = canonicalCsvEntry();
         SpotifyChartEntry expected = canonicalEntry();
 
-        when(api.getTrack(ID)).thenReturn(canonicalTrack());
+        when(api.getTrack(ChartTestUtils.ID)).thenReturn(ChartTestUtils.track());
 
         SpotifyChartEntry entry = augmentor.augment(csvChartEntry);
 
@@ -74,8 +59,8 @@ public class IdLookupAugmentorTest {
         CsvChartEntry csvChartEntry = canonicalCsvEntry();
         SpotifyChartEntry expected = canonicalEntry();
 
-        when(api.getTracks(ImmutableList.of(ID)))
-                .thenReturn(ImmutableList.of(canonicalTrack()));
+        when(api.getTracks(ImmutableList.of(ChartTestUtils.ID)))
+                .thenReturn(ImmutableList.of(ChartTestUtils.track()));
 
         SpotifyChartEntry entry = Iterables.getOnlyElement(
                 augmentor.augmentList(ImmutableList.of(csvChartEntry)));
@@ -86,7 +71,7 @@ public class IdLookupAugmentorTest {
     @Test
     public void augmentListAppliesYoutubeMapping() {
         setUpYoutubeMapping();
-        when(api.getTracks(ImmutableList.of(ID))).thenReturn(ImmutableList.of());
+        when(api.getTracks(ImmutableList.of(ChartTestUtils.ID))).thenReturn(ImmutableList.of());
         when(api.getTracks(ImmutableList.of())).thenReturn(ImmutableList.of());
 
         SpotifyChartEntry expected = getYoutubeEntry();
@@ -99,7 +84,7 @@ public class IdLookupAugmentorTest {
     @Test
     public void augmentAppliesYoutubeMapping() {
         setUpYoutubeMapping();
-        when(api.getTrack(ID)).thenThrow(new RuntimeException("uh oh"));
+        when(api.getTrack(ChartTestUtils.ID)).thenThrow(new RuntimeException("uh oh"));
 
         SpotifyChartEntry expected = getYoutubeEntry();
         CsvChartEntry entry = canonicalCsvEntry();
@@ -119,8 +104,8 @@ public class IdLookupAugmentorTest {
 
     private SpotifyChartEntry getYoutubeEntry() {
         Track youtubeTrack = new Track();
-        String href = "http://www.youtube.com/watch?v=" + ID;
-        youtubeTrack.setId(ID);
+        String href = "http://www.youtube.com/watch?v=" + ChartTestUtils.ID;
+        youtubeTrack.setId(ChartTestUtils.ID);
         youtubeTrack.setName(YOUTUBE_TITLE);
         youtubeTrack.setArtists(ImmutableList.of(artist));
         youtubeTrack.setHref(href);
@@ -137,7 +122,7 @@ public class IdLookupAugmentorTest {
 
     private void setUpYoutubeMapping() {
         YoutubeMapping mapping = ImmutableYoutubeMapping.builder()
-                                                        .id(ID)
+                                                        .id(ChartTestUtils.ID)
                                                         .title(YOUTUBE_TITLE)
                                                         .artist(artist.getName())
                                                         .build();
@@ -149,11 +134,11 @@ public class IdLookupAugmentorTest {
                                      .position(POSITION)
                                      .weeksOnChart(WEEKS)
                                      .lastPosition(LAST_POSITION)
-                                     .artist(ARTIST)
-                                     .title(TITLE)
-                                     .id(ID)
-                                     .href(HREF)
-                                     .uri(URI)
+                                     .artist(ChartTestUtils.ARTIST)
+                                     .title(ChartTestUtils.TITLE)
+                                     .id(ChartTestUtils.ID)
+                                     .href(ChartTestUtils.HREF)
+                                     .uri(ChartTestUtils.URI)
                                      .build();
     }
 }

@@ -1,34 +1,25 @@
 package chart.spotify;
 
-import static org.junit.Assert.assertNotEquals;
-
+import chart.ChartTestUtils;
+import com.wrapper.spotify.models.Track;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
-import com.wrapper.spotify.models.SimpleArtist;
-import com.wrapper.spotify.models.Track;
+import static org.junit.Assert.assertNotEquals;
 
 public class SpotifyChartEntryTest {
     private static final int POSITION = 1;
     private static final int WEEKS = 2;
     private static final int LAST_POSITION = 3;
-    private static final String ARTIST = "Artist";
-    private static final String TITLE = "Title";
-    private static final String ID = "id";
-    private static final String HREF = "href";
-    private static final String URI = "uri";
+    private static final String ID = ChartTestUtils.ID;
+    private static final String HREF = ChartTestUtils.HREF;
+    private static final String URI = ChartTestUtils.URI;
 
-    private SimpleArtist artist;
-    private Track track;
     private SpotifyChartEntry canonical;
 
     @Before
     public void setUp() {
-        artist = new SimpleArtist();
-        artist.setName(ARTIST);
-
-        track = canonicalTrack();
+        Track track = ChartTestUtils.track();
 
         canonical = ImmutableSpotifyChartEntry.builder()
                                               .track(track)
@@ -38,19 +29,9 @@ public class SpotifyChartEntryTest {
                                               .build();
     }
 
-    private Track canonicalTrack() {
-        Track canonical = new Track();
-        canonical.setName(TITLE);
-        canonical.setArtists(ImmutableList.of(artist));
-        canonical.setId(ID);
-        canonical.setHref(HREF);
-        canonical.setUri(URI);
-        return canonical;
-    }
-
     @Test
     public void testEquals_unequalId() {
-        Track trackWithDifferentId = canonicalTrack();
+        Track trackWithDifferentId = ChartTestUtils.track();
         trackWithDifferentId.setId(ID + "2");
         SpotifyChartEntry differentId = ImmutableSpotifyChartEntry.builder()
                                                                   .from(canonical)
@@ -61,7 +42,7 @@ public class SpotifyChartEntryTest {
 
     @Test
     public void testEquals_unequalHref() {
-        Track trackWithDifferentHref = canonicalTrack();
+        Track trackWithDifferentHref = ChartTestUtils.track();
         trackWithDifferentHref.setHref(HREF + "2");
         SpotifyChartEntry differentHref = ImmutableSpotifyChartEntry.builder()
                 .from(canonical)
@@ -72,7 +53,7 @@ public class SpotifyChartEntryTest {
 
     @Test
     public void testEquals_unequalUri() {
-        Track trackWithDifferentUri = canonicalTrack();
+        Track trackWithDifferentUri = ChartTestUtils.track();
         trackWithDifferentUri.setUri(URI + "2");
         SpotifyChartEntry differentHref = ImmutableSpotifyChartEntry.builder()
                 .from(canonical)
