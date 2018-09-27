@@ -1,9 +1,5 @@
 package chart.spotify;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.wrapper.spotify.Api;
@@ -11,11 +7,17 @@ import com.wrapper.spotify.exceptions.WebApiException;
 import com.wrapper.spotify.methods.ArtistSearchRequest;
 import com.wrapper.spotify.methods.PlaylistRequest;
 import com.wrapper.spotify.methods.TrackRequest;
+import com.wrapper.spotify.methods.TrackSearchRequest;
 import com.wrapper.spotify.methods.TracksRequest;
 import com.wrapper.spotify.models.Artist;
 import com.wrapper.spotify.models.ClientCredentials;
+import com.wrapper.spotify.models.Page;
 import com.wrapper.spotify.models.Playlist;
 import com.wrapper.spotify.models.Track;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 class SpotifyApi {
     private final Api api;
@@ -55,11 +57,28 @@ class SpotifyApi {
         }
     }
 
+    Track getTrack(String title, String artist) {
+        TrackSearchRequest request = api.searchTracks(title).build();
+        try {
+            Page<Track> trackPage = request.get();
+            for (Track item : trackPage.getItems()) {
+                boolean sameTitle = item.getName().equalsIgnoreCase(title);
+                boolean sameArtist = item.getArtists().stream().anyMatch(a -> a.getName().equalsIgnoreCase(artist));
+                if (sameTitle && sameArtist) {
+                    return item;
+                }
+                // TODO have some measure of edit distance?
+            }
+        } catch (IOException | WebApiException e) {
+            throw new RuntimeException("Couldn't get track " + title, e);
+        }
+    }
+
     Artist getArtist(String name) throws IOException, WebApiException {
         ArtistSearchRequest request = api.searchArtists(name).build();
         List<Artist> items = request.get().getItems();
         List<Artist> exactMatches = items.stream()
-                                         .filter(artist -> artist.getName().equals(name))
+                                         .filter(artist -> artist.getName().equalsIgnoreCase(name))
                                          .collect(Collectors.toList());
 
         if (exactMatches.isEmpty()) {
