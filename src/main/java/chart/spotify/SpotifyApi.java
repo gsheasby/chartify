@@ -72,6 +72,8 @@ class SpotifyApi {
         } catch (IOException | WebApiException e) {
             throw new RuntimeException("Couldn't get track " + title, e);
         }
+
+        throw new IllegalStateException("Couldn't find exact matches for track " + title);
     }
 
     Artist getArtist(String name) throws IOException, WebApiException {
