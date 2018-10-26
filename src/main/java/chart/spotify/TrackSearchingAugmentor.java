@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 /**
  *  For importing from CSV files in the older format, without ID/Href/Uri.
- *  In this case, we must search Spotify for both the artist and the title.
+ *  In this case, we must search Postgres or Spotify for both the artist and the title.
  */
 public class TrackSearchingAugmentor implements SpotifyAugmentor {
     private final SpotifyApi api;
@@ -36,6 +36,12 @@ public class TrackSearchingAugmentor implements SpotifyAugmentor {
 
     @Override
     public SpotifyChartEntry augment(ChartEntry entry) {
+        return fetchFromPostgres(entry).orElseGet(() -> fetchFromSpotify(entry));
+
+    }
+
+    private Optional<SpotifyChartEntry> fetchFromPostgres(ChartEntry entry) {
+        Optional<SpotifyChartEntry> postgresEntry = Optional.empty();
         Optional<ArtistRecord> artist = connection.getArtist(entry.artist());
 
         if (artist.isPresent()) {
@@ -45,10 +51,14 @@ public class TrackSearchingAugmentor implements SpotifyAugmentor {
                 SimpleArtist simpleArtist = artist.get().simpleArtist();
                 Track track = maybeTrack.get().track(ImmutableList.of(simpleArtist));
 
-                return SpotifyChartEntry.builder().from(entry).track(track).build();
+                SpotifyChartEntry spotifyChartEntry = SpotifyChartEntry.builder().from(entry).track(track).build();
+                postgresEntry = Optional.of(spotifyChartEntry);
             }
         }
+        return postgresEntry;
+    }
 
+    private SpotifyChartEntry fetchFromSpotify(ChartEntry entry) {
         Track track = api.getTrack(entry.title(), entry.artist());
         return SpotifyChartEntry.builder().from(entry).track(track).build();
     }
