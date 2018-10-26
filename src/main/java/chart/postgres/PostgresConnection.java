@@ -1,5 +1,25 @@
 package chart.postgres;
 
+import chart.postgres.raw.ArtistRecord;
+import chart.postgres.raw.ChartEntryRecord;
+import chart.postgres.raw.ImmutableArtistRecord;
+import chart.postgres.raw.ImmutableChartEntryRecord;
+import chart.postgres.raw.ImmutableTrackArtistRecord;
+import chart.postgres.raw.ImmutableTrackPositionRecord;
+import chart.postgres.raw.ImmutableTrackRecord;
+import chart.postgres.raw.TrackArtistRecord;
+import chart.postgres.raw.TrackPositionRecord;
+import chart.postgres.raw.TrackRecord;
+import chart.spotify.SpotifyChart;
+import chart.spotify.SpotifyChartEntry;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.wrapper.spotify.models.SimpleArtist;
+import com.wrapper.spotify.models.Track;
+import javafx.util.Pair;
+import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,25 +31,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang.StringUtils;
-import org.joda.time.DateTime;
-
-import com.google.common.collect.Lists;
-import com.wrapper.spotify.models.SimpleArtist;
-import com.wrapper.spotify.models.Track;
-
-import chart.postgres.raw.ArtistRecord;
-import chart.postgres.raw.ChartEntryRecord;
-import chart.postgres.raw.ImmutableChartEntryRecord;
-import chart.postgres.raw.TrackPositionRecord;
-import chart.postgres.raw.ImmutableArtistRecord;
-import chart.postgres.raw.ImmutableTrackPositionRecord;
-import chart.postgres.raw.ImmutableTrackArtistRecord;
-import chart.postgres.raw.TrackArtistRecord;
-import chart.spotify.SpotifyChart;
-import chart.spotify.SpotifyChartEntry;
-import javafx.util.Pair;
 
 public class PostgresConnection {
     private final PostgresConnectionManager manager;
@@ -280,6 +281,38 @@ public class PostgresConnection {
 
         List<ArtistRecord> entries = executeSelectStatement(sql, this::createSimpleArtist);
         return entries.stream().collect(Collectors.toMap(ArtistRecord::id, artist -> artist));
+    }
+
+    public Optional<ArtistRecord> getArtist(String artistName) {
+        String sql = "SELECT id, name, href, uri, is_youtube FROM artists" +
+                "    WHERE name = " + artistName;
+
+        List<ArtistRecord> artists = executeSelectStatement(sql, this::createSimpleArtist);
+        return artists.isEmpty() ? Optional.empty() : Optional.of(Iterables.getOnlyElement(artists));
+    }
+
+    public Optional<TrackRecord> getTrack(String title, String artistId) {
+        String sql = "SELECT t.id, t.name, t.href, t.uri. t.is_youtube FROM tracks" +
+                "     JOIN trackArtists ta ON t.id = ta.track_id" +
+                "     WHERE ta.artist_id = " + artistId +
+                "     AND t.name = " + title;
+
+        List<TrackRecord> tracks = executeSelectStatement(sql, this::createTrackRecord);
+        return tracks.isEmpty() ? Optional.empty() : Optional.of(Iterables.getOnlyElement(tracks));
+    }
+
+    private TrackRecord createTrackRecord(ResultSet resultSet) {
+        try {
+            return ImmutableTrackRecord.builder()
+                    .id(resultSet.getString("id"))
+                    .name(resultSet.getString("name"))
+                    .href(resultSet.getString("href"))
+                    .uri(resultSet.getString("uri"))
+                    .is_youtube(resultSet.getBoolean("is_youtube"))
+                    .build();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to create track!", e);
+        }
     }
 
     private ArtistRecord createSimpleArtist(ResultSet resultSet) {

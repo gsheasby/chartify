@@ -1,5 +1,7 @@
 package chart;
 
+import chart.csv.CsvChartEntry;
+import chart.csv.ImmutableCsvChartEntry;
 import com.google.common.collect.ImmutableList;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
@@ -26,7 +28,7 @@ public class ChartTestUtils {
         return entry(1, 5);
     }
 
-    static SpotifyChartEntry entry(int position, int lastPosition) {
+    public static SpotifyChartEntry entry(int position, int lastPosition) {
         return SpotifyChartEntry.builder()
                                 .position(position)
                                 .lastPosition(lastPosition)
@@ -36,12 +38,23 @@ public class ChartTestUtils {
                                 .build();
     }
 
+    public static CsvChartEntry csvChartEntry(int position, int lastPosition) {
+        return ImmutableCsvChartEntry.builder()
+                .title(track().getName())
+                .artist(track().getArtists().get(0).getName())
+                .position(position)
+                .lastPosition(lastPosition)
+                .weeksOnChart(2)
+                .build();
+    }
+
+
     public static SpotifyChartEntry threeWeeks() {
         Iterable<ChartPosition> run = ImmutableList.of(
                 pos(1, 10), pos(2, 7), pos(3, 5)
         );
         return SpotifyChartEntry.builder()
-                                .track(ChartTestUtils.track())
+                                .track(track())
                                 .position(5)
                                 .lastPosition(7)
                                 .weeksOnChart(3)
@@ -50,15 +63,22 @@ public class ChartTestUtils {
     }
 
     public static Track track() {
-        SimpleArtist artist = new SimpleArtist();
-        artist.setName("artist");
         Track track = new Track();
         track.setName("title");
-        track.setArtists(ImmutableList.of(artist));
+        track.setArtists(ImmutableList.of(artist()));
         track.setId(ID);
         track.setHref(HREF);
         track.setUri(URI);
         return track;
+    }
+
+    public static SimpleArtist artist() {
+        SimpleArtist artist = new SimpleArtist();
+        artist.setName("artist");
+        artist.setId(ID);
+        artist.setHref(HREF);
+        artist.setUri(URI);
+        return artist;
     }
 
     private static ChartPosition pos(int week, int position) {
