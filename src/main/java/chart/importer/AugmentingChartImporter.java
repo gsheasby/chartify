@@ -44,7 +44,7 @@ public class AugmentingChartImporter {
     }
 
     public void importCharts(int fromWeek, int toWeek) throws IOException {
-        for (int week = fromWeek; week <= toWeek; week++) {
+        for (int week = toWeek; week >= fromWeek; week--) {
             System.out.println("Importing chart " + week);
             CsvChart chart = reader.findDerivedChart(week);
             SpotifyChart spotifyChart = SpotifyChart.augment(chart, augmentor);
