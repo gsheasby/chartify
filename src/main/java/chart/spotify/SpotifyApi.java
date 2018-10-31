@@ -19,11 +19,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-class SpotifyApi {
+public class SpotifyApi {
     private final Api api;
     private final SpotifyConfig config;
 
-    static SpotifyApi create(SpotifyConfig config) {
+    public static SpotifyApi create(SpotifyConfig config) {
         Api api = getApi(config);
         return new SpotifyApi(api, config);
     }

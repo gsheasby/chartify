@@ -18,7 +18,7 @@ public class ChartImporterTask {
         Preconditions.checkArgument(toWeek > 0, "toWeek must be a positive integer");
         Preconditions.checkArgument(fromWeek <= toWeek, "toWeek must be at least fromWeek");
 
-        AugmentingChartImporter.create(TaskUtils.getConfig()).importCharts(fromWeek, toWeek);
+        AugmentingChartImporter.idLookupImporter(TaskUtils.getConfig()).importCharts(fromWeek, toWeek);
     }
 
 }
