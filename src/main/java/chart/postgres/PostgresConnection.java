@@ -342,7 +342,7 @@ public class PostgresConnection {
 
             return results;
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to execute select statement!", e);
+            throw new RuntimeException("Failed to execute select statement: " + sql, e);
         }
     }
 
