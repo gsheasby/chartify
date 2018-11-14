@@ -118,10 +118,14 @@ public class PostgresConnection {
         Track track = entry.track();
         return String.format("('%s', '%s', '%s', '%s', %s)",
                              track.getId(),
-                             StringUtils.replace(track.getName(), "'", "''"),
+                             escapeQuotes(track.getName()),
                              track.getHref(),
                              track.getUri(),
                              entry.isYoutube());
+    }
+
+    private static String escapeQuotes(String name) {
+        return StringUtils.replace(name, "'", "''");
     }
 
     private String getFieldsForEntries(int week, List<SpotifyChartEntry> entries) {
@@ -153,7 +157,7 @@ public class PostgresConnection {
     private String getFieldForArtist(ArtistRecord artist) {
         return String.format("('%s', '%s', '%s', '%s', %s)",
                              artist.id(),
-                             StringUtils.replace(artist.name(), "'", "''"),
+                             escapeQuotes(artist.name()),
                              artist.href(),
                              artist.uri(),
                              artist.is_youtube());
@@ -285,20 +289,24 @@ public class PostgresConnection {
 
     public Optional<ArtistRecord> getArtist(String artistName) {
         String sql = "SELECT id, name, href, uri, is_youtube FROM artists" +
-                "    WHERE name = " + artistName;
+                "    WHERE name = " + quote(artistName);
 
         List<ArtistRecord> artists = executeSelectStatement(sql, this::createSimpleArtist);
         return artists.isEmpty() ? Optional.empty() : Optional.of(Iterables.getOnlyElement(artists));
     }
 
     public Optional<TrackRecord> getTrack(String title, String artistId) {
-        String sql = "SELECT t.id, t.name, t.href, t.uri. t.is_youtube FROM tracks" +
+        String sql = "SELECT t.id, t.name, t.href, t.uri, t.is_youtube FROM tracks t" +
                 "     JOIN trackArtists ta ON t.id = ta.track_id" +
-                "     WHERE ta.artist_id = " + artistId +
-                "     AND t.name = " + title;
+                "     WHERE ta.artist_id = " + quote(artistId) +
+                "     AND t.name = " + quote(title);
 
         List<TrackRecord> tracks = executeSelectStatement(sql, this::createTrackRecord);
         return tracks.isEmpty() ? Optional.empty() : Optional.of(Iterables.getOnlyElement(tracks));
+    }
+
+    private static String quote(String term) {
+        return "'" + escapeQuotes(term) + "'";
     }
 
     private TrackRecord createTrackRecord(ResultSet resultSet) {
