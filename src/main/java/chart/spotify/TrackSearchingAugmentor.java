@@ -53,6 +53,10 @@ public class TrackSearchingAugmentor implements SpotifyAugmentor {
 
                 SpotifyChartEntry spotifyChartEntry = SpotifyChartEntry.builder().from(entry).track(track).build();
                 postgresEntry = Optional.of(spotifyChartEntry);
+                System.out.println(String.format("Found track from postgres: (%s) %s - %s",
+                        postgresEntry.get().id(),
+                        postgresEntry.get().artist(),
+                        postgresEntry.get().title()));
             }
         }
         return postgresEntry;
@@ -60,6 +64,10 @@ public class TrackSearchingAugmentor implements SpotifyAugmentor {
 
     private SpotifyChartEntry fetchFromSpotify(ChartEntry entry) {
         Track track = api.getTrack(entry.title(), entry.artist());
+        System.out.println(String.format("Found track from spotify: (%s) %s - %s",
+                track.getId(),
+                track.getArtists().get(0).getName(),
+                track.getName()));
         return SpotifyChartEntry.builder().from(entry).track(track).build();
     }
 }
