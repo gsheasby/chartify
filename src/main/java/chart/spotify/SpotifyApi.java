@@ -58,7 +58,7 @@ public class SpotifyApi {
     }
 
     Track getTrack(String title, String artist) {
-        TrackSearchRequest request = api.searchTracks(title).build();
+        TrackSearchRequest request = api.searchTracks(title + " " + artist).build();
         try {
             Page<Track> trackPage = request.get();
             for (Track item : trackPage.getItems()) {
