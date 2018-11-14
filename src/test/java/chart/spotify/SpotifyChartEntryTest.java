@@ -22,11 +22,11 @@ public class SpotifyChartEntryTest {
         Track track = ChartTestUtils.track();
 
         canonical = ImmutableSpotifyChartEntry.builder()
-                                              .track(track)
-                                              .position(POSITION)
-                                              .weeksOnChart(WEEKS)
-                                              .lastPosition(LAST_POSITION)
-                                              .build();
+                .track(track)
+                .position(POSITION)
+                .weeksOnChart(WEEKS)
+                .lastPosition(LAST_POSITION)
+                .build();
     }
 
     @Test
@@ -34,9 +34,9 @@ public class SpotifyChartEntryTest {
         Track trackWithDifferentId = ChartTestUtils.track();
         trackWithDifferentId.setId(ID + "2");
         SpotifyChartEntry differentId = ImmutableSpotifyChartEntry.builder()
-                                                                  .from(canonical)
-                                                                  .track(trackWithDifferentId)
-                                                                  .build();
+                .from(canonical)
+                .track(trackWithDifferentId)
+                .build();
         assertNotEquals("IDs should have been different", canonical, differentId);
     }
 

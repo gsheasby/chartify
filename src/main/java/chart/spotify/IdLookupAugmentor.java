@@ -41,18 +41,18 @@ public class IdLookupAugmentor implements SpotifyAugmentor {
 
         List<String> youtubeTracks = partitionedTracks.get(true);
         List<Track> tracks = youtubeTracks
-                                              .stream()
-                                              .map(this::getYoutubeTrack)
-                                              .collect(Collectors.toList());
+                .stream()
+                .map(this::getYoutubeTrack)
+                .collect(Collectors.toList());
         tracks.addAll(spotifyTracks);
 
         Map<String, Track> tracksById = tracks.stream()
-                                              .collect(Collectors.toMap(Track::getId, track -> track));
+                .collect(Collectors.toMap(Track::getId, track -> track));
 
         Set<String> youtubeTrackIds = new HashSet<>(youtubeTracks);
         return chartEntries.stream()
-                           .map(e -> enrich(e, tracksById, youtubeTrackIds::contains))
-                           .collect(Collectors.toList());
+                .map(e -> enrich(e, tracksById, youtubeTrackIds::contains))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -63,10 +63,10 @@ public class IdLookupAugmentor implements SpotifyAugmentor {
                 : api.getTrack(entry.id());
 
         return ImmutableSpotifyChartEntry.builder()
-                                         .from(entry)
-                                         .track(track)
-                                         .isYoutube(isYoutube)
-                                         .build();
+                .from(entry)
+                .track(track)
+                .isYoutube(isYoutube)
+                .build();
     }
 
     private Set<String> getMappedIds() {
@@ -89,9 +89,9 @@ public class IdLookupAugmentor implements SpotifyAugmentor {
         Track track = tracksById.get(entry.id());
 
         return ImmutableSpotifyChartEntry.builder()
-                                         .from(entry)
-                                         .track(track)
-                                         .isYoutube(isYoutube.test(entry.id()))
-                                         .build();
+                .from(entry)
+                .track(track)
+                .isYoutube(isYoutube.test(entry.id()))
+                .build();
     }
 }

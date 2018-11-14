@@ -18,10 +18,10 @@ public class ChartTestUtils {
 
     public static SpotifyChartEntry newEntry() {
         return SpotifyChartEntry.builder()
-                                .position(11)
-                                .weeksOnChart(1)
-                                .track(track())
-                                .build();
+                .position(11)
+                .weeksOnChart(1)
+                .track(track())
+                .build();
     }
 
     static SpotifyChartEntry numberOne() {
@@ -30,12 +30,12 @@ public class ChartTestUtils {
 
     public static SpotifyChartEntry entry(int position, int lastPosition) {
         return SpotifyChartEntry.builder()
-                                .position(position)
-                                .lastPosition(lastPosition)
-                                .weeksOnChart(2)
-                                .track(track())
-                                .chartRun(ImmutableList.of(pos(111, lastPosition), pos(112, position)))
-                                .build();
+                .position(position)
+                .lastPosition(lastPosition)
+                .weeksOnChart(2)
+                .track(track())
+                .chartRun(ImmutableList.of(pos(111, lastPosition), pos(112, position)))
+                .build();
     }
 
     public static CsvChartEntry csvChartEntry(int position, int lastPosition) {
@@ -54,12 +54,12 @@ public class ChartTestUtils {
                 pos(1, 10), pos(2, 7), pos(3, 5)
         );
         return SpotifyChartEntry.builder()
-                                .track(track())
-                                .position(5)
-                                .lastPosition(7)
-                                .weeksOnChart(3)
-                                .chartRun(run)
-                                .build();
+                .track(track())
+                .position(5)
+                .lastPosition(7)
+                .weeksOnChart(3)
+                .chartRun(run)
+                .build();
     }
 
     public static Track track() {

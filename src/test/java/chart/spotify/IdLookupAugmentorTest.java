@@ -95,11 +95,11 @@ public class IdLookupAugmentorTest {
 
     private SpotifyChartEntry canonicalEntry() {
         return ImmutableSpotifyChartEntry.builder()
-                                         .track(track)
-                                         .position(POSITION)
-                                         .weeksOnChart(WEEKS)
-                                         .lastPosition(LAST_POSITION)
-                                         .build();
+                .track(track)
+                .position(POSITION)
+                .weeksOnChart(WEEKS)
+                .lastPosition(LAST_POSITION)
+                .build();
     }
 
     private SpotifyChartEntry getYoutubeEntry() {
@@ -112,33 +112,33 @@ public class IdLookupAugmentorTest {
         youtubeTrack.setUri(href);
 
         return ImmutableSpotifyChartEntry.builder()
-                                         .track(youtubeTrack)
-                                         .position(POSITION)
-                                         .weeksOnChart(WEEKS)
-                                         .lastPosition(LAST_POSITION)
-                                         .isYoutube(true)
-                                         .build();
+                .track(youtubeTrack)
+                .position(POSITION)
+                .weeksOnChart(WEEKS)
+                .lastPosition(LAST_POSITION)
+                .isYoutube(true)
+                .build();
     }
 
     private void setUpYoutubeMapping() {
         YoutubeMapping mapping = ImmutableYoutubeMapping.builder()
-                                                        .id(ChartTestUtils.ID)
-                                                        .title(YOUTUBE_TITLE)
-                                                        .artist(artist.getName())
-                                                        .build();
+                .id(ChartTestUtils.ID)
+                .title(YOUTUBE_TITLE)
+                .artist(artist.getName())
+                .build();
         when(config.mappings()).thenReturn(Maps.newHashMap(ImmutableMap.of("bad-id", mapping)));
     }
 
     private CsvChartEntry canonicalCsvEntry() {
         return ImmutableCsvChartEntry.builder()
-                                     .position(POSITION)
-                                     .weeksOnChart(WEEKS)
-                                     .lastPosition(LAST_POSITION)
-                                     .artist(ChartTestUtils.ARTIST)
-                                     .title(ChartTestUtils.TITLE)
-                                     .id(ChartTestUtils.ID)
-                                     .href(ChartTestUtils.HREF)
-                                     .uri(ChartTestUtils.URI)
-                                     .build();
+                .position(POSITION)
+                .weeksOnChart(WEEKS)
+                .lastPosition(LAST_POSITION)
+                .artist(ChartTestUtils.ARTIST)
+                .title(ChartTestUtils.TITLE)
+                .id(ChartTestUtils.ID)
+                .href(ChartTestUtils.HREF)
+                .uri(ChartTestUtils.URI)
+                .build();
     }
 }
