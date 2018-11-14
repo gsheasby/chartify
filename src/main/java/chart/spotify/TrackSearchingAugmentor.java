@@ -37,7 +37,6 @@ public class TrackSearchingAugmentor implements SpotifyAugmentor {
     @Override
     public SpotifyChartEntry augment(ChartEntry entry) {
         return fetchFromPostgres(entry).orElseGet(() -> fetchFromSpotify(entry));
-
     }
 
     private Optional<SpotifyChartEntry> fetchFromPostgres(ChartEntry entry) {
@@ -53,10 +52,6 @@ public class TrackSearchingAugmentor implements SpotifyAugmentor {
 
                 SpotifyChartEntry spotifyChartEntry = SpotifyChartEntry.builder().from(entry).track(track).build();
                 postgresEntry = Optional.of(spotifyChartEntry);
-                System.out.println(String.format("Found track from postgres: (%s) %s - %s",
-                        postgresEntry.get().id(),
-                        postgresEntry.get().artist(),
-                        postgresEntry.get().title()));
             }
         }
         return postgresEntry;
