@@ -73,7 +73,8 @@ public class SpotifyApi {
             throw new RuntimeException("Couldn't get track " + title, e);
         }
 
-        throw new IllegalStateException("Couldn't find exact matches for track " + title);
+        throw new IllegalStateException(String.format(
+                "Couldn't find exact matches for track %s by %s", title, artist));
     }
 
     Artist getArtist(String name) throws IOException, WebApiException {
