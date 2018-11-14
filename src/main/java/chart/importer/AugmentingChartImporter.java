@@ -48,6 +48,8 @@ public class AugmentingChartImporter {
             System.out.println("Importing chart " + week);
             CsvChart chart = reader.findDerivedChart(week);
             SpotifyChart spotifyChart = SpotifyChart.augment(chart, augmentor);
+            System.out.println(String.format("Found chart with %d entries",
+                    spotifyChart.entries().size()));
             saver.saveChart(spotifyChart);
         }
     }
