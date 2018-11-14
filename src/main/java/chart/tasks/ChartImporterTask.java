@@ -20,7 +20,7 @@ public class ChartImporterTask {
         boolean useTrackSearcher = false;
         if (args.length >= 3) {
             String importerToUse = args[2];
-            if (importerToUse.equalsIgnoreCase("postgres") {
+            if (importerToUse.equalsIgnoreCase("postgres")) {
                 System.out.println("Using TrackSearchingImporter");
                 useTrackSearcher = true;
             } else {
