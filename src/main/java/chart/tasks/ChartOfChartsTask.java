@@ -1,6 +1,7 @@
 package chart.tasks;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -16,13 +17,20 @@ import chart.Chart;
 import chart.ChartConfig;
 import chart.ChartEntry;
 import chart.Song;
-import chart.csv.CsvChartLoader;
+import chart.postgres.PostgresChartLoader;
+import chart.postgres.PostgresChartReader;
+import chart.postgres.PostgresConnection;
+import chart.postgres.PostgresConnectionManager;
+import chart.spotify.SpotifyChart;
 
 public class ChartOfChartsTask {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
         ChartConfig config = TaskUtils.getConfig();
-        CsvChartLoader loader = new CsvChartLoader(config.csvDestination());
-        List<Chart> charts = loader.loadAll();
+        PostgresConnectionManager manager = PostgresConnectionManager.create(config.postgresConfig());
+        PostgresConnection connection = new PostgresConnection(manager);
+        PostgresChartReader reader = new PostgresChartReader(connection);
+        PostgresChartLoader loader = new PostgresChartLoader(connection, reader);
+        List<SpotifyChart> charts = loader.loadCharts(2018);
 
         Map<Song, ChartRun> chartRuns = Maps.newHashMap();
         for (Chart chart : charts) {
@@ -46,11 +54,11 @@ public class ChartOfChartsTask {
     }
 
     private static void print(int pos, ChartRun chartRun) {
-        System.out.println(String.format("%02d ", pos) + chartRun.toString());
+        System.out.println(String.format("%02d\t%s", pos, chartRun.toString()));
     }
 
     private static class ChartRun implements Comparable<ChartRun> {
-        private static final int POSITIONS_TO_SCORE = 30;
+        private static final int POSITIONS_TO_SCORE = 60;
 
         private final Song song;
         private final Integer entryWeek;
@@ -107,12 +115,13 @@ public class ChartOfChartsTask {
 
         @Override
         public String toString() {
-            return String.format("%03d %02d %02d %s - %s %s",
+            return String.format("%03d\t%02d\t%02d\t%s\t-\t%s\t%s\t%s",
                                  getScore(),
                                  positions.size(),
                                  getPeak(),
                                  song.title(),
                                  song.artist(),
+                                 entryDate.toLocalDate(),
                                  positions.toString());
 
 //                    getScore() + ": " + song.title() + " - " + song.artist()

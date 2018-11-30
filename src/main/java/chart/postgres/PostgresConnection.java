@@ -1,5 +1,25 @@
 package chart.postgres;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
+
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.wrapper.spotify.models.SimpleArtist;
+import com.wrapper.spotify.models.Track;
+
 import chart.postgres.raw.ArtistRecord;
 import chart.postgres.raw.ChartEntryRecord;
 import chart.postgres.raw.ImmutableArtistRecord;
@@ -12,25 +32,7 @@ import chart.postgres.raw.TrackPositionRecord;
 import chart.postgres.raw.TrackRecord;
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.wrapper.spotify.models.SimpleArtist;
-import com.wrapper.spotify.models.Track;
 import javafx.util.Pair;
-import org.apache.commons.lang.StringUtils;
-import org.joda.time.DateTime;
-
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class PostgresConnection {
     private final PostgresConnectionManager manager;
@@ -358,6 +360,19 @@ public class PostgresConnection {
         return String.format("(%s)", ids.stream()
                                         .map(id -> String.format("'%s'", id))
                                         .collect(Collectors.joining(", ")));
+    }
+
+    public List<Integer> getChartWeeks(int year) {
+        String sql = "SELECT week FROM chart WHERE date >= '" + year + "-01-01'" +
+                "     AND date <= '" + year + "-12-31'";
+        Function<ResultSet, Integer> mapper = resultSet -> {
+            try {
+                return resultSet.getInt("week");
+            } catch (SQLException e) {
+                throw new RuntimeException("Failed to get week");
+            }
+        };
+        return executeSelectStatement(sql, mapper);
     }
 
     public DateTime getChartDate(int week) {
