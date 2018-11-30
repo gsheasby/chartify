@@ -25,12 +25,19 @@ import chart.spotify.SpotifyChart;
 
 public class ChartOfChartsTask {
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
+        int year = 2018;
+        if (args.length < 1) {
+            System.out.println("Using default year of " + year);
+        } else {
+            year = Integer.parseInt(args[0]);
+        }
+
         ChartConfig config = TaskUtils.getConfig();
         PostgresConnectionManager manager = PostgresConnectionManager.create(config.postgresConfig());
         PostgresConnection connection = new PostgresConnection(manager);
         PostgresChartReader reader = new PostgresChartReader(connection);
         PostgresChartLoader loader = new PostgresChartLoader(connection, reader);
-        List<SpotifyChart> charts = loader.loadCharts(2018);
+        List<SpotifyChart> charts = loader.loadCharts(year);
 
         Map<Song, ChartRun> chartRuns = Maps.newHashMap();
         for (Chart chart : charts) {
