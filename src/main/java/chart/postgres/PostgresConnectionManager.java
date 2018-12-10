@@ -77,7 +77,7 @@ public class PostgresConnectionManager {
     private void createSchema(Connection conn) throws SQLException {
         Statement statement = conn.createStatement();
 
-        statement.executeUpdate("CREATE TABLE artists (" +
+        statement.executeUpdate("CREATE TABLE IF NOT EXISTS artists (" +
                                         "id varchar(256) CONSTRAINT artistid PRIMARY KEY," +
                                         "name varchar(256) NOT NULL," +
                                         "href varchar(512)," +
@@ -85,7 +85,7 @@ public class PostgresConnectionManager {
                                         "is_youtube boolean DEFAULT FALSE" +
                                         ");");
 
-        statement.executeUpdate("CREATE TABLE tracks (" +
+        statement.executeUpdate("CREATE TABLE IF NOT EXISTS tracks (" +
                                         "id varchar(256) CONSTRAINT trackid PRIMARY KEY," +
                                         "name varchar(256) NOT NULL," +
                                         "href varchar(512)," +
@@ -93,18 +93,18 @@ public class PostgresConnectionManager {
                                         "is_youtube boolean DEFAULT FALSE" +
                                         ");");
 
-        statement.executeUpdate("CREATE TABLE trackArtists (" +
+        statement.executeUpdate("CREATE TABLE IF NOT EXISTS trackArtists (" +
                                         "track_id varchar(256) REFERENCES tracks," +
                                         "artist_id varchar(256) REFERENCES artists," +
                                         "CONSTRAINT track_artist PRIMARY KEY(track_id, artist_id)" +
                                         ");");
 
-        statement.executeUpdate("CREATE TABLE chart (" +
+        statement.executeUpdate("CREATE TABLE IF NOT EXISTS chart (" +
                                         "week int CONSTRAINT chartweek PRIMARY KEY," +
                                         "date date" +
                                         ");");
 
-        statement.executeUpdate("CREATE TABLE chartEntries (" +
+        statement.executeUpdate("CREATE TABLE IF NOT EXISTS chartEntries (" +
                                         "chart_week int REFERENCES chart," +
                                         "position int NOT NULL," +
                                         "track_id varchar(256) REFERENCES tracks," +
