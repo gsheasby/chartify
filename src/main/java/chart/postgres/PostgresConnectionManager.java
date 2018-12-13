@@ -39,8 +39,10 @@ public class PostgresConnectionManager {
 
         boolean dbWasCreated = ensureDatabaseExists();
         if (dbWasCreated) {
-            createSchema();
+            createInitialSchema();
         }
+
+        updateSchema();
     }
 
     private boolean ensureDatabaseExists() throws SQLException {
@@ -68,13 +70,13 @@ public class PostgresConnectionManager {
         }
     }
 
-    private void createSchema() throws SQLException {
+    private void createInitialSchema() throws SQLException {
         try (Connection conn = getConnection()) {
-            createSchema(conn);
+            createInitialSchema(conn);
         }
     }
 
-    private void createSchema(Connection conn) throws SQLException {
+    private void createInitialSchema(Connection conn) throws SQLException {
         Statement statement = conn.createStatement();
 
         statement.executeUpdate("CREATE TABLE IF NOT EXISTS artists (" +
@@ -111,5 +113,51 @@ public class PostgresConnectionManager {
                                         "CONSTRAINT chart_position PRIMARY KEY(chart_week,position)," +
                                         "CONSTRAINT pospos CHECK (position > 0)" +
                                         ");");
+    }
+
+    private void updateSchema() throws SQLException {
+        try (Connection conn = getConnection()) {
+            updateSchema(conn);
+        }
+    }
+
+    private void updateSchema(Connection conn) throws SQLException {
+        // Create schema_version table if it doesn't exist
+        Statement statement = conn.createStatement();
+
+        statement.executeUpdate("CREATE TABLE IF NOT EXISTS schemaVersion (" +
+                                        "key varchar(128)," +
+                                        "version int);");
+
+        int version = getSchemaVersion(statement);
+        if (version < 2) {
+            updateToVersionTwo(statement);
+            System.out.println("Updated schema to version 2");
+        } else {
+            System.out.println("Database schema is up to date");
+        }
+    }
+
+    private void updateToVersionTwo(Statement statement) throws SQLException {
+        statement.executeUpdate("CREATE TABLE IF NOT EXISTS yearEndChartEntries (" +
+                                        "year int NOT NULL," +
+                                        "position int NOT NULL," +
+                                        "track_id varchar(256) REFERENCES tracks," +
+                                        "CONSTRAINT yec_position PRIMARY KEY(year,position)," +
+                                        "CONSTRAINT yec_year_pos CHECK (year > 0)," +
+                                        "CONSTRAINT yec_pos_pos CHECK (position > 0)" +
+                                        ");");
+
+        statement.executeUpdate("INSERT INTO schemaVersion (key, version) VALUES ('version', 2)");
+    }
+
+    private int getSchemaVersion(Statement statement) throws SQLException {
+        // Query version - if 1, then upgrade to 2
+        ResultSet resultSet = statement.executeQuery("SELECT version FROM schemaVersion WHERE key = 'version'");
+        if (!resultSet.next()) {
+            return 1;
+        } else {
+            return resultSet.getInt("version");
+        }
     }
 }
