@@ -7,5 +7,8 @@ spotify:
   clientSecret: <your client secret here>
   userName: <Spotify user who owns the playlist>
   playlistId: <the playlistID>
+  playlists:
+    chart: <main playlist>
+    yec: <year-end playlist>
 chartSize: 75
 csvDestination: 'src/main/resources/top75'
