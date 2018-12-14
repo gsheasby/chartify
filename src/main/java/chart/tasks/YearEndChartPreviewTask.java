@@ -2,7 +2,6 @@ package chart.tasks;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,7 +19,12 @@ import chart.postgres.PostgresConnection;
 import chart.postgres.PostgresConnectionManager;
 import chart.spotify.SpotifyChart;
 
-public class ChartOfChartsTask {
+public class YearEndChartPreviewTask {
+    /* TODO copy from ChartOfChartsTask
+     * Then get top part from playlist in Spotify
+     * And deduplicate
+     */
+
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
         int year = 2018;
         if (args.length < 1) {
@@ -34,6 +38,7 @@ public class ChartOfChartsTask {
         PostgresConnection connection = new PostgresConnection(manager);
         PostgresChartReader reader = new PostgresChartReader(connection);
         PostgresChartLoader loader = new PostgresChartLoader(connection, reader);
+
         List<SpotifyChart> charts = loader.loadCharts(year);
 
         Map<Song, ChartRun> chartRuns = Maps.newHashMap();
@@ -50,14 +55,7 @@ public class ChartOfChartsTask {
             }
         }
 
-        Iterator<ChartRun> chartOfCharts = chartRuns.values().stream().sorted().collect(Collectors.toList()).iterator();
-        for (int pos = 1; chartOfCharts.hasNext(); pos++) {
-            ChartRun chartRun = chartOfCharts.next();
-            print(pos, chartRun);
-        }
-    }
+        List<ChartRun> statisticalYec = chartRuns.values().stream().sorted().collect(Collectors.toList());
 
-    private static void print(int pos, ChartRun chartRun) {
-        System.out.println(String.format("%02d\t%s", pos, chartRun.toString()));
     }
 }
