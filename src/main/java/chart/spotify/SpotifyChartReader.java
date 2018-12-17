@@ -25,7 +25,7 @@ public class SpotifyChartReader implements SimpleChartReader<SimpleSpotifyChart>
 
     @Override
     public SimpleSpotifyChart findChart(int week) {
-        List<PlaylistTrack> playlist = playlistLoader.load();
+        List<PlaylistTrack> playlist = playlistLoader.load(spotifyConfig.playlists().chart());
         List<Track> tracks = playlist.stream().limit(chartSize).map(PlaylistTrack::getTrack).collect(Collectors.toList());
         int position = 1;
         List<SimpleSpotifyChartEntry> entries = Lists.newArrayList();
