@@ -30,6 +30,16 @@ public class SpotifyChartReader implements SimpleChartReader<SimpleSpotifyChart>
         return new SpotifyChartReader(config, spotifyConfig -> spotifyConfig.playlists().chart());
     }
 
+    public static SpotifyChartReader yecReader(ChartConfig config) {
+        return new SpotifyChartReader(config, spotifyConfig -> {
+            if (!spotifyConfig.playlists().yec().isPresent()) {
+                throw new IllegalStateException("Expected a YEC playlist but none was configured: playlists/yec");
+            }
+
+            return spotifyConfig.playlists().yec().get();
+        });
+    }
+
     @Override
     public SimpleSpotifyChart findChart(int week) {
         List<PlaylistTrack> playlist = playlistLoader.load(playlistToLoad.apply(spotifyConfig));

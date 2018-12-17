@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Maps;
@@ -17,14 +18,12 @@ import chart.postgres.PostgresChartLoader;
 import chart.postgres.PostgresChartReader;
 import chart.postgres.PostgresConnection;
 import chart.postgres.PostgresConnectionManager;
+import chart.spotify.SimpleSpotifyChart;
 import chart.spotify.SpotifyChart;
+import chart.spotify.SpotifyChartReader;
 
+// TODO duplicate of ChartOfChartsTask
 public class YearEndChartPreviewTask {
-    /* TODO copy from ChartOfChartsTask
-     * Then get top part from playlist in Spotify
-     * And deduplicate
-     */
-
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
         int year = 2018;
         if (args.length < 1) {
@@ -34,10 +33,16 @@ public class YearEndChartPreviewTask {
         }
 
         ChartConfig config = TaskUtils.getConfig();
+        Optional<String> yecPlaylistId = config.spotifyConfig().playlists().yec();
+        if (!yecPlaylistId.isPresent()) {
+            throw new IllegalStateException("Config does not have required entry: playlists/yec");
+        }
+
         PostgresConnectionManager manager = PostgresConnectionManager.create(config.postgresConfig());
         PostgresConnection connection = new PostgresConnection(manager);
         PostgresChartReader reader = new PostgresChartReader(connection);
         PostgresChartLoader loader = new PostgresChartLoader(connection, reader);
+        SpotifyChartReader spotifyChartReader = SpotifyChartReader.yecReader(config);
 
         List<SpotifyChart> charts = loader.loadCharts(year);
 
@@ -57,5 +62,7 @@ public class YearEndChartPreviewTask {
 
         List<ChartRun> statisticalYec = chartRuns.values().stream().sorted().collect(Collectors.toList());
 
+        // TODO add to top of YEC (and deduplicate)
+        SimpleSpotifyChart chart = spotifyChartReader.findChart(year);
     }
 }
