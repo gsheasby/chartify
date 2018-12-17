@@ -14,7 +14,7 @@ public class ChartPreviewTask {
     public static void main(String[] args) throws IOException {
         ChartConfig config = TaskUtils.getConfig();
 
-        SpotifyChartReader reader = new SpotifyChartReader(config);
+        SpotifyChartReader reader = SpotifyChartReader.chartReader(config);
         FileChartReader derivedReader = new FileChartReader(config.csvDestination());
         ChartCompiler compiler = new CsvChartCompiler(reader, derivedReader);
         Chart chart = compiler.compileChart();

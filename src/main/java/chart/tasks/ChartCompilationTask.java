@@ -23,7 +23,7 @@ public class ChartCompilationTask {
         PostgresConnection connection = new PostgresConnection(manager);
 
         PostgresChartReader postgresChartReader = new PostgresChartReader(connection);
-        SpotifyChartReader reader = new SpotifyChartReader(config);
+        SpotifyChartReader reader = SpotifyChartReader.chartReader(config);
         PostgresChartCompiler postgresCompiler = new PostgresChartCompiler(reader, postgresChartReader);
         SpotifyChart chart = postgresCompiler.compileChart();
 
