@@ -6,7 +6,6 @@ spotify:
   clientId: <your client ID here>
   clientSecret: <your client secret here>
   userName: <Spotify user who owns the playlist>
-  playlistId: <the playlistID>
   playlists:
     chart: <main playlist>
     yec: <year-end playlist>

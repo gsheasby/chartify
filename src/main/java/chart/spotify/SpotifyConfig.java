@@ -15,13 +15,6 @@ public abstract class SpotifyConfig {
     public abstract String clientId();
     public abstract String clientSecret();
     public abstract String userName();
-
-    /**
-     * @deprecated use playlists instead
-     */
-    @Deprecated
-    public abstract String playlistId();
-
     public abstract PlaylistsConfig playlists();
 
     @Value.Default

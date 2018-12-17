@@ -19,7 +19,7 @@ public class SpotifyPlaylistLoader {
     }
 
     public List<PlaylistTrack> load() {
-        String playlistId = config.playlistId();
+        String playlistId = config.playlists().chart();
         Playlist playlist = spotifyApi.getPlaylist(playlistId);
 
         return playlist.getTracks().getItems();
