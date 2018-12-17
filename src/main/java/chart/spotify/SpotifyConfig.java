@@ -1,7 +1,6 @@
 package chart.spotify;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import org.immutables.value.Value;
 
@@ -23,7 +22,7 @@ public abstract class SpotifyConfig {
     @Deprecated
     public abstract String playlistId();
 
-    public abstract Map<String, String> playlists();
+    public abstract PlaylistsConfig playlists();
 
     @Value.Default
     // Using a HashMap explicitly to work around https://github.com/immutables/immutables/issues/680
