@@ -31,13 +31,7 @@ public class SpotifyChartReader implements SimpleChartReader<SimpleSpotifyChart>
     }
 
     public static SpotifyChartReader yecReader(ChartConfig config) {
-        return new SpotifyChartReader(config, spotifyConfig -> {
-            if (!spotifyConfig.playlists().yec().isPresent()) {
-                throw new IllegalStateException("Expected a YEC playlist but none was configured: playlists/yec");
-            }
-
-            return spotifyConfig.playlists().yec().get();
-        });
+        return new SpotifyChartReader(config, spotifyConfig -> spotifyConfig.playlists().yec());
     }
 
     @Override
