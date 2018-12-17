@@ -39,7 +39,7 @@ public class ChartOfChartsTask {
         Map<Song, ChartRun> chartRuns = Maps.newHashMap();
         for (Chart chart : charts) {
             for (ChartEntry entry : chart.entries()) {
-                Song song = Song.fromEntry(entry);
+                Song song = entry.toSong();
                 if (chartRuns.containsKey(song)) {
                     chartRuns.get(song).add(entry.position());
                 } else {

@@ -2,6 +2,8 @@ package chart;
 
 import java.util.Optional;
 
+import org.immutables.value.Value;
+
 public interface ChartEntry {
     Integer position();
 
@@ -18,4 +20,12 @@ public interface ChartEntry {
     String href();
 
     String uri();
+
+    @Value.Default
+    default Song toSong() {
+        return ImmutableSong.builder()
+                            .title(title())
+                            .artist(artist())
+                            .build();
+    }
 }
