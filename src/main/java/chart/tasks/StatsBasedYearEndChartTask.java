@@ -12,7 +12,7 @@ import chart.Song;
 import chart.postgres.MultiChartLoader;
 import chart.postgres.YearEndChartPrinter;
 
-public class ChartOfChartsTask {
+public class StatsBasedYearEndChartTask {
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
         int year = 2018;
         if (args.length < 1) {
