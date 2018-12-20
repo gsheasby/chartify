@@ -88,15 +88,15 @@ public class ChartRunTest {
         bothRunsShouldBeEqual(list(1, 3, 4), list(1, 2, 5));
     }
 
-    private ChartRun newChartRun() {
+    private static ChartRun newChartRun() {
         return new ChartRun(mock(Song.class), ENTRY_WEEK, ENTRY_DATE);
     }
 
-    private void runShouldHaveScore(ChartRun run, Integer expected) {
+    private static void runShouldHaveScore(ChartRun run, Integer expected) {
         assertEquals(expected, run.getScore());
     }
 
-    private void firstRunShouldBeBetter(List<Integer> betterPositions, List<Integer> worsePositions) {
+    private static void firstRunShouldBeBetter(List<Integer> betterPositions, List<Integer> worsePositions) {
         ChartRun betterRun = newChartRun();
         betterPositions.forEach(betterRun::add);
 
@@ -106,7 +106,7 @@ public class ChartRunTest {
         assertEquals(-1L, betterRun.compareTo(worseRun));
     }
 
-    private void bothRunsShouldBeEqual(List<Integer> firstRunPositions, List<Integer> secondRunPositions) {
+    private static void bothRunsShouldBeEqual(List<Integer> firstRunPositions, List<Integer> secondRunPositions) {
         ChartRun firstRun = newChartRun();
         firstRunPositions.forEach(firstRun::add);
 
@@ -116,7 +116,7 @@ public class ChartRunTest {
         assertEquals(0L, firstRun.compareTo(secondRun));
     }
 
-    private List<Integer> list(Integer... positions) {
+    private static List<Integer> list(Integer... positions) {
         return Lists.newArrayList(positions);
     }
 }
