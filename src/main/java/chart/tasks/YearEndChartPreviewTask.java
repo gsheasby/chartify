@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +14,7 @@ import chart.ChartRun;
 import chart.SimpleChartEntry;
 import chart.Song;
 import chart.postgres.MultiChartLoader;
+import chart.postgres.YearEndChartPrinter;
 import chart.spotify.SimpleSpotifyChart;
 import chart.spotify.SpotifyChartReader;
 
@@ -41,15 +41,6 @@ public class YearEndChartPreviewTask {
         Set<ChartRun> indexedTopRuns = new HashSet<>(topRuns);
 
         statisticalYec.stream().filter(run -> !indexedTopRuns.contains(run)).forEach(yec::add);
-        Iterator<ChartRun> yecIterator = yec.iterator();
-
-        for (int pos = 1; yecIterator.hasNext(); pos++) {
-            ChartRun chartRun = yecIterator.next();
-            print(pos, chartRun);
-        }
-    }
-
-    private static void print(int pos, ChartRun chartRun) {
-        System.out.println(String.format("%02d\t%s", pos, chartRun.toString()));
+        YearEndChartPrinter.printYearEndChart(yec);
     }
 }
