@@ -10,23 +10,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Maps;
-
-import chart.Chart;
 import chart.ChartConfig;
-import chart.ChartEntry;
 import chart.ChartRun;
 import chart.SimpleChartEntry;
 import chart.Song;
-import chart.postgres.PostgresChartLoader;
-import chart.postgres.PostgresChartReader;
-import chart.postgres.PostgresConnection;
-import chart.postgres.PostgresConnectionManager;
+import chart.postgres.MultiChartLoader;
 import chart.spotify.SimpleSpotifyChart;
-import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartReader;
 
-// TODO duplicate of ChartOfChartsTask
 public class YearEndChartPreviewTask {
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
         int year = 2018;
@@ -37,30 +28,11 @@ public class YearEndChartPreviewTask {
         }
 
         ChartConfig config = TaskUtils.getConfig();
-        PostgresConnectionManager manager = PostgresConnectionManager.create(config.postgresConfig());
-        PostgresConnection connection = new PostgresConnection(manager);
-        PostgresChartReader reader = new PostgresChartReader(connection);
-        PostgresChartLoader loader = new PostgresChartLoader(connection, reader);
-        SpotifyChartReader spotifyChartReader = SpotifyChartReader.yecReader(config);
-
-        List<SpotifyChart> charts = loader.loadCharts(year);
-
-        Map<Song, ChartRun> chartRuns = Maps.newHashMap();
-        for (Chart chart : charts) {
-            for (ChartEntry entry : chart.entries()) {
-                Song song = entry.toSong();
-                if (chartRuns.containsKey(song)) {
-                    chartRuns.get(song).add(entry.position());
-                } else {
-                    ChartRun chartRun = new ChartRun(song, chart.week(), chart.date());
-                    chartRun.add(entry.position());
-                    chartRuns.put(song, chartRun);
-                }
-            }
-        }
+        Map<Song, ChartRun> chartRuns = new MultiChartLoader(config).getAllChartRuns(year);
 
         List<ChartRun> statisticalYec = chartRuns.values().stream().sorted().collect(Collectors.toList());
 
+        SpotifyChartReader spotifyChartReader = SpotifyChartReader.yecReader(config);
         SimpleSpotifyChart chart = spotifyChartReader.findChart(year);
         List<Song> topSongs = chart.entries().stream().map(SimpleChartEntry::toSong).collect(Collectors.toList());
         List<ChartRun> topRuns = topSongs.stream().map(chartRuns::get).collect(Collectors.toList());
