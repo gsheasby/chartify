@@ -2,9 +2,12 @@ package chart.tasks;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Maps;
@@ -13,6 +16,7 @@ import chart.Chart;
 import chart.ChartConfig;
 import chart.ChartEntry;
 import chart.ChartRun;
+import chart.SimpleChartEntry;
 import chart.Song;
 import chart.postgres.PostgresChartLoader;
 import chart.postgres.PostgresChartReader;
@@ -33,11 +37,6 @@ public class YearEndChartPreviewTask {
         }
 
         ChartConfig config = TaskUtils.getConfig();
-        Optional<String> yecPlaylistId = config.spotifyConfig().playlists().yec();
-        if (!yecPlaylistId.isPresent()) {
-            throw new IllegalStateException("Config does not have required entry: playlists/yec");
-        }
-
         PostgresConnectionManager manager = PostgresConnectionManager.create(config.postgresConfig());
         PostgresConnection connection = new PostgresConnection(manager);
         PostgresChartReader reader = new PostgresChartReader(connection);
@@ -49,7 +48,7 @@ public class YearEndChartPreviewTask {
         Map<Song, ChartRun> chartRuns = Maps.newHashMap();
         for (Chart chart : charts) {
             for (ChartEntry entry : chart.entries()) {
-                Song song = Song.fromEntry(entry);
+                Song song = entry.toSong();
                 if (chartRuns.containsKey(song)) {
                     chartRuns.get(song).add(entry.position());
                 } else {
@@ -62,7 +61,23 @@ public class YearEndChartPreviewTask {
 
         List<ChartRun> statisticalYec = chartRuns.values().stream().sorted().collect(Collectors.toList());
 
-        // TODO add to top of YEC (and deduplicate)
         SimpleSpotifyChart chart = spotifyChartReader.findChart(year);
+        List<Song> topSongs = chart.entries().stream().map(SimpleChartEntry::toSong).collect(Collectors.toList());
+        List<ChartRun> topRuns = topSongs.stream().map(chartRuns::get).collect(Collectors.toList());
+
+        List<ChartRun> yec = new ArrayList<>(topRuns);
+        Set<ChartRun> indexedTopRuns = new HashSet<>(topRuns);
+
+        statisticalYec.stream().filter(run -> !indexedTopRuns.contains(run)).forEach(yec::add);
+        Iterator<ChartRun> yecIterator = yec.iterator();
+
+        for (int pos = 1; yecIterator.hasNext(); pos++) {
+            ChartRun chartRun = yecIterator.next();
+            print(pos, chartRun);
+        }
+    }
+
+    private static void print(int pos, ChartRun chartRun) {
+        System.out.println(String.format("%02d\t%s", pos, chartRun.toString()));
     }
 }
