@@ -17,7 +17,7 @@ public class PostgresChartPreviewTask {
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
         ChartConfig config = TaskUtils.getConfig();
 
-        SpotifyChartReader reader = new SpotifyChartReader(config);
+        SpotifyChartReader reader = SpotifyChartReader.chartReader(config);
         PostgresConnectionManager manager = PostgresConnectionManager.create(config.postgresConfig());
         PostgresConnection connection = new PostgresConnection(manager);
         PostgresChartReader derivedReader = new PostgresChartReader(connection);

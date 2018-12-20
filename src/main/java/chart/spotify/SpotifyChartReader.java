@@ -1,6 +1,7 @@
 package chart.spotify;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.joda.time.DateTime;
@@ -16,16 +17,26 @@ public class SpotifyChartReader implements SimpleChartReader<SimpleSpotifyChart>
     private final int chartSize;
     private final SpotifyConfig spotifyConfig;
     private final SpotifyPlaylistLoader playlistLoader;
+    private final Function<SpotifyConfig, String> playlistToLoad;
 
-    public SpotifyChartReader(ChartConfig config) {
+    private SpotifyChartReader(ChartConfig config, Function<SpotifyConfig, String> playlistToLoad) {
         this.chartSize = config.chartSize();
         this.spotifyConfig = config.spotifyConfig();
         this.playlistLoader = SpotifyPlaylistLoader.create(config.spotifyConfig());
+        this.playlistToLoad = playlistToLoad;
+    }
+
+    public static SpotifyChartReader chartReader(ChartConfig config) {
+        return new SpotifyChartReader(config, spotifyConfig -> spotifyConfig.playlists().chart());
+    }
+
+    public static SpotifyChartReader yecReader(ChartConfig config) {
+        return new SpotifyChartReader(config, spotifyConfig -> spotifyConfig.playlists().yec());
     }
 
     @Override
     public SimpleSpotifyChart findChart(int week) {
-        List<PlaylistTrack> playlist = playlistLoader.load();
+        List<PlaylistTrack> playlist = playlistLoader.load(playlistToLoad.apply(spotifyConfig));
         List<Track> tracks = playlist.stream().limit(chartSize).map(PlaylistTrack::getTrack).collect(Collectors.toList());
         int position = 1;
         List<SimpleSpotifyChartEntry> entries = Lists.newArrayList();

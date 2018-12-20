@@ -1,5 +1,7 @@
 package chart;
 
+import org.immutables.value.Value;
+
 public interface SimpleChartEntry {
     int position();
 
@@ -12,4 +14,12 @@ public interface SimpleChartEntry {
     String href();
 
     String uri();
+
+    @Value.Default
+    default Song toSong() {
+        return ImmutableSong.builder()
+                .title(title())
+                .artist(artist())
+                .build();
+    }
 }
