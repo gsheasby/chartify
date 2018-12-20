@@ -35,7 +35,7 @@ public class ChartRun implements Comparable<ChartRun> {
     }
 
     private Integer getPeak() {
-        //noinspection ConstantConditions
+        //noinspection OptionalGetWithoutIsPresent
         return positions.stream().mapToInt(i -> i).min().getAsInt();
     }
 
