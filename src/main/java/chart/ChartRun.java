@@ -73,9 +73,5 @@ public class ChartRun implements Comparable<ChartRun> {
                              song.artist(),
                              entryDate.toLocalDate(),
                              positions.toString());
-
-//                    getScore() + ": " + song.title() + " - " + song.artist()
-//                    + " (" + positions.size() + " weeks; run: " + positions.toString() + ")";
     }
-
 }
