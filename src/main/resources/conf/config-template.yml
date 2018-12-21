@@ -9,5 +9,6 @@ spotify:
   playlists:
     chart: <main playlist>
     yec: <year-end playlist>
+    yecSections: <e.g. ["12345", "123fbr", "123fdsge"]>
 chartSize: 75
 csvDestination: 'src/main/resources/top75'

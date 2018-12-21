@@ -1,5 +1,7 @@
 package chart.spotify;
 
+import java.util.ArrayList;
+
 import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -12,4 +14,6 @@ public abstract class PlaylistsConfig {
     public abstract String chart();
 
     public abstract String yec();
+
+    public abstract ArrayList<String> yecSections();
 }

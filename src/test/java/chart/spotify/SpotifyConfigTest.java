@@ -11,6 +11,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 public class SpotifyConfigTest {
     @Test
@@ -27,6 +28,14 @@ public class SpotifyConfigTest {
         assertEquals("abcd123", entry.getValue().id());
         assertEquals("Song, Title", entry.getValue().title());
         assertEquals("The People", entry.getValue().artist());
+
+        PlaylistsConfig expected = ImmutablePlaylistsConfig.builder()
+                .chart("qux")
+                .yec("fizz")
+                .yecSections(Lists.newArrayList("boom", "bust"))
+                .build();
+
+        assertEquals(expected, config.playlists());
     }
 
 }
