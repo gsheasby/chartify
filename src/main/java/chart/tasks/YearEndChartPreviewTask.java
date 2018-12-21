@@ -3,7 +3,7 @@ package chart.tasks;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,22 +28,47 @@ public class YearEndChartPreviewTask {
         }
 
         ChartConfig config = TaskUtils.getConfig();
+
         Map<Song, ChartRun> chartRuns = new MultiChartLoader(config).getAllChartRuns(year);
+        List<List<SimpleSpotifyChartEntry>> topLists = getPartsOfYearEndChart(config);
+        List<ChartRun> remainingEntries = getChartRunsNotInTopSections(chartRuns, topLists);
 
-        List<ChartRun> statisticalYec = chartRuns.values().stream().sorted().collect(Collectors.toList());
+        // Printing
+        int pos = 1;
+        int sectionIndex = 1;
+        for (List<SimpleSpotifyChartEntry> section : topLists) {
+            System.out.println("-- Section " + sectionIndex + " --");
+            for (SimpleSpotifyChartEntry entry : section) {
+                Song song = entry.toSong();
+                ChartRun chartRun = chartRuns.get(song);
+                YearEndChartPrinter.printSingleSong(pos, chartRun);
+                pos++;
+            }
+            System.out.println();
+            sectionIndex++;
+        }
 
+        Iterator<ChartRun> yecIterator = remainingEntries.iterator();
+        for (int statPos = pos; yecIterator.hasNext(); statPos++) {
+            ChartRun chartRun = yecIterator.next();
+            YearEndChartPrinter.printSingleSong(statPos, chartRun);
+        }
+    }
+
+    private static List<List<SimpleSpotifyChartEntry>> getPartsOfYearEndChart(ChartConfig config) {
         SpotifyPlaylistLoader playlistLoader = SpotifyPlaylistLoader.create(config.spotifyConfig());
         ArrayList<String> playlistIds = config.spotifyConfig().playlists().yecSections();
-        List<List<SimpleSpotifyChartEntry>> topLists = playlistIds.stream().map(playlistLoader::loadChartEntries).collect(Collectors.toList());
+        return playlistIds.stream().map(playlistLoader::loadChartEntries).collect(Collectors.toList());
+    }
 
+    private static List<ChartRun> getChartRunsNotInTopSections(Map<Song, ChartRun> chartRuns, List<List<SimpleSpotifyChartEntry>> topLists) {
+        List<ChartRun> statisticalYec = chartRuns.values().stream().sorted().collect(Collectors.toList());
         List<SimpleSpotifyChartEntry> topEntries = topLists.stream().flatMap(List::stream).collect(Collectors.toList());
         List<Song> topSongs = topEntries.stream().map(SimpleChartEntry::toSong).collect(Collectors.toList());
-        List<ChartRun> topRuns = topSongs.stream().map(chartRuns::get).collect(Collectors.toList());
+        Set<ChartRun> indexedTopRuns = topSongs.stream().map(chartRuns::get).collect(Collectors.toSet());
 
-        List<ChartRun> yec = new ArrayList<>(topRuns);
-        Set<ChartRun> indexedTopRuns = new HashSet<>(topRuns);
-
-        statisticalYec.stream().filter(run -> !indexedTopRuns.contains(run)).forEach(yec::add);
-        YearEndChartPrinter.printYearEndChart(yec);
+        return statisticalYec.stream()
+                             .filter(run -> !indexedTopRuns.contains(run))
+                             .collect(Collectors.toList());
     }
 }

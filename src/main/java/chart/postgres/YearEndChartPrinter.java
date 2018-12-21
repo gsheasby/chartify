@@ -11,11 +11,11 @@ public class YearEndChartPrinter {
 
         for (int pos = 1; yecIterator.hasNext(); pos++) {
             ChartRun chartRun = yecIterator.next();
-            print(pos, chartRun);
+            printSingleSong(pos, chartRun);
         }
     }
 
-    private static void print(int pos, ChartRun chartRun) {
+    public static void printSingleSong(int pos, ChartRun chartRun) {
         System.out.println(String.format("%02d\t%s", pos, chartRun.toString()));
     }
 }
