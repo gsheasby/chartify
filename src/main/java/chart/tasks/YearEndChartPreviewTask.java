@@ -15,8 +15,8 @@ import chart.SimpleChartEntry;
 import chart.Song;
 import chart.postgres.MultiChartLoader;
 import chart.postgres.YearEndChartPrinter;
-import chart.spotify.SimpleSpotifyChart;
-import chart.spotify.SpotifyChartReader;
+import chart.spotify.SimpleSpotifyChartEntry;
+import chart.spotify.SpotifyPlaylistLoader;
 
 public class YearEndChartPreviewTask {
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
@@ -32,9 +32,12 @@ public class YearEndChartPreviewTask {
 
         List<ChartRun> statisticalYec = chartRuns.values().stream().sorted().collect(Collectors.toList());
 
-        SpotifyChartReader spotifyChartReader = SpotifyChartReader.yecReader(config);
-        SimpleSpotifyChart chart = spotifyChartReader.findChart(year);
-        List<Song> topSongs = chart.entries().stream().map(SimpleChartEntry::toSong).collect(Collectors.toList());
+        SpotifyPlaylistLoader playlistLoader = SpotifyPlaylistLoader.create(config.spotifyConfig());
+        ArrayList<String> playlistIds = config.spotifyConfig().playlists().yecSections();
+        List<List<SimpleSpotifyChartEntry>> topLists = playlistIds.stream().map(playlistLoader::loadChartEntries).collect(Collectors.toList());
+
+        List<SimpleSpotifyChartEntry> topEntries = topLists.stream().flatMap(List::stream).collect(Collectors.toList());
+        List<Song> topSongs = topEntries.stream().map(SimpleChartEntry::toSong).collect(Collectors.toList());
         List<ChartRun> topRuns = topSongs.stream().map(chartRuns::get).collect(Collectors.toList());
 
         List<ChartRun> yec = new ArrayList<>(topRuns);

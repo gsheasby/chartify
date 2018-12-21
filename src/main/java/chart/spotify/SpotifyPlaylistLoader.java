@@ -1,7 +1,9 @@
 package chart.spotify;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.google.common.collect.Lists;
 import com.wrapper.spotify.models.Playlist;
@@ -21,9 +23,14 @@ public class SpotifyPlaylistLoader {
         this.spotifyConfig = config;
     }
 
+    public List<SimpleSpotifyChartEntry> loadChartEntries(String playlistId) {
+        List<PlaylistTrack> playlist = load(playlistId);
+        return convertToEntries(playlist, Optional.empty());
+    }
+
     public List<SimpleSpotifyChartEntry> loadChartEntries(String playlistId, int limit) {
         List<PlaylistTrack> playlist = load(playlistId);
-        return convertToEntries(playlist, limit);
+        return convertToEntries(playlist, Optional.of(limit));
     }
 
     private List<PlaylistTrack> load(String playlistId) {
@@ -31,8 +38,15 @@ public class SpotifyPlaylistLoader {
         return playlist.getTracks().getItems();
     }
 
-    private List<SimpleSpotifyChartEntry> convertToEntries(List<PlaylistTrack> playlist, int limit) {
-        List<Track> tracks = playlist.stream().limit(limit).map(PlaylistTrack::getTrack).collect(Collectors.toList());
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    private List<SimpleSpotifyChartEntry> convertToEntries(List<PlaylistTrack> playlist,
+                                                           Optional<Integer> limit) {
+        Stream<PlaylistTrack> trackStream = limit
+                .map(integer -> playlist.stream().limit(integer))
+                .orElseGet(playlist::stream);
+        List<Track> tracks = trackStream
+                .map(PlaylistTrack::getTrack)
+                .collect(Collectors.toList());
         int position = 1;
         List<SimpleSpotifyChartEntry> entries = Lists.newArrayList();
         for (Track track : tracks) {
