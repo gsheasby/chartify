@@ -30,13 +30,20 @@ public class YearEndChartPreviewTask {
         ChartConfig config = TaskUtils.getConfig();
 
         Map<Song, ChartRun> chartRuns = new MultiChartLoader(config).getAllChartRuns(year);
-        List<List<SimpleSpotifyChartEntry>> topLists = getPartsOfYearEndChart(config);
-        List<ChartRun> remainingEntries = getChartRunsNotInTopSections(chartRuns, topLists);
+        List<List<SimpleSpotifyChartEntry>> yecSections = getPartsOfYearEndChart(config);
+        printYearEndChartPreview(chartRuns, yecSections);
+    }
 
-        // Printing
+    private static List<List<SimpleSpotifyChartEntry>> getPartsOfYearEndChart(ChartConfig config) {
+        SpotifyPlaylistLoader playlistLoader = SpotifyPlaylistLoader.create(config.spotifyConfig());
+        ArrayList<String> playlistIds = config.spotifyConfig().playlists().yecSections();
+        return playlistIds.stream().map(playlistLoader::loadChartEntries).collect(Collectors.toList());
+    }
+
+    private static void printYearEndChartPreview(Map<Song, ChartRun> chartRuns, List<List<SimpleSpotifyChartEntry>> yecSections) {
         int pos = 1;
         int sectionIndex = 1;
-        for (List<SimpleSpotifyChartEntry> section : topLists) {
+        for (List<SimpleSpotifyChartEntry> section : yecSections) {
             System.out.println("-- Section " + sectionIndex + " --");
             for (SimpleSpotifyChartEntry entry : section) {
                 Song song = entry.toSong();
@@ -48,17 +55,12 @@ public class YearEndChartPreviewTask {
             sectionIndex++;
         }
 
+        List<ChartRun> remainingEntries = getChartRunsNotInTopSections(chartRuns, yecSections);
         Iterator<ChartRun> yecIterator = remainingEntries.iterator();
         for (int statPos = pos; yecIterator.hasNext(); statPos++) {
             ChartRun chartRun = yecIterator.next();
             YearEndChartPrinter.printSingleSong(statPos, chartRun);
         }
-    }
-
-    private static List<List<SimpleSpotifyChartEntry>> getPartsOfYearEndChart(ChartConfig config) {
-        SpotifyPlaylistLoader playlistLoader = SpotifyPlaylistLoader.create(config.spotifyConfig());
-        ArrayList<String> playlistIds = config.spotifyConfig().playlists().yecSections();
-        return playlistIds.stream().map(playlistLoader::loadChartEntries).collect(Collectors.toList());
     }
 
     private static List<ChartRun> getChartRunsNotInTopSections(Map<Song, ChartRun> chartRuns, List<List<SimpleSpotifyChartEntry>> topLists) {
