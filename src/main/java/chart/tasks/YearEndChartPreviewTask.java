@@ -64,13 +64,15 @@ public class YearEndChartPreviewTask {
     }
 
     private static List<ChartRun> getChartRunsNotInTopSections(Map<Song, ChartRun> chartRuns, List<List<SimpleSpotifyChartEntry>> topLists) {
-        List<ChartRun> statisticalYec = chartRuns.values().stream().sorted().collect(Collectors.toList());
-        List<SimpleSpotifyChartEntry> topEntries = topLists.stream().flatMap(List::stream).collect(Collectors.toList());
-        List<Song> topSongs = topEntries.stream().map(SimpleChartEntry::toSong).collect(Collectors.toList());
-        Set<ChartRun> indexedTopRuns = topSongs.stream().map(chartRuns::get).collect(Collectors.toSet());
+        Set<ChartRun> indexedTopRuns = topLists.stream()
+                .flatMap(List::stream) // Concatenate lists
+                .map(SimpleChartEntry::toSong)
+                .map(chartRuns::get)
+                .collect(Collectors.toSet());
 
-        return statisticalYec.stream()
-                             .filter(run -> !indexedTopRuns.contains(run))
-                             .collect(Collectors.toList());
+        return chartRuns.values().stream()
+                .sorted()
+                .filter(run -> !indexedTopRuns.contains(run))
+                .collect(Collectors.toList());
     }
 }
