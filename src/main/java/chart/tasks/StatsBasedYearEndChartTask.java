@@ -20,11 +20,17 @@ public class StatsBasedYearEndChartTask {
         } else {
             year = Integer.parseInt(args[0]);
         }
+        int limit = 200;
+        if (args.length < 2) {
+            System.out.println("Using default limit of " + limit);
+        } else {
+            limit = Integer.parseInt(args[1]);
+        }
 
         ChartConfig config = TaskUtils.getConfig();
         Map<Song, ChartRun> chartRuns = new MultiChartLoader(config).getAllChartRuns(year);
 
         List<ChartRun> yec = chartRuns.values().stream().sorted().collect(Collectors.toList());
-        YearEndChartPrinter.printYearEndChart(yec);
+        YearEndChartPrinter.printYearEndChart(yec, limit);
     }
 }

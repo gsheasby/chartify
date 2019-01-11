@@ -19,6 +19,8 @@ import chart.spotify.SimpleSpotifyChartEntry;
 import chart.spotify.SpotifyPlaylistLoader;
 
 public class YearEndChartPreviewTask {
+    private static final int LIMIT = 200;
+
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
         int year = 2018;
         if (args.length < 1) {
@@ -57,7 +59,7 @@ public class YearEndChartPreviewTask {
 
         List<ChartRun> remainingEntries = getChartRunsNotInTopSections(chartRuns, yecSections);
         Iterator<ChartRun> yecIterator = remainingEntries.iterator();
-        for (int statPos = pos; yecIterator.hasNext(); statPos++) {
+        for (int statPos = pos; yecIterator.hasNext() && statPos <= LIMIT; statPos++) {
             ChartRun chartRun = yecIterator.next();
             YearEndChartPrinter.printSingleSong(statPos, chartRun);
         }

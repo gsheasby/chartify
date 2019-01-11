@@ -6,10 +6,10 @@ import java.util.List;
 import chart.ChartRun;
 
 public class YearEndChartPrinter {
-    public static void printYearEndChart(List<ChartRun> yec) {
+    public static void printYearEndChart(List<ChartRun> yec, int limit) {
         Iterator<ChartRun> yecIterator = yec.iterator();
 
-        for (int pos = 1; yecIterator.hasNext(); pos++) {
+        for (int pos = 1; yecIterator.hasNext() && pos <= limit; pos++) {
             ChartRun chartRun = yecIterator.next();
             printSingleSong(pos, chartRun);
         }
