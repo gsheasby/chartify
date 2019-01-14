@@ -23,6 +23,14 @@ public class ChartRun implements Comparable<ChartRun> {
         this.positions = Lists.newArrayList();
     }
 
+    public Song getSong() {
+        return song;
+    }
+
+    public DateTime getEntryDate() {
+        return entryDate;
+    }
+
     public void add(Integer position) {
         positions.add(position);
     }
@@ -34,7 +42,7 @@ public class ChartRun implements Comparable<ChartRun> {
                  .sum();
     }
 
-    private Integer getPeak() {
+    public Integer getPeak() {
         //noinspection OptionalGetWithoutIsPresent
         return positions.stream().mapToInt(i -> i).min().getAsInt();
     }
