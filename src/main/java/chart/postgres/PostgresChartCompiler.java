@@ -103,8 +103,7 @@ public class PostgresChartCompiler implements ChartCompiler<SpotifyChart> {
     }
 
     private Predicate<ChartEntry> sameSongAs(SimpleChartEntry entry) {
-        return sce -> sce.artist().equalsIgnoreCase(entry.artist())
-                && sce.title().equalsIgnoreCase(entry.title());
+        return sce -> sce.sameSongAs(entry);
     }
 
     private SpotifyChart allNewEntries(SimpleSpotifyChart thisWeek) {

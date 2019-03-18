@@ -28,4 +28,10 @@ public interface ChartEntry {
                             .artist(artist())
                             .build();
     }
+
+    default boolean sameSongAs(SimpleChartEntry entry) {
+        return id().equalsIgnoreCase(entry.id())
+                || (artist().equalsIgnoreCase(entry.artist())
+                && title().equalsIgnoreCase(entry.title()));
+    }
 }

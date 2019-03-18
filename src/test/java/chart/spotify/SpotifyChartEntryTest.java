@@ -1,11 +1,13 @@
 package chart.spotify;
 
 import chart.ChartTestUtils;
+import chart.SimpleChartEntry;
 import com.wrapper.spotify.models.Track;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 public class SpotifyChartEntryTest {
     private static final int POSITION = 1;
@@ -60,5 +62,41 @@ public class SpotifyChartEntryTest {
                 .track(trackWithDifferentUri)
                 .build();
         assertNotEquals("uri should have been different", canonical, differentHref);
+    }
+
+    @Test
+    public void same_id_means_same_song() {
+        Track trackWithDifferentTitle = ChartTestUtils.track();
+        trackWithDifferentTitle.setName(trackWithDifferentTitle.getName() + " (Radio Edit)");
+        SpotifyChartEntry differentTitle = ImmutableSpotifyChartEntry.builder()
+                .from(canonical)
+                .track(trackWithDifferentTitle)
+                .build();
+
+        SimpleChartEntry sce = ImmutableSimpleSpotifyChartEntry.builder()
+                .track(canonical.track())
+                .position(5)
+                .build();
+
+        assertTrue("Expected " + differentTitle + " to have the same song as " + sce,
+                differentTitle.sameSongAs(sce));
+    }
+
+    @Test
+    public void same_artist_and_title_means_same_song() {
+        Track trackWithDifferentId = ChartTestUtils.track();
+        trackWithDifferentId.setId("different-id");
+        SpotifyChartEntry differentId = ImmutableSpotifyChartEntry.builder()
+                .from(canonical)
+                .track(trackWithDifferentId)
+                .build();
+
+        SimpleChartEntry sce = ImmutableSimpleSpotifyChartEntry.builder()
+                .track(canonical.track())
+                .position(5)
+                .build();
+
+        assertTrue("Expected " + differentId + " to have the same song as " + sce,
+                differentId.sameSongAs(sce));
     }
 }
