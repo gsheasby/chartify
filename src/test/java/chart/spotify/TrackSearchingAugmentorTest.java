@@ -5,6 +5,7 @@ import chart.csv.CsvChartEntry;
 import chart.postgres.PostgresConnection;
 import chart.postgres.raw.ArtistRecord;
 import chart.postgres.raw.TrackRecord;
+import com.google.common.collect.ImmutableList;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 import org.junit.Before;
@@ -32,7 +33,8 @@ public class TrackSearchingAugmentorTest {
     @Test
     public void augmentKeepsAllProperties() {
         Track track = ChartTestUtils.track();
-        when(api.getTrack(track.getName(), track.getArtists().get(0).getName())).thenReturn(track);
+        when(api.searchForTrack(track.getName(), track.getArtists().get(0).getName()))
+                .thenReturn(ImmutableList.of(track));
 
         CsvChartEntry csvChartEntry = ChartTestUtils.csvChartEntry(2, 3);
         SpotifyChartEntry expected = ChartTestUtils.entry(2, 3);

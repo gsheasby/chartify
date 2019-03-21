@@ -7,6 +7,7 @@ import chart.postgres.raw.TrackRecord;
 import com.google.common.collect.ImmutableList;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -58,11 +59,43 @@ public class TrackSearchingAugmentor implements SpotifyAugmentor {
     }
 
     private SpotifyChartEntry fetchFromSpotify(ChartEntry entry) {
-        Track track = api.getTrack(entry.title(), entry.artist());
+        String title = entry.title();
+        String artist = entry.artist();
+        Track track = getTrack(title, artist);
         System.out.println(String.format("Found track from spotify: (%s) %s - %s",
                 track.getId(),
                 track.getArtists().get(0).getName(),
                 track.getName()));
         return SpotifyChartEntry.builder().from(entry).track(track).build();
+    }
+
+    private Track getTrack(String title, String artist) {
+        List<Track> tracks = api.searchForTrack(title, artist);
+
+        Track closestMatch = null;
+        int closestDistance = Integer.MAX_VALUE;
+        for (Track item : tracks) {
+            boolean sameTitle = item.getName().equalsIgnoreCase(title);
+            boolean sameArtist = item.getArtists().stream().anyMatch(a -> a.getName().equalsIgnoreCase(artist));
+            if (sameTitle && sameArtist) {
+                return item;
+            }
+
+            if (sameArtist) {
+                int distance = StringUtils.getLevenshteinDistance(title, item.getName());
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestMatch = item;
+                }
+            }
+        }
+
+        if (closestMatch != null && closestDistance < 5) {
+            return closestMatch;
+        }
+
+        throw new IllegalStateException(String.format(
+                "Couldn't find exact matches for track %s by %s - potential matches were:\n%s", title, artist,
+                api.printSearchResults(tracks)));
     }
 }

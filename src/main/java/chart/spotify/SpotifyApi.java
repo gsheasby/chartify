@@ -14,7 +14,6 @@ import com.wrapper.spotify.models.ClientCredentials;
 import com.wrapper.spotify.models.Page;
 import com.wrapper.spotify.models.Playlist;
 import com.wrapper.spotify.models.Track;
-import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -58,38 +57,13 @@ public class SpotifyApi {
         }
     }
 
-    Track getTrack(String title, String artist) {
+    List<Track> searchForTrack(String title, String artist) {
         Page<Track> trackPage = getSearchResultsFromSpotify(title, artist);
-
-        Track closestMatch = null;
-        int closestDistance = Integer.MAX_VALUE;
-        for (Track item : trackPage.getItems()) {
-            boolean sameTitle = item.getName().equalsIgnoreCase(title);
-            boolean sameArtist = item.getArtists().stream().anyMatch(a -> a.getName().equalsIgnoreCase(artist));
-            if (sameTitle && sameArtist) {
-                return item;
-            }
-
-            if (sameArtist) {
-                int distance = StringUtils.getLevenshteinDistance(title, item.getName());
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    closestMatch = item;
-                }
-            }
-        }
-
-        if (closestMatch != null && closestDistance < 5) {
-            return closestMatch;
-        }
-
-        throw new IllegalStateException(String.format(
-                "Couldn't find exact matches for track %s by %s - potential matches were:\n%s", title, artist,
-                printSearchResults(trackPage)));
+        return trackPage.getItems();
     }
 
-    private String printSearchResults(Page<Track> trackPage) {
-        return trackPage.getItems().stream()
+    String printSearchResults(List<Track> tracks) {
+        return tracks.stream()
                 .map(this::printTrack)
                 .collect(Collectors.joining("\n"));
     }
