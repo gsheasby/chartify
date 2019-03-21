@@ -58,18 +58,7 @@ public class SpotifyApi {
     }
 
     List<Track> searchForTrack(String title, String artist) {
-        Page<Track> trackPage = getSearchResultsFromSpotify(title, artist);
-        return trackPage.getItems();
-    }
-
-    String printSearchResults(List<Track> tracks) {
-        return tracks.stream()
-                .map(this::printTrack)
-                .collect(Collectors.joining("\n"));
-    }
-
-    private String printTrack(Track track) {
-        return track.getArtists().get(0).getName() + " - " + track.getName();
+        return getSearchResultsFromSpotify(title, artist).getItems();
     }
 
     private Page<Track> getSearchResultsFromSpotify(String title, String artist) {

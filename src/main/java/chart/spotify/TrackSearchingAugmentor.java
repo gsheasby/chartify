@@ -96,6 +96,16 @@ public class TrackSearchingAugmentor implements SpotifyAugmentor {
 
         throw new IllegalStateException(String.format(
                 "Couldn't find exact matches for track %s by %s - potential matches were:\n%s", title, artist,
-                api.printSearchResults(tracks)));
+                printSearchResults(tracks)));
+    }
+
+    private String printSearchResults(List<Track> tracks) {
+        return tracks.stream()
+                .map(this::printTrack)
+                .collect(Collectors.joining("\n"));
+    }
+
+    private String printTrack(Track track) {
+        return track.getArtists().get(0).getName() + " - " + track.getName();
     }
 }
