@@ -14,6 +14,7 @@ import com.wrapper.spotify.models.ClientCredentials;
 import com.wrapper.spotify.models.Page;
 import com.wrapper.spotify.models.Playlist;
 import com.wrapper.spotify.models.Track;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -58,23 +59,53 @@ public class SpotifyApi {
     }
 
     Track getTrack(String title, String artist) {
-        TrackSearchRequest request = api.searchTracks(title + " " + artist).build();
-        try {
-            Page<Track> trackPage = request.get();
-            for (Track item : trackPage.getItems()) {
-                boolean sameTitle = item.getName().equalsIgnoreCase(title);
-                boolean sameArtist = item.getArtists().stream().anyMatch(a -> a.getName().equalsIgnoreCase(artist));
-                if (sameTitle && sameArtist) {
-                    return item;
-                }
-                // TODO have some measure of edit distance?
+        Page<Track> trackPage = getSearchResultsFromSpotify(title, artist);
+
+        Track closestMatch = null;
+        int closestDistance = Integer.MAX_VALUE;
+        for (Track item : trackPage.getItems()) {
+            boolean sameTitle = item.getName().equalsIgnoreCase(title);
+            boolean sameArtist = item.getArtists().stream().anyMatch(a -> a.getName().equalsIgnoreCase(artist));
+            if (sameTitle && sameArtist) {
+                return item;
             }
-        } catch (IOException | WebApiException e) {
-            throw new RuntimeException("Couldn't get track " + title, e);
+
+            if (sameArtist) {
+                int distance = StringUtils.getLevenshteinDistance(title, item.getName());
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestMatch = item;
+                }
+            }
+        }
+
+        if (closestMatch != null && closestDistance < 5) {
+            return closestMatch;
         }
 
         throw new IllegalStateException(String.format(
-                "Couldn't find exact matches for track %s by %s", title, artist));
+                "Couldn't find exact matches for track %s by %s - potential matches were:\n%s", title, artist,
+                printSearchResults(trackPage)));
+    }
+
+    private String printSearchResults(Page<Track> trackPage) {
+        return trackPage.getItems().stream()
+                .map(this::printTrack)
+                .collect(Collectors.joining("\n"));
+    }
+
+    private String printTrack(Track track) {
+        return track.getArtists().get(0).getName() + " - " + track.getName();
+    }
+
+    private Page<Track> getSearchResultsFromSpotify(String title, String artist) {
+        TrackSearchRequest request = api.searchTracks(title + " " + artist).build();
+
+        try {
+            return request.get();
+        } catch (IOException | WebApiException e) {
+            throw new RuntimeException("Couldn't get track " + title, e);
+        }
     }
 
     Artist getArtist(String name) throws IOException, WebApiException {
