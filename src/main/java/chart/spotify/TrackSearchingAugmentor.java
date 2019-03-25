@@ -62,7 +62,14 @@ public class TrackSearchingAugmentor implements SpotifyAugmentor {
         // TODO handle cases where track was removed from Spotify
         String title = entry.title();
         String artist = entry.artist();
-        Track track = getTrack(title, artist);
+        Optional<Track> maybeTrack = getTrack(title, artist);
+
+        if (!maybeTrack.isPresent()) {
+            throw new IllegalStateException("no track found!");
+        }
+
+        Track track = maybeTrack.get();
+
         System.out.println(String.format("Found track from spotify: (%s) %s - %s",
                 track.getId(),
                 track.getArtists().get(0).getName(),
@@ -70,10 +77,8 @@ public class TrackSearchingAugmentor implements SpotifyAugmentor {
         return SpotifyChartEntry.builder().from(entry).track(track).build();
     }
 
-    private Track getTrack(String title, String artist) {
-        Optional<Track> bestMatch = spotifySearcher.searchForTrack(title, artist);
-
-        return bestMatch.get();
+    private Optional<Track> getTrack(String title, String artist) {
+        return spotifySearcher.searchForTrack(title, artist);
     }
 
 }
