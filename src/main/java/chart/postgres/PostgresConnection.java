@@ -380,6 +380,11 @@ public class PostgresConnection {
         return executeSelectSingleStatement(sql, this::getDateTime, DateTime.now());
     }
 
+    public boolean chartExists(int week) {
+        String sql = "SELECT date FROM chart WHERE week = " + week;
+        return executeSingleSelectStatement(sql, this::getDateTime).isPresent();
+    }
+
     public int getLatestWeek() {
         String sql = "SELECT max(week) AS latest FROM chart";
         Function<ResultSet, Integer> mapper = resultSet -> {
@@ -393,16 +398,21 @@ public class PostgresConnection {
     }
 
     private <T> T executeSelectSingleStatement(String sql, Function<ResultSet, T> mapper, T defaultResult) {
+        return executeSingleSelectStatement(sql, mapper).orElse(defaultResult);
+    }
+
+    private <T> Optional<T> executeSingleSelectStatement(String sql, Function<ResultSet, T> mapper) {
+        Optional<T> result = Optional.empty();
         try (Connection conn = manager.getConnection()) {
             Statement statement = conn.createStatement();
             ResultSet resultSet = statement.executeQuery(sql);
             if (resultSet.next()) {
-                return mapper.apply(resultSet);
+                result = Optional.of(mapper.apply(resultSet));
             }
         } catch (SQLException e) {
             throw new RuntimeException("Failed to execute select statement!", e);
         }
-        return defaultResult;
+        return result;
     }
 
     private DateTime getDateTime(ResultSet resultSet) {
