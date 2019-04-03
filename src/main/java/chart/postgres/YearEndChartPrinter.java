@@ -19,11 +19,12 @@ public class YearEndChartPrinter {
     public static void printSingleSong(int pos, ChartRun chartRun) {
 //        System.out.println(String.format("%02d\t%s", pos, chartRun.toString()));
         Song song = chartRun.getSong();
-        System.out.println(String.format("%02d\t%s\t-\t%s\t(#%d, %s)",
+        System.out.println(String.format("%02d\t%s\t-\t%s\t(#%d, %s, %s)",
                                          pos,
                                          song.title(),
                                          song.artist(),
                                          chartRun.getPeak(),
-                                         chartRun.getEntryDate().toString("MMMM")));
+                                         chartRun.getEntryDate().toString("MMMM"),
+                chartRun.getRun()));
     }
 }

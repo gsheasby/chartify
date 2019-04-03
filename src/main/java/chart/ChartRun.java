@@ -82,4 +82,8 @@ public class ChartRun implements Comparable<ChartRun> {
                              entryDate.toLocalDate(),
                              positions.toString());
     }
+
+    public String getRun() {
+        return positions.toString();
+    }
 }
