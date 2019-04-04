@@ -1,8 +1,12 @@
 package chart.spotify;
 
+import com.wrapper.spotify.exceptions.WebApiException;
+import com.wrapper.spotify.models.Artist;
+import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -47,11 +51,30 @@ public class SpotifySearcher {
         }
 
         if (!bestMatch.isPresent()) {
-            throw new IllegalStateException(String.format(
+            System.out.println(String.format(
                     "Couldn't find exact matches for track %s by %s - potential matches were:\n%s", title, artist,
                     printSearchResults(tracks)));
         }
         return bestMatch;
+    }
+
+    public Optional<SimpleArtist> searchForArtist(String name) {
+        try {
+            return api.getArtist(name).map(this::convertToSimpleArtist);
+        } catch (IOException | WebApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private SimpleArtist convertToSimpleArtist(Artist artist) {
+        SimpleArtist simpleArtist = new SimpleArtist();
+        simpleArtist.setId(artist.getId());
+        simpleArtist.setName(artist.getName());
+        simpleArtist.setType(artist.getType());
+        simpleArtist.setExternalUrls(artist.getExternalUrls());
+        simpleArtist.setHref(artist.getHref());
+        simpleArtist.setUri(artist.getUri());
+        return simpleArtist;
     }
 
     private String printSearchResults(List<Track> tracks) {
