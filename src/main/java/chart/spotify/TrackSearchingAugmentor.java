@@ -10,6 +10,7 @@ import com.wrapper.spotify.models.Track;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -62,23 +63,53 @@ public class TrackSearchingAugmentor implements SpotifyAugmentor {
         // TODO handle cases where track was removed from Spotify
         String title = entry.title();
         String artist = entry.artist();
-        Optional<Track> maybeTrack = getTrack(title, artist);
 
-        if (!maybeTrack.isPresent()) {
-            throw new IllegalStateException("no track found!");
-        }
+        Track track = getTrack(title, artist).orElseGet(() -> createTrack(title, artist));
 
-        Track track = maybeTrack.get();
-
-        System.out.println(String.format("Found track from spotify: (%s) %s - %s",
-                track.getId(),
-                track.getArtists().get(0).getName(),
-                track.getName()));
         return SpotifyChartEntry.builder().from(entry).track(track).build();
     }
 
     private Optional<Track> getTrack(String title, String artist) {
-        return spotifySearcher.searchForTrack(title, artist);
+        Optional<Track> track = spotifySearcher.searchForTrack(title, artist);
+        track.ifPresent(value -> printTrackFound(value, "Found track from spotify"));
+        return track;
+    }
+
+    private void printTrackFound(Track track, String message) {
+        System.out.println(String.format(message + ": (%s) %s - %s",
+                track.getId(),
+                track.getArtists().get(0).getName(),
+                track.getName()));
+    }
+
+    private Track createTrack(String title, String artist) {
+        getArtist(artist);
+
+        Track track = new Track();
+        track.setId(UUID.randomUUID().toString());
+        track.setName(title);
+        track.setArtists(ImmutableList.of(getArtist(artist)));
+        printTrackFound(track, "Created track");
+        return track;
+    }
+
+    private SimpleArtist getArtist(String artist) {
+        Optional<SimpleArtist> postgresArtist = connection.getArtist(artist)
+                .map(ArtistRecord::simpleArtist);
+        return postgresArtist
+                .orElseGet(() -> spotifySearcher.searchForArtist(artist)
+                        .orElseGet(() -> createArtist(artist)));
+
+    }
+
+    private SimpleArtist createArtist(String name) {
+        // TEMP - want to catch this case initially
+        throw new RuntimeException("Couldn't find artist " + name);
+
+//        SimpleArtist simpleArtist = new SimpleArtist();
+//        simpleArtist.setId(UUID.randomUUID().toString());
+//        simpleArtist.setName(name);
+//        return simpleArtist;
     }
 
 }
