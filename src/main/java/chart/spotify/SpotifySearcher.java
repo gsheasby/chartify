@@ -23,16 +23,26 @@ public class SpotifySearcher {
     }
 
     public Optional<Track> searchForTrack(String title, String artist) {
-        Optional<Track> bestMatch = Optional.empty();
         List<Track> tracks = api.searchForTrack(title, artist);
 
+        Optional<Track> bestMatch = getClosestMatch(tracks, title, artist);
+
+        if (!bestMatch.isPresent()) {
+            System.out.println(String.format(
+                    "Couldn't find exact matches for track %s by %s - potential matches were:\n%s", title, artist,
+                    printSearchResults(tracks)));
+        }
+        return bestMatch;
+    }
+
+    private Optional<Track> getClosestMatch(List<Track> tracks, String title, String artist) {
         Track closestMatch = null;
         int closestDistance = Integer.MAX_VALUE;
         for (Track item : tracks) {
             boolean sameTitle = item.getName().equalsIgnoreCase(title);
             boolean sameArtist = item.getArtists().stream().anyMatch(a -> a.getName().equalsIgnoreCase(artist));
             if (sameTitle && sameArtist) {
-                bestMatch = Optional.of(item);
+                return Optional.of(item);
             }
 
             if (sameArtist) {
@@ -44,16 +54,9 @@ public class SpotifySearcher {
             }
         }
 
-        if (!bestMatch.isPresent() && closestMatch != null && closestDistance < 5) {
-            bestMatch = Optional.of(closestMatch);
-        }
-
-        if (!bestMatch.isPresent()) {
-            System.out.println(String.format(
-                    "Couldn't find exact matches for track %s by %s - potential matches were:\n%s", title, artist,
-                    printSearchResults(tracks)));
-        }
-        return bestMatch;
+        return (closestMatch != null && closestDistance < 5)
+                ? Optional.of(closestMatch)
+                : Optional.empty();
     }
 
     // TODO fuzzy matching
