@@ -17,7 +17,6 @@ import com.wrapper.spotify.models.Track;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class SpotifyApi {
@@ -72,21 +71,17 @@ public class SpotifyApi {
         }
     }
 
-    Optional<Artist> getArtist(String name) throws IOException, WebApiException {
+    List<Artist> searchForArtist(String name) {
+        return getArtistSearchResultsFromSpotify(name).getItems();
+    }
+
+    private Page<Artist> getArtistSearchResultsFromSpotify(String name) {
         ArtistSearchRequest request = api.searchArtists(name).build();
-        List<Artist> items = request.get().getItems();
-        List<Artist> exactMatches = items.stream()
-                                         .filter(artist -> artist.getName().equalsIgnoreCase(name))
-                                         .collect(Collectors.toList());
-
-        if (exactMatches.isEmpty()) {
-            return Optional.empty();
+        try {
+            return request.get();
+        } catch (IOException | WebApiException e) {
+            throw new RuntimeException("Couldn't get artist " + name, e);
         }
-        if (exactMatches.size() > 1) {
-            System.out.println("Multiple matches found; returning the first result");
-        }
-
-        return Optional.of(exactMatches.get(0));
     }
 
     Playlist getPlaylist(String playlistId) {

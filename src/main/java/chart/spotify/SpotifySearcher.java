@@ -1,12 +1,10 @@
 package chart.spotify;
 
-import com.wrapper.spotify.exceptions.WebApiException;
 import com.wrapper.spotify.models.Artist;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
 import org.apache.commons.lang.StringUtils;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -58,12 +56,22 @@ public class SpotifySearcher {
         return bestMatch;
     }
 
+    // TODO fuzzy matching
     public Optional<SimpleArtist> searchForArtist(String name) {
-        try {
-            return api.getArtist(name).map(this::convertToSimpleArtist);
-        } catch (IOException | WebApiException e) {
-            throw new RuntimeException(e);
+        List<Artist> items = api.searchForArtist(name);
+        List<Artist> exactMatches = items.stream()
+                .filter(artist -> artist.getName().equalsIgnoreCase(name))
+                .collect(Collectors.toList());
+
+        if (exactMatches.isEmpty()) {
+            return Optional.empty();
         }
+        if (exactMatches.size() > 1) {
+            System.out.println("Multiple matches found; returning the first result");
+        }
+
+        Optional<Artist> artist = Optional.of(exactMatches.get(0));
+        return artist.map(this::convertToSimpleArtist);
     }
 
     private SimpleArtist convertToSimpleArtist(Artist artist) {
