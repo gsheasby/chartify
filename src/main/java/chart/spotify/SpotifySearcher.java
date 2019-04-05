@@ -24,7 +24,6 @@ public class SpotifySearcher {
 
     public Optional<Track> searchForTrack(String title, String artist) {
         List<Track> tracks = api.searchForTrack(title, artist);
-
         Optional<Track> bestMatch = getClosestMatch(tracks, title, artist);
 
         if (!bestMatch.isPresent()) {
@@ -59,22 +58,36 @@ public class SpotifySearcher {
                 : Optional.empty();
     }
 
-    // TODO fuzzy matching
     public Optional<SimpleArtist> searchForArtist(String name) {
         List<Artist> items = api.searchForArtist(name);
-        List<Artist> exactMatches = items.stream()
-                .filter(artist -> artist.getName().equalsIgnoreCase(name))
-                .collect(Collectors.toList());
+        Optional<Artist> artist = getClosestMatch(items, name);
 
-        if (exactMatches.isEmpty()) {
-            return Optional.empty();
+        if (!artist.isPresent()) {
+            System.out.println(String.format(
+                    "Couldn't find exact matches for artist %s - potential matches were:\n%s", artist,
+                    printArtists(items)));
         }
-        if (exactMatches.size() > 1) {
-            System.out.println("Multiple matches found; returning the first result");
-        }
-
-        Optional<Artist> artist = Optional.of(exactMatches.get(0));
         return artist.map(this::convertToSimpleArtist);
+    }
+
+    private Optional<Artist> getClosestMatch(List<Artist> artists, String name) {
+        Artist closestMatch = null;
+        int closestDistance = Integer.MAX_VALUE;
+        for (Artist item : artists) {
+            if (item.getName().equalsIgnoreCase(name)) {
+                return Optional.of(item);
+            }
+
+            int distance = StringUtils.getLevenshteinDistance(name, item.getName());
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closestMatch = item;
+            }
+        }
+
+        return closestDistance < 5
+                ? Optional.of(closestMatch)
+                : Optional.empty();
     }
 
     private SimpleArtist convertToSimpleArtist(Artist artist) {
@@ -97,4 +110,9 @@ public class SpotifySearcher {
     private String printTrack(Track track) {
         return track.getArtists().get(0).getName() + " - " + track.getName();
     }
+
+    private String printArtists(List<Artist> artists) {
+        return artists.stream().map(Artist::getName).collect(Collectors.joining("\n"));
+    }
+
 }
