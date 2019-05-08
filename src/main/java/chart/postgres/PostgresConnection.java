@@ -1,25 +1,5 @@
 package chart.postgres;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang.StringUtils;
-import org.joda.time.DateTime;
-
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.wrapper.spotify.models.SimpleArtist;
-import com.wrapper.spotify.models.Track;
-
 import chart.postgres.raw.ArtistRecord;
 import chart.postgres.raw.ChartEntryRecord;
 import chart.postgres.raw.ImmutableArtistRecord;
@@ -32,7 +12,25 @@ import chart.postgres.raw.TrackPositionRecord;
 import chart.postgres.raw.TrackRecord;
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.wrapper.spotify.models.SimpleArtist;
+import com.wrapper.spotify.models.Track;
 import javafx.util.Pair;
+import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class PostgresConnection {
     private final PostgresConnectionManager manager;
@@ -270,6 +268,13 @@ public class PostgresConnection {
         return executeSelectStatement(sql, this::createTrackArtistRecord);
     }
 
+    public List<TrackArtistRecord> getTracksByArtist(String artistId) {
+        String sql = "SELECT track_id, artist_id FROM trackArtists" +
+                "    WHERE artist_id = " + artistId;
+
+        return executeSelectStatement(sql, this::createTrackArtistRecord);
+    }
+
     private TrackArtistRecord createTrackArtistRecord(ResultSet resultSet) {
         try {
             return ImmutableTrackArtistRecord.builder()
@@ -305,6 +310,14 @@ public class PostgresConnection {
 
         List<TrackRecord> tracks = executeSelectStatement(sql, this::createTrackRecord);
         return tracks.isEmpty() ? Optional.empty() : Optional.of(Iterables.getOnlyElement(tracks));
+    }
+
+    public List<TrackRecord> getTracks(String artistId) {
+        String sql = "SELECT t.id, t.name, t.href, t.uri, t.is_youtube FROM tracks t" +
+                "     JOIN trackArtists ta ON t.id = ta.track_id" +
+                "     WHERE ta.artist_id = " + quote(artistId);
+
+        return executeSelectStatement(sql, this::createTrackRecord);
     }
 
     private static String quote(String term) {

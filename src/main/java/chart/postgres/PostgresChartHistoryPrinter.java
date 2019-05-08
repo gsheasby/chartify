@@ -1,0 +1,105 @@
+package chart.postgres;
+
+import chart.postgres.raw.ChartEntryRecord;
+import chart.postgres.raw.TrackRecord;
+import chart.spotify.ChartPosition;
+import chart.spotify.ImmutableChartPosition;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+import com.wrapper.spotify.models.SimpleArtist;
+import org.joda.time.DateTime;
+
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+public class PostgresChartHistoryPrinter {
+    private final PostgresConnection connection;
+
+    public PostgresChartHistoryPrinter(PostgresConnection connection) {
+        this.connection = connection;
+    }
+
+    public void printHistory(SimpleArtist artist) {
+        int week = connection.getLatestWeek();
+        List<TrackRecord> tracks = connection.getTracks(artist.getId());
+        Set<String> trackIds = tracks.stream()
+                .map(TrackRecord::id)
+                .collect(Collectors.toSet());
+
+        Map<String, TrackRecord> tracksById = tracks.stream().collect(Collectors.toMap(
+                TrackRecord::id,
+                track -> track));
+
+        // TODO don't really care about latest week here
+        List<ChartEntryRecord> entries = connection.getChartEntries(tracksById.keySet(), week);
+        Multimap<String, ChartPosition> chartRunsByTrackId = convertToChartRuns(entries);
+
+        List<ChartHistoryItem> history = chartRunsByTrackId.asMap().entrySet()
+                .stream()
+                .map(entry -> new ChartHistoryItem(tracksById.get(entry.getKey()), entry.getValue()))
+                .collect(Collectors.toList());
+
+        List<ChartHistoryItem> sortedHistory = history.stream()
+                .sorted(Comparator.comparingInt(ChartHistoryItem::getEntryWeek))
+                .collect(Collectors.toList());
+
+        sortedHistory.forEach(this::print);
+    }
+
+    // TODO copied from PostgresChartReader
+    private Multimap<String, ChartPosition> convertToChartRuns(List<ChartEntryRecord> chartEntries) {
+        Multimap<String, ChartPosition> chartRuns = ArrayListMultimap.create();
+
+        for (ChartEntryRecord record : chartEntries) {
+            String trackId = record.track_id();
+            ChartPosition chartPosition = ImmutableChartPosition.builder()
+                    .week(record.chart_week())
+                    .position(record.position())
+                    .build();
+            chartRuns.put(trackId, chartPosition);
+        }
+
+        return chartRuns;
+    }
+
+    private void print(ChartHistoryItem item) {
+        TrackRecord trackRecord = item.getTrack();
+        String title = trackRecord.name();
+        int entryWeek = item.getEntryWeek();
+        DateTime entryDate = connection.getChartDate(entryWeek);
+        Collection<ChartPosition> chartRun = item.getChartRun();
+        int weeks = chartRun.size();
+        int peak = chartRun.stream().map(ChartPosition::position).sorted().findFirst().orElse(-1);
+        System.out.println(String.format("%s, %s, %d weeks, PP #%d",
+                title, entryDate, weeks, peak));
+    }
+
+    private class ChartHistoryItem {
+        private final TrackRecord track;
+        private final Collection<ChartPosition> chartRun;
+
+        private ChartHistoryItem(TrackRecord track, Collection<ChartPosition> chartRun) {
+            this.track = track;
+            this.chartRun = chartRun;
+        }
+
+        public int getEntryWeek() {
+            return chartRun.stream()
+                    .map(ChartPosition::week)
+                    .min(Integer::compareTo)
+                    .orElseThrow(() -> new IllegalStateException("Empty chart run!"));
+        }
+
+        public TrackRecord getTrack() {
+            return track;
+        }
+
+        public Collection<ChartPosition> getChartRun() {
+            return chartRun;
+        }
+    }
+}
