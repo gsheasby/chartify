@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class PostgresChartHistoryPrinter {
@@ -30,9 +29,6 @@ public class PostgresChartHistoryPrinter {
     public void printHistory(SimpleArtist artist) {
         int week = connection.getLatestWeek();
         List<TrackRecord> tracks = connection.getTracks(artist.getId());
-        Set<String> trackIds = tracks.stream()
-                .map(TrackRecord::id)
-                .collect(Collectors.toSet());
 
         Map<String, TrackRecord> tracksById = tracks.stream().collect(Collectors.toMap(
                 TrackRecord::id,
@@ -82,6 +78,7 @@ public class PostgresChartHistoryPrinter {
                 title, FORMATTER.print(entryDate), weeks, peak));
     }
 
+    // TODO make immutable
     private class ChartHistoryItem {
         private final TrackRecord track;
         private final Collection<ChartPosition> chartRun;
