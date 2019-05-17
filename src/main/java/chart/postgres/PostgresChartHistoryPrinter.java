@@ -8,6 +8,8 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.wrapper.spotify.models.SimpleArtist;
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -17,6 +19,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class PostgresChartHistoryPrinter {
+    private static final DateTimeFormatter FORMATTER = DateTimeFormat.forPattern("MMM-yy");
+
     private final PostgresConnection connection;
 
     public PostgresChartHistoryPrinter(PostgresConnection connection) {
@@ -75,7 +79,7 @@ public class PostgresChartHistoryPrinter {
         int weeks = chartRun.size();
         int peak = chartRun.stream().map(ChartPosition::position).sorted().findFirst().orElse(-1);
         System.out.println(String.format("%s, %s, %d weeks, PP #%d",
-                title, entryDate, weeks, peak));
+                title, FORMATTER.print(entryDate), weeks, peak));
     }
 
     private class ChartHistoryItem {
