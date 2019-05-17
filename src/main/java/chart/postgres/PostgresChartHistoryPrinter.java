@@ -27,15 +27,13 @@ public class PostgresChartHistoryPrinter {
     }
 
     public void printHistory(SimpleArtist artist) {
-        int week = connection.getLatestWeek();
         List<TrackRecord> tracks = connection.getTracks(artist.getId());
 
         Map<String, TrackRecord> tracksById = tracks.stream().collect(Collectors.toMap(
                 TrackRecord::id,
                 track -> track));
 
-        // TODO don't really care about latest week here
-        List<ChartEntryRecord> entries = connection.getChartEntries(tracksById.keySet(), week);
+        List<ChartEntryRecord> entries = connection.getChartEntries(tracksById.keySet());
         Multimap<String, ChartPosition> chartRunsByTrackId = convertToChartRuns(entries);
 
         List<ChartHistoryItem> history = chartRunsByTrackId.asMap().entrySet()

@@ -227,6 +227,10 @@ public class PostgresConnection {
         return executeSelectStatement(sql, this::createChartEntryRecord);
     }
 
+    public List<ChartEntryRecord> getChartEntries(Set<String> trackIds) {
+        return getChartEntries(trackIds, getLatestWeek());
+    }
+
     public List<ChartEntryRecord> getChartEntries(Set<String> trackIds, int upToWeek) {
         String sql = "SELECT chart_week, position, track_id" +
                 "     FROM chartEntries e" +
