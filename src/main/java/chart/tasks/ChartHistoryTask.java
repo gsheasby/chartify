@@ -1,13 +1,11 @@
 package chart.tasks;
 
 import chart.ChartConfig;
+import chart.ChartHistoryPrinter;
 import chart.postgres.PostgresChartHistoryPrinter;
 import chart.postgres.PostgresConnection;
 import chart.postgres.PostgresConnectionManager;
 import chart.spotify.SpotifyApi;
-import com.wrapper.spotify.exceptions.WebApiException;
-import com.wrapper.spotify.models.Artist;
-import com.wrapper.spotify.models.SimpleArtist;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -24,19 +22,8 @@ public class ChartHistoryTask {
 
         String artist = "Feeder";
 
-        try {
-            Artist spotifyArtist = api.getArtist(artist);
-
-            SimpleArtist simpleArtist = new SimpleArtist();
-            simpleArtist.setId(spotifyArtist.getId());
-            simpleArtist.setName(spotifyArtist.getName());
-            simpleArtist.setHref(spotifyArtist.getHref());
-            simpleArtist.setUri(spotifyArtist.getUri());
-
-            printer.printHistory(simpleArtist);
-        } catch (WebApiException e) {
-            e.printStackTrace();
-        }
+        new ChartHistoryPrinter(api, printer).printHistory(artist);
 
     }
+
 }
