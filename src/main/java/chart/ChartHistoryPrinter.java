@@ -21,16 +21,20 @@ public class ChartHistoryPrinter {
     public void printHistory(String artist) throws IOException {
         Optional<Artist> maybeSpotifyArtist = getArtist(artist);
 
-        // TODO isPresent check
+        if (!maybeSpotifyArtist.isPresent()) {
+            System.out.println("Not printing history for " + artist + " - Spotify lookup failed.");
+            return;
+        }
+
         Artist spotifyArtist = maybeSpotifyArtist.get();
 
         SimpleArtist simpleArtist = new SimpleArtist();
-            simpleArtist.setId(spotifyArtist.getId());
-            simpleArtist.setName(spotifyArtist.getName());
-            simpleArtist.setHref(spotifyArtist.getHref());
-            simpleArtist.setUri(spotifyArtist.getUri());
+        simpleArtist.setId(spotifyArtist.getId());
+        simpleArtist.setName(spotifyArtist.getName());
+        simpleArtist.setHref(spotifyArtist.getHref());
+        simpleArtist.setUri(spotifyArtist.getUri());
 
-            printer.printHistory(simpleArtist);
+        printer.printHistory(simpleArtist);
     }
 
     private Optional<Artist> getArtist(String artist) throws IOException {
