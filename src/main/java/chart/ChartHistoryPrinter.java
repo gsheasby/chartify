@@ -26,15 +26,7 @@ public class ChartHistoryPrinter {
             return;
         }
 
-        Artist spotifyArtist = maybeSpotifyArtist.get();
-
-        SimpleArtist simpleArtist = new SimpleArtist();
-        simpleArtist.setId(spotifyArtist.getId());
-        simpleArtist.setName(spotifyArtist.getName());
-        simpleArtist.setHref(spotifyArtist.getHref());
-        simpleArtist.setUri(spotifyArtist.getUri());
-
-        printer.printHistory(simpleArtist);
+        printHistory(maybeSpotifyArtist.get());
     }
 
     private Optional<Artist> getArtist(String artist) throws IOException {
@@ -44,5 +36,15 @@ public class ChartHistoryPrinter {
             System.out.println("Couldn't load artist from Spotify!");
             return Optional.empty();
         }
+    }
+
+    private void printHistory(Artist spotifyArtist) {
+        SimpleArtist simpleArtist = new SimpleArtist();
+        simpleArtist.setId(spotifyArtist.getId());
+        simpleArtist.setName(spotifyArtist.getName());
+        simpleArtist.setHref(spotifyArtist.getHref());
+        simpleArtist.setUri(spotifyArtist.getUri());
+
+        printer.printHistory(simpleArtist);
     }
 }
