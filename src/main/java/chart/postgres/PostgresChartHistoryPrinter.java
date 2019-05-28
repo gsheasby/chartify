@@ -80,8 +80,9 @@ public class PostgresChartHistoryPrinter {
         Collection<ChartPosition> chartRun = item.getChartRun();
         int weeks = chartRun.size();
         int peak = chartRun.stream().map(ChartPosition::position).sorted().findFirst().orElse(-1);
-        System.out.println(String.format("%s, %s, %d weeks, PP #%d",
-                title, FORMATTER.print(entryDate), weeks, peak));
+        String weekStr = weeks == 1 ? "week" : "weeks";
+        System.out.println(String.format("%s, %s, %d %s, PP #%d",
+                title, FORMATTER.print(entryDate), weeks, weekStr, peak));
     }
 
     // TODO make immutable
