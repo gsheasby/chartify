@@ -12,6 +12,8 @@ import chart.postgres.raw.TrackPositionRecord;
 import chart.postgres.raw.TrackRecord;
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.wrapper.spotify.models.SimpleArtist;
@@ -179,6 +181,10 @@ public class PostgresConnection {
     }
 
     public Map<String, Integer> getPositions(Set<String> trackIds, int week) {
+        if (trackIds.isEmpty()) {
+            return ImmutableMap.of();
+        }
+
         String sql = "SELECT e.track_id AS id, e.position AS lastPos" +
                 "     FROM chartEntries e" +
                 "     WHERE e.chart_week = " + week +
@@ -198,6 +204,10 @@ public class PostgresConnection {
     }
 
     public Map<String, Integer> getWeeksOnChart(Set<String> trackIds, int upToWeek) {
+        if (trackIds.isEmpty()) {
+            return ImmutableMap.of();
+        }
+
         String sql = "SELECT e.track_id AS id, COUNT(e.track_id) AS weeks" +
                 "     FROM chartEntries e" +
                 "     WHERE e.track_id IN " + getInClause(trackIds) +
@@ -228,10 +238,18 @@ public class PostgresConnection {
     }
 
     public List<ChartEntryRecord> getChartEntries(Set<String> trackIds) {
+        if (trackIds.isEmpty()) {
+            return ImmutableList.of();
+        }
+
         return getChartEntries(trackIds, getLatestWeek());
     }
 
     public List<ChartEntryRecord> getChartEntries(Set<String> trackIds, int upToWeek) {
+        if (trackIds.isEmpty()) {
+            return ImmutableList.of();
+        }
+
         String sql = "SELECT chart_week, position, track_id" +
                 "     FROM chartEntries e" +
                 "     WHERE track_id IN " + getInClause(trackIds) +
@@ -266,6 +284,10 @@ public class PostgresConnection {
     }
 
     public List<TrackArtistRecord> getTrackArtists(Set<String> trackIds) {
+        if (trackIds.isEmpty()) {
+            return ImmutableList.of();
+        }
+
         String sql = "SELECT track_id, artist_id FROM trackArtists" +
                 "    WHERE track_id IN " + getInClause(trackIds);
 
@@ -291,6 +313,10 @@ public class PostgresConnection {
     }
 
     public Map<String, ArtistRecord> getArtists(Set<String> artistIds) {
+        if (artistIds.isEmpty()) {
+            return ImmutableMap.of();
+        }
+
         String sql = "SELECT id, name, href, uri, is_youtube FROM artists" +
                 "    WHERE id IN " + getInClause(artistIds);
 
