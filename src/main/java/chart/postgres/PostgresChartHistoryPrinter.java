@@ -34,6 +34,12 @@ public class PostgresChartHistoryPrinter {
                 track -> track));
 
         List<ChartEntryRecord> entries = connection.getChartEntries(tracksById.keySet());
+        if (entries.isEmpty()) {
+            System.out.println(artist.getName() + ": chart debut");
+            System.out.println();
+            return;
+        }
+
         Multimap<String, ChartPosition> chartRunsByTrackId = convertToChartRuns(entries);
 
         List<ChartHistoryItem> history = chartRunsByTrackId.asMap().entrySet()
@@ -45,7 +51,9 @@ public class PostgresChartHistoryPrinter {
                 .sorted(Comparator.comparingInt(ChartHistoryItem::getEntryWeek))
                 .collect(Collectors.toList());
 
+        System.out.println("Chart history for " + artist.getName());
         sortedHistory.forEach(this::print);
+        System.out.println();
     }
 
     // TODO copied from PostgresChartReader
