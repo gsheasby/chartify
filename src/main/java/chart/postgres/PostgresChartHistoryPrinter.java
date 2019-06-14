@@ -3,8 +3,6 @@ package chart.postgres;
 import chart.postgres.raw.ChartEntryRecord;
 import chart.postgres.raw.TrackRecord;
 import chart.spotify.ChartPosition;
-import chart.spotify.ImmutableChartPosition;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.wrapper.spotify.models.SimpleArtist;
 import org.joda.time.DateTime;
@@ -40,7 +38,7 @@ public class PostgresChartHistoryPrinter {
             return;
         }
 
-        Multimap<String, ChartPosition> chartRunsByTrackId = convertToChartRuns(entries);
+        Multimap<String, ChartPosition> chartRunsByTrackId = ChartEntryRecord.toChartRuns(entries);
 
         List<ChartHistoryItem> history = chartRunsByTrackId.asMap().entrySet()
                 .stream()
@@ -57,22 +55,6 @@ public class PostgresChartHistoryPrinter {
         System.out.println("Chart history for " + artist.getName());
         sortedHistory.forEach(this::print);
         System.out.println();
-    }
-
-    // TODO copied from PostgresChartReader
-    private Multimap<String, ChartPosition> convertToChartRuns(List<ChartEntryRecord> chartEntries) {
-        Multimap<String, ChartPosition> chartRuns = ArrayListMultimap.create();
-
-        for (ChartEntryRecord record : chartEntries) {
-            String trackId = record.track_id();
-            ChartPosition chartPosition = ImmutableChartPosition.builder()
-                    .week(record.chart_week())
-                    .position(record.position())
-                    .build();
-            chartRuns.put(trackId, chartPosition);
-        }
-
-        return chartRuns;
     }
 
     private void print(ChartHistoryItem item) {
