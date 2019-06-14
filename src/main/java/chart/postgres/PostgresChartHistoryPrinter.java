@@ -44,7 +44,10 @@ public class PostgresChartHistoryPrinter {
 
         List<ChartHistoryItem> history = chartRunsByTrackId.asMap().entrySet()
                 .stream()
-                .map(entry -> new ChartHistoryItem(tracksById.get(entry.getKey()), entry.getValue()))
+                .map(entry -> ChartHistoryItem.builder()
+                        .track(tracksById.get(entry.getKey()))
+                        .chartRun(entry.getValue())
+                        .build())
                 .collect(Collectors.toList());
 
         List<ChartHistoryItem> sortedHistory = history.stream()
@@ -73,41 +76,15 @@ public class PostgresChartHistoryPrinter {
     }
 
     private void print(ChartHistoryItem item) {
-        TrackRecord trackRecord = item.getTrack();
-        String title = trackRecord.name();
-        int entryWeek = item.getEntryWeek();
-        DateTime entryDate = connection.getChartDate(entryWeek);
-        Collection<ChartPosition> chartRun = item.getChartRun();
+        Collection<ChartPosition> chartRun = item.chartRun();
+
+        String title = item.track().name();
+        DateTime entryDate = connection.getChartDate(item.getEntryWeek());
         int weeks = chartRun.size();
-        int peak = chartRun.stream().map(ChartPosition::position).sorted().findFirst().orElse(-1);
         String weekStr = weeks == 1 ? "week" : "weeks";
+        int peak = chartRun.stream().map(ChartPosition::position).sorted().findFirst().orElse(-1);
         System.out.println(String.format("%s, %s, %d %s, PP #%d",
                 title, FORMATTER.print(entryDate), weeks, weekStr, peak));
     }
 
-    // TODO make immutable
-    private class ChartHistoryItem {
-        private final TrackRecord track;
-        private final Collection<ChartPosition> chartRun;
-
-        private ChartHistoryItem(TrackRecord track, Collection<ChartPosition> chartRun) {
-            this.track = track;
-            this.chartRun = chartRun;
-        }
-
-        public int getEntryWeek() {
-            return chartRun.stream()
-                    .map(ChartPosition::week)
-                    .min(Integer::compareTo)
-                    .orElseThrow(() -> new IllegalStateException("Empty chart run!"));
-        }
-
-        public TrackRecord getTrack() {
-            return track;
-        }
-
-        public Collection<ChartPosition> getChartRun() {
-            return chartRun;
-        }
-    }
 }
