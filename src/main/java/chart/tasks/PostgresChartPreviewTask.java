@@ -1,17 +1,18 @@
 package chart.tasks;
 
-import java.io.IOException;
-import java.sql.SQLException;
-
 import chart.ChartConfig;
 import chart.format.ChartFormatters;
 import chart.postgres.PostgresChartCompiler;
+import chart.postgres.PostgresChartHistoryPrinter;
 import chart.postgres.PostgresChartPrinter;
 import chart.postgres.PostgresChartReader;
 import chart.postgres.PostgresConnection;
 import chart.postgres.PostgresConnectionManager;
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartReader;
+
+import java.io.IOException;
+import java.sql.SQLException;
 
 public class PostgresChartPreviewTask {
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
@@ -24,6 +25,7 @@ public class PostgresChartPreviewTask {
         PostgresChartCompiler compiler = new PostgresChartCompiler(reader, derivedReader);
         SpotifyChart chart = compiler.compileChart();
 
-        new PostgresChartPrinter(ChartFormatters.preview()).print(chart);
+        PostgresChartHistoryPrinter historyPrinter = new PostgresChartHistoryPrinter(connection);
+        new PostgresChartPrinter(ChartFormatters.preview(), historyPrinter).print(chart);
     }
 }

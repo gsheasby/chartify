@@ -77,7 +77,7 @@ public class SpotifyApi {
                 "Couldn't find exact matches for track %s by %s", title, artist));
     }
 
-    Artist getArtist(String name) throws IOException, WebApiException {
+    public Artist getArtist(String name) throws IOException, WebApiException {
         ArtistSearchRequest request = api.searchArtists(name).build();
         List<Artist> items = request.get().getItems();
         List<Artist> exactMatches = items.stream()
