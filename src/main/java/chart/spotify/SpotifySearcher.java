@@ -64,7 +64,7 @@ public class SpotifySearcher {
 
         if (!artist.isPresent()) {
             System.out.println(String.format(
-                    "Couldn't find exact matches for artist %s - potential matches were:\n%s", artist,
+                    "Couldn't find exact matches for artist %s - potential matches were:\n%s", name,
                     printArtists(items)));
         }
         return artist.map(this::convertToSimpleArtist);
