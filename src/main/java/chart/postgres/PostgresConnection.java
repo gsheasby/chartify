@@ -1,25 +1,5 @@
 package chart.postgres;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang.StringUtils;
-import org.joda.time.DateTime;
-
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.wrapper.spotify.models.SimpleArtist;
-import com.wrapper.spotify.models.Track;
-
 import chart.postgres.raw.ArtistRecord;
 import chart.postgres.raw.ChartEntryRecord;
 import chart.postgres.raw.ImmutableArtistRecord;
@@ -32,7 +12,25 @@ import chart.postgres.raw.TrackPositionRecord;
 import chart.postgres.raw.TrackRecord;
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.wrapper.spotify.models.SimpleArtist;
+import com.wrapper.spotify.models.Track;
 import javafx.util.Pair;
+import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class PostgresConnection {
     private final PostgresConnectionManager manager;
@@ -291,7 +289,7 @@ public class PostgresConnection {
 
     public Optional<ArtistRecord> getArtist(String artistName) {
         String sql = "SELECT id, name, href, uri, is_youtube FROM artists" +
-                "    WHERE name = " + quote(artistName);
+                "    WHERE LOWER(name) = LOWER(" + quote(artistName) + ")";
 
         List<ArtistRecord> artists = executeSelectStatement(sql, this::createSimpleArtist);
         return artists.isEmpty() ? Optional.empty() : Optional.of(Iterables.getOnlyElement(artists));
@@ -301,9 +299,15 @@ public class PostgresConnection {
         String sql = "SELECT t.id, t.name, t.href, t.uri, t.is_youtube FROM tracks t" +
                 "     JOIN trackArtists ta ON t.id = ta.track_id" +
                 "     WHERE ta.artist_id = " + quote(artistId) +
-                "     AND t.name = " + quote(title);
+                "     AND LOWER(t.name) = LOWER(" + quote(title) + ")";
 
         List<TrackRecord> tracks = executeSelectStatement(sql, this::createTrackRecord);
+
+        if (tracks.size() > 1) {
+            System.err.println("Query returned multiple results!");
+            System.err.println(sql);
+        }
+
         return tracks.isEmpty() ? Optional.empty() : Optional.of(Iterables.getOnlyElement(tracks));
     }
 
