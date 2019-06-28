@@ -42,7 +42,6 @@ public class TrackSearchingAugmentor implements SpotifyAugmentor {
     }
 
     private Optional<SpotifyChartEntry> fetchFromPostgres(ChartEntry entry) {
-        Optional<SpotifyChartEntry> postgresEntry = Optional.empty();
         Optional<ArtistRecord> artist = connection.getArtist(entry.artist());
 
         if (artist.isPresent()) {
@@ -53,10 +52,11 @@ public class TrackSearchingAugmentor implements SpotifyAugmentor {
                 Track track = maybeTrack.get().track(ImmutableList.of(simpleArtist));
 
                 SpotifyChartEntry spotifyChartEntry = SpotifyChartEntry.builder().from(entry).track(track).build();
-                postgresEntry = Optional.of(spotifyChartEntry);
+                return Optional.of(spotifyChartEntry);
             }
         }
-        return postgresEntry;
+
+        return Optional.empty();
     }
 
     private SpotifyChartEntry fetchFromSpotify(ChartEntry entry) {
