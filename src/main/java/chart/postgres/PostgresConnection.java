@@ -113,10 +113,6 @@ public class PostgresConnection {
         }
     }
 
-    public void saveYearEndChartEntries(Set<YearEndChartEntryRecord> entriesToSave) {
-        // TODO
-    }
-
     private String getTrackFieldsForEntries(List<SpotifyChartEntry> entries) {
         return entries.stream().map(this::getTrackFieldsForEntry).collect(Collectors.joining(", "));
     }
@@ -129,6 +125,30 @@ public class PostgresConnection {
                              track.getHref(),
                              track.getUri(),
                              entry.isYoutube());
+    }
+
+    public void saveYearEndChartEntries(Set<YearEndChartEntryRecord> entries) {
+        try (Connection conn = manager.getConnection()) {
+            Statement statement = conn.createStatement();
+
+            String insertEntries = "INSERT INTO yearEndChartEntries (year, position, track_id)" +
+                    " VALUES " + getFieldsForYecEntries(entries) +
+                    " ON CONFLICT DO NOTHING";
+            statement.executeUpdate(insertEntries);
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to insert tracks!", e);
+        }
+    }
+
+    private String getFieldsForYecEntries(Set<YearEndChartEntryRecord> entries) {
+        return entries.stream().map(this::getFieldsForYecEntry).collect(Collectors.joining(", "));
+    }
+
+    private String getFieldsForYecEntry(YearEndChartEntryRecord record) {
+        return String.format("(%d, %d, '%s')",
+                record.year(),
+                record.position(),
+                record.track_id());
     }
 
     private static String escapeQuotes(String name) {

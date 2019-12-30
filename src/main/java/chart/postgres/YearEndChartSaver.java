@@ -22,6 +22,8 @@ public class YearEndChartSaver {
                         .track_id(entry.getValue().id())
                         .build())
                 .collect(Collectors.toSet());
+        System.out.println("Saving " + entriesToSave.size() + " entries...");
         connection.saveYearEndChartEntries(entriesToSave);
+        System.out.println("Success!");
     }
 }
