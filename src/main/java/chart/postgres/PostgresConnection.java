@@ -10,6 +10,7 @@ import chart.postgres.raw.ImmutableTrackRecord;
 import chart.postgres.raw.TrackArtistRecord;
 import chart.postgres.raw.TrackPositionRecord;
 import chart.postgres.raw.TrackRecord;
+import chart.postgres.raw.YearEndChartEntryRecord;
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;
 import com.google.common.collect.ImmutableList;
@@ -110,6 +111,10 @@ public class PostgresConnection {
         } catch (SQLException e) {
             throw new RuntimeException("Failed to insert tracks!", e);
         }
+    }
+
+    public void saveYearEndChartEntries(Set<YearEndChartEntryRecord> entriesToSave) {
+        // TODO
     }
 
     private String getTrackFieldsForEntries(List<SpotifyChartEntry> entries) {

@@ -1,8 +1,11 @@
 package chart.postgres;
 
+import chart.postgres.raw.YearEndChartEntryRecord;
 import chart.spotify.SimpleSpotifyChartEntry;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class YearEndChartSaver {
     private final PostgresConnection connection;
@@ -12,6 +15,13 @@ public class YearEndChartSaver {
     }
 
     public void save(int year, Map<Integer, SimpleSpotifyChartEntry> yearEndChart) {
-        // TODO
+        Set<YearEndChartEntryRecord> entriesToSave = yearEndChart.entrySet().stream()
+                .map(entry -> YearEndChartEntryRecord.builder()
+                        .year(year)
+                        .position(entry.getKey())
+                        .track_id(entry.getValue().id())
+                        .build())
+                .collect(Collectors.toSet());
+        connection.saveYearEndChartEntries(entriesToSave);
     }
 }
