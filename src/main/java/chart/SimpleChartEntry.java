@@ -18,6 +18,7 @@ public interface SimpleChartEntry {
     @Value.Default
     default Song toSong() {
         return ImmutableSong.builder()
+                .id(id())
                 .title(title())
                 .artist(artist())
                 .build();

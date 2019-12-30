@@ -28,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -291,6 +292,25 @@ public class PostgresConnection {
             }
         };
         return executeSelectStatement(sql, mapper);
+    }
+
+    public Set<YearEndChartEntryRecord> getYearEndChartEntries(int year, int limit) {
+        String sql = "SELECT year, position, track_id" +
+                "     FROM yearEndChartEntries" +
+                "     WHERE year = " + year +
+                "     AND position <= " + limit;
+        Function<ResultSet, YearEndChartEntryRecord> mapper = resultSet -> {
+            try {
+                return YearEndChartEntryRecord.builder()
+                        .year(resultSet.getInt("year"))
+                        .position(resultSet.getInt("position"))
+                        .track_id(resultSet.getString("track_id"))
+                        .build();
+            } catch (SQLException e) {
+                throw new RuntimeException("Couldn't extract year-end chart entry!", e);
+            }
+        };
+        return new HashSet<>(executeSelectStatement(sql, mapper));
     }
 
     private TrackPositionRecord createChartEntryRecord(ResultSet resultSet) {

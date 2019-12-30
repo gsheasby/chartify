@@ -1,5 +1,16 @@
 package chart.tasks;
 
+import chart.ChartConfig;
+import chart.ChartRun;
+import chart.SimpleChartEntry;
+import chart.Song;
+import chart.postgres.MultiChartLoader;
+import chart.postgres.PostgresConnection;
+import chart.postgres.YearEndChartPrinter;
+import chart.postgres.raw.YearEndChartEntryRecord;
+import chart.spotify.SimpleSpotifyChartEntry;
+import chart.spotify.SpotifyPlaylistLoader;
+
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -9,20 +20,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import chart.ChartConfig;
-import chart.ChartRun;
-import chart.SimpleChartEntry;
-import chart.Song;
-import chart.postgres.MultiChartLoader;
-import chart.postgres.YearEndChartPrinter;
-import chart.spotify.SimpleSpotifyChartEntry;
-import chart.spotify.SpotifyPlaylistLoader;
-
 public class YearEndChartPreviewTask {
     private static final int LIMIT = 200;
 
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
-        int year = 2018;
+        int year = 2019;
         if (args.length < 1) {
             System.out.println("Using default year of " + year);
         } else {
@@ -30,10 +32,11 @@ public class YearEndChartPreviewTask {
         }
 
         ChartConfig config = TaskUtils.getConfig();
+        PostgresConnection connection = PostgresConnection.create(config.postgresConfig());
 
         Map<Song, ChartRun> chartRuns = new MultiChartLoader(config).getAllChartRuns(year);
         List<List<SimpleSpotifyChartEntry>> yecSections = getPartsOfYearEndChart(config);
-        printYearEndChartPreview(chartRuns, yecSections);
+        printYearEndChartPreview(year, connection, chartRuns, yecSections);
     }
 
     private static List<List<SimpleSpotifyChartEntry>> getPartsOfYearEndChart(ChartConfig config) {
@@ -42,7 +45,13 @@ public class YearEndChartPreviewTask {
         return playlistIds.stream().map(playlistLoader::loadChartEntries).collect(Collectors.toList());
     }
 
-    private static void printYearEndChartPreview(Map<Song, ChartRun> chartRuns, List<List<SimpleSpotifyChartEntry>> yecSections) {
+    private static void printYearEndChartPreview(
+            int year,
+            PostgresConnection connection,
+            Map<Song, ChartRun> chartRuns,
+            List<List<SimpleSpotifyChartEntry>> yecSections) {
+        Set<YearEndChartEntryRecord> lastYearsTopHundred = connection.getYearEndChartEntries(year - 1, 100);
+
         int pos = 1;
         int sectionIndex = 1;
         for (List<SimpleSpotifyChartEntry> section : yecSections) {
@@ -58,9 +67,21 @@ public class YearEndChartPreviewTask {
         }
 
         List<ChartRun> remainingEntries = getChartRunsNotInTopSections(chartRuns, yecSections);
+
+        Set<String> trackIdsToExclude = lastYearsTopHundred.stream()
+                .map(YearEndChartEntryRecord::track_id)
+                .collect(Collectors.toSet());;
+
         Iterator<ChartRun> yecIterator = remainingEntries.iterator();
         for (int statPos = pos; yecIterator.hasNext() && statPos <= LIMIT; statPos++) {
             ChartRun chartRun = yecIterator.next();
+
+            if (trackIdsToExclude.contains(chartRun.getSong().id())) {
+                System.out.println("Skipping " + chartRun.getSong() + " from last year's top 100");
+                statPos--; // TODO this is rather hacky!
+                continue;
+            }
+
             YearEndChartPrinter.printSingleSong(statPos, chartRun);
         }
     }
