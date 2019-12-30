@@ -367,6 +367,14 @@ public class PostgresConnection {
         return tracks.isEmpty() ? Optional.empty() : Optional.of(Iterables.getOnlyElement(tracks));
     }
 
+    public Optional<TrackRecord> getTrackById(String trackId) {
+        String sql = "SELECT t.id, t.name, t.href, t.uri, t.is_youtube FROM tracks t" +
+                "     WHERE t.id = " + quote(trackId);
+
+        List<TrackRecord> tracks = executeSelectStatement(sql, this::createTrackRecord);
+        return tracks.isEmpty() ? Optional.empty() : Optional.of(Iterables.getOnlyElement(tracks));
+    }
+
     public List<TrackRecord> getTracks(String artistId) {
         String sql = "SELECT t.id, t.name, t.href, t.uri, t.is_youtube FROM tracks t" +
                 "     JOIN trackArtists ta ON t.id = ta.track_id" +
