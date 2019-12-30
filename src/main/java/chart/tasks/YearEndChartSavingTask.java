@@ -8,6 +8,7 @@ import chart.postgres.MultiChartLoader;
 import chart.postgres.YearEndChartPrinter;
 import chart.spotify.SimpleSpotifyChartEntry;
 import chart.spotify.SpotifyPlaylistLoader;
+import com.google.common.collect.Maps;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -34,7 +35,12 @@ public class YearEndChartSavingTask {
 
         Map<Song, ChartRun> chartRuns = new MultiChartLoader(config).getAllChartRuns(year);
         List<List<SimpleSpotifyChartEntry>> yecSections = getPartsOfYearEndChart(config);
-        printYearEndChartPreview(chartRuns, yecSections);
+        Map<Integer, SimpleSpotifyChartEntry> yearEndChart = printYearEndChartPreview(chartRuns, yecSections);
+        saveYearEndChart(yearEndChart);
+    }
+
+    private static void saveYearEndChart(Map<Integer, SimpleSpotifyChartEntry> yearEndChart) {
+        // TODO!
     }
 
     private static List<List<SimpleSpotifyChartEntry>> getPartsOfYearEndChart(ChartConfig config) {
@@ -43,7 +49,9 @@ public class YearEndChartSavingTask {
         return playlistIds.stream().map(playlistLoader::loadChartEntries).collect(Collectors.toList());
     }
 
-    private static void printYearEndChartPreview(Map<Song, ChartRun> chartRuns, List<List<SimpleSpotifyChartEntry>> yecSections) {
+    private static Map<Integer, SimpleSpotifyChartEntry> printYearEndChartPreview(Map<Song, ChartRun> chartRuns, List<List<SimpleSpotifyChartEntry>> yecSections) {
+        Map<Integer, SimpleSpotifyChartEntry> yearEndChart = Maps.newHashMap();
+
         int pos = 1;
         int sectionIndex = 1;
         for (List<SimpleSpotifyChartEntry> section : yecSections) {
@@ -52,6 +60,8 @@ public class YearEndChartSavingTask {
                 Song song = entry.toSong();
                 ChartRun chartRun = chartRuns.get(song);
                 YearEndChartPrinter.printSingleSong(pos, chartRun);
+                yearEndChart.put(pos, entry);
+
                 pos++;
             }
             System.out.println();
@@ -64,6 +74,8 @@ public class YearEndChartSavingTask {
             ChartRun chartRun = yecIterator.next();
             YearEndChartPrinter.printSingleSong(statPos, chartRun);
         }
+
+        return yearEndChart;
     }
 
     private static List<ChartRun> getChartRunsNotInTopSections(Map<Song, ChartRun> chartRuns, List<List<SimpleSpotifyChartEntry>> topLists) {
