@@ -5,7 +5,9 @@ import chart.ChartRun;
 import chart.SimpleChartEntry;
 import chart.Song;
 import chart.postgres.MultiChartLoader;
+import chart.postgres.PostgresConnection;
 import chart.postgres.YearEndChartPrinter;
+import chart.postgres.YearEndChartSaver;
 import chart.spotify.SimpleSpotifyChartEntry;
 import chart.spotify.SpotifyPlaylistLoader;
 import com.google.common.collect.Maps;
@@ -32,15 +34,14 @@ public class YearEndChartSavingTask {
         }
 
         ChartConfig config = TaskUtils.getConfig();
+        PostgresConnection connection = PostgresConnection.create(config.postgresConfig());
 
         Map<Song, ChartRun> chartRuns = new MultiChartLoader(config).getAllChartRuns(year);
         List<List<SimpleSpotifyChartEntry>> yecSections = getPartsOfYearEndChart(config);
         Map<Integer, SimpleSpotifyChartEntry> yearEndChart = printYearEndChartPreview(chartRuns, yecSections);
-        saveYearEndChart(yearEndChart);
-    }
 
-    private static void saveYearEndChart(Map<Integer, SimpleSpotifyChartEntry> yearEndChart) {
-        // TODO!
+        YearEndChartSaver saver = new YearEndChartSaver(connection);
+        saver.save(year, yearEndChart);
     }
 
     private static List<List<SimpleSpotifyChartEntry>> getPartsOfYearEndChart(ChartConfig config) {
