@@ -64,7 +64,8 @@ public class AugmentingChartImporter {
             SpotifyChart spotifyChart = SpotifyChart.augment(chart, augmentor);
             System.out.println(String.format("Found chart with %d entries",
                     spotifyChart.entries().size()));
-            saver.saveChart(spotifyChart);
+            System.out.println("Debug - not saving");
+//            saver.saveChart(spotifyChart);
         }
     }
 }
