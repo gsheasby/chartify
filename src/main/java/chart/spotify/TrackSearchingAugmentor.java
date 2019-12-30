@@ -42,11 +42,18 @@ public class TrackSearchingAugmentor implements SpotifyAugmentor {
     }
 
     private Optional<SpotifyChartEntry> fetchFromPostgres(ChartEntry entry) {
-        Optional<ArtistRecord> artist = connection.getArtist(entry.artist());
+        String artistName = entry.artist();
+        Optional<ArtistRecord> artist = getArtistInvariantToThe(artistName);
+
+        if (!artist.isPresent() && artistName.contains(",")) {
+            artist = connection.getArtist(artistName.split(",")[0]);
+        }
 
         if (artist.isPresent()) {
             String id = artist.get().id();
             Optional<TrackRecord> maybeTrack = connection.getTrack(entry.title(), id);
+
+            // TODO if not, return artist and then search spotify better.
             if (maybeTrack.isPresent()) {
                 SimpleArtist simpleArtist = artist.get().simpleArtist();
                 Track track = maybeTrack.get().track(ImmutableList.of(simpleArtist));
@@ -59,12 +66,30 @@ public class TrackSearchingAugmentor implements SpotifyAugmentor {
         return Optional.empty();
     }
 
+    private Optional<ArtistRecord> getArtistInvariantToThe(String artistName) {
+        Optional<ArtistRecord> artist = connection.getArtist(artistName);
+        if (!artist.isPresent()) {
+            // If starting with 'The', try removing it
+            if (artistName.startsWith("The ")) {
+                String artistWithoutThe = artistName.substring(4);
+                artist = connection.getArtist(artistWithoutThe);
+            } else {
+                artist = connection.getArtist("The " + artistName);
+            }
+        }
+        return artist;
+    }
+
     private SpotifyChartEntry fetchFromSpotify(ChartEntry entry) {
-        // TODO handle cases where track was removed from Spotify
         String title = entry.title();
         String artist = entry.artist();
 
-        Track track = getTrack(title, artist).orElseGet(() -> createTrack(title, artist));
+        Optional<Track> maybeTrack = getTrack(title, artist);
+        if (!maybeTrack.isPresent() && artist.contains(",")) {
+            maybeTrack = getTrack(title, artist.split(",")[0]);
+        }
+
+        Track track = maybeTrack.orElseGet(() -> createTrack(title, artist));
 
         return SpotifyChartEntry.builder().from(entry).track(track).build();
     }
@@ -97,9 +122,24 @@ public class TrackSearchingAugmentor implements SpotifyAugmentor {
         Optional<SimpleArtist> postgresArtist = connection.getArtist(artist)
                 .map(ArtistRecord::simpleArtist);
         return postgresArtist
-                .orElseGet(() -> spotifySearcher.searchForArtist(artist)
-                        .orElseGet(() -> createArtist(artist)));
+                .orElseGet(() -> loadFromSpotify(artist));
 
+    }
+
+    private SimpleArtist loadFromSpotify(String artist) {
+        Optional<SimpleArtist> simpleArtist = spotifySearcher.searchForArtist(artist);
+        if (simpleArtist.isPresent()) {
+            return simpleArtist.get();
+        }
+
+        if (artist.contains(",")) {
+            String[] artists = artist.split(",");
+            String firstArtist = artists[0];
+            return spotifySearcher.searchForArtist(firstArtist)
+                    .orElseGet(() -> createArtist(firstArtist));
+        } else {
+            return createArtist(artist);
+        }
     }
 
     private SimpleArtist createArtist(String name) {
