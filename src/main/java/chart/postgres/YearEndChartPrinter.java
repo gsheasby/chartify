@@ -1,10 +1,10 @@
 package chart.postgres;
 
-import java.util.Iterator;
-import java.util.List;
-
 import chart.ChartRun;
 import chart.Song;
+
+import java.util.Iterator;
+import java.util.List;
 
 public class YearEndChartPrinter {
     public static void printYearEndChart(List<ChartRun> yec, int limit) {
@@ -19,11 +19,26 @@ public class YearEndChartPrinter {
     public static void printSingleSong(int pos, ChartRun chartRun) {
 //        System.out.println(String.format("%02d\t%s", pos, chartRun.toString()));
         Song song = chartRun.getSong();
-        System.out.println(String.format("%02d\t%s\t-\t%s\t(#%d, %s)",
+        System.out.println(String.format("%02d\t%03d\t%s\t%s\t-\t%s\t#%d\t%s\t%s",
                                          pos,
+                                         chartRun.getScore(),
+                                         getMarker(chartRun),
                                          song.title(),
                                          song.artist(),
                                          chartRun.getPeak(),
-                                         chartRun.getEntryDate().toString("MMMM")));
+                                         chartRun.getEntryDate().toString("MMMM"),
+                                         chartRun.getRun()));
+    }
+
+    private static String getMarker(ChartRun chartRun) {
+        if (chartRun.isActive()) {
+            return "*";
+        }
+
+        if (chartRun.getEntryDate().dayOfYear().get() <= 7) {
+            return "J";
+        }
+
+        return "";
     }
 }

@@ -1,11 +1,10 @@
 package chart;
 
-import java.util.List;
-import java.util.Objects;
-
+import com.google.common.collect.Lists;
 import org.joda.time.DateTime;
 
-import com.google.common.collect.Lists;
+import java.util.List;
+import java.util.Objects;
 
 public class ChartRun implements Comparable<ChartRun> {
     private static final int POSITIONS_TO_SCORE = 60;
@@ -15,12 +14,21 @@ public class ChartRun implements Comparable<ChartRun> {
     private final DateTime entryDate;
 
     private List<Integer> positions;
+    private boolean active = false;
 
     public ChartRun(Song song, Integer entryWeek, DateTime entryDate) {
         this.song = song;
         this.entryWeek = entryWeek;
         this.entryDate = entryDate;
         this.positions = Lists.newArrayList();
+    }
+
+    public void add(Integer position) {
+        positions.add(position);
+    }
+
+    public void setActive(boolean isActive) {
+        this.active = isActive;
     }
 
     public Song getSong() {
@@ -31,8 +39,8 @@ public class ChartRun implements Comparable<ChartRun> {
         return entryDate;
     }
 
-    public void add(Integer position) {
-        positions.add(position);
+    public boolean isActive() {
+        return active;
     }
 
     public Integer getScore() {
@@ -81,5 +89,9 @@ public class ChartRun implements Comparable<ChartRun> {
                              song.artist(),
                              entryDate.toLocalDate(),
                              positions.toString());
+    }
+
+    public String getRun() {
+        return positions.toString();
     }
 }
