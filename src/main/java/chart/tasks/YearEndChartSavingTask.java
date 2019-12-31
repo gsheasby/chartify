@@ -60,7 +60,7 @@ public class YearEndChartSavingTask {
             for (SimpleSpotifyChartEntry entry : section) {
                 Song song = entry.toSong();
                 ChartRun chartRun = chartRuns.get(song);
-                YearEndChartPrinter.printSingleSong(pos, chartRun);
+                YearEndChartPrinter.printWithStats(pos, chartRun);
                 yearEndChart.put(pos, entry);
 
                 pos++;
@@ -73,7 +73,7 @@ public class YearEndChartSavingTask {
         Iterator<ChartRun> yecIterator = remainingEntries.iterator();
         for (int statPos = pos; yecIterator.hasNext() && statPos <= LIMIT; statPos++) {
             ChartRun chartRun = yecIterator.next();
-            YearEndChartPrinter.printSingleSong(statPos, chartRun);
+            YearEndChartPrinter.printWithStats(statPos, chartRun);
         }
 
         return yearEndChart;

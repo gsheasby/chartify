@@ -59,7 +59,7 @@ public class YearEndChartPreviewTask {
             for (SimpleSpotifyChartEntry entry : section) {
                 Song song = entry.toSong();
                 ChartRun chartRun = chartRuns.get(song);
-                YearEndChartPrinter.printSingleSong(pos, chartRun);
+                YearEndChartPrinter.printWithStats(pos, chartRun);
                 pos++;
             }
             System.out.println();
@@ -82,7 +82,7 @@ public class YearEndChartPreviewTask {
                 continue;
             }
 
-            YearEndChartPrinter.printSingleSong(statPos, chartRun);
+            YearEndChartPrinter.printForPostage(statPos, chartRun);
         }
     }
 
