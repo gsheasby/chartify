@@ -10,6 +10,7 @@ import chart.postgres.YearEndChartPrinter;
 import chart.postgres.raw.YearEndChartEntryRecord;
 import chart.spotify.SimpleSpotifyChartEntry;
 import chart.spotify.SpotifyPlaylistLoader;
+import com.google.common.collect.Lists;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -73,17 +74,20 @@ public class YearEndChartPreviewTask {
                 .collect(Collectors.toSet());;
 
         Iterator<ChartRun> yecIterator = remainingEntries.iterator();
+        List<String> entriesForPrinting = Lists.newArrayListWithCapacity(remainingEntries.size());
         for (int statPos = pos; yecIterator.hasNext() && statPos <= LIMIT; statPos++) {
             ChartRun chartRun = yecIterator.next();
 
             if (trackIdsToExclude.contains(chartRun.getSong().id())) {
-                System.out.println("Skipping " + chartRun.getSong() + " from last year's top 100");
+                entriesForPrinting.add("Skipping " + chartRun.getSong() + " from last year's top 100");
                 statPos--; // TODO this is rather hacky!
                 continue;
             }
 
-            YearEndChartPrinter.printForPostage(statPos, chartRun);
+            entriesForPrinting.add(YearEndChartPrinter.getBbCodedString(statPos, chartRun));
         }
+
+        Lists.reverse(entriesForPrinting).forEach(System.out::println);
     }
 
     private static List<ChartRun> getChartRunsNotInTopSections(Map<Song, ChartRun> chartRuns, List<List<SimpleSpotifyChartEntry>> topLists) {

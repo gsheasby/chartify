@@ -12,19 +12,24 @@ public class YearEndChartPrinter {
 
         for (int pos = 1; yecIterator.hasNext() && pos <= limit; pos++) {
             ChartRun chartRun = yecIterator.next();
-//            printWithStats(pos, chartRun);
-            printForPostage(pos, chartRun);
+            printWithStats(pos, chartRun);
+//            printForPostage(pos, chartRun);
         }
     }
 
     public static void printForPostage(int pos, ChartRun chartRun) {
+        String stringForPrinting = getBbCodedString(pos, chartRun);
+        System.out.println(stringForPrinting);
+    }
+
+    public static String getBbCodedString(int pos, ChartRun chartRun) {
         Song song = chartRun.getSong();
-        System.out.println(String.format("%02d\t%s\t-\t%s\t (#%d, %s)",
+        return String.format("[b]%02d[/b]    %s\t-\t%s\t (#%d, %s)",
                 pos,
                 song.title(),
                 song.artist(),
                 chartRun.getPeak(),
-                chartRun.getEntryDate().toString("MMMM")));
+                chartRun.getEntryDate().toString("MMMM"));
     }
 
     public static void printWithStats(int pos, ChartRun chartRun) {
