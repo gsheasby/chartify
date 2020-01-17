@@ -10,6 +10,7 @@ import chart.postgres.raw.ImmutableTrackRecord;
 import chart.postgres.raw.TrackArtistRecord;
 import chart.postgres.raw.TrackPositionRecord;
 import chart.postgres.raw.TrackRecord;
+import chart.postgres.raw.YearEndChartEntryRecord;
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;
 import com.google.common.collect.ImmutableList;
@@ -27,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -124,6 +126,30 @@ public class PostgresConnection {
                              track.getHref(),
                              track.getUri(),
                              entry.isYoutube());
+    }
+
+    public void saveYearEndChartEntries(Set<YearEndChartEntryRecord> entries) {
+        try (Connection conn = manager.getConnection()) {
+            Statement statement = conn.createStatement();
+
+            String insertEntries = "INSERT INTO yearEndChartEntries (year, position, track_id)" +
+                    " VALUES " + getFieldsForYecEntries(entries) +
+                    " ON CONFLICT DO NOTHING";
+            statement.executeUpdate(insertEntries);
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to insert tracks!", e);
+        }
+    }
+
+    private String getFieldsForYecEntries(Set<YearEndChartEntryRecord> entries) {
+        return entries.stream().map(this::getFieldsForYecEntry).collect(Collectors.joining(", "));
+    }
+
+    private String getFieldsForYecEntry(YearEndChartEntryRecord record) {
+        return String.format("(%d, %d, '%s')",
+                record.year(),
+                record.position(),
+                record.track_id());
     }
 
     private static String escapeQuotes(String name) {
@@ -268,6 +294,25 @@ public class PostgresConnection {
         return executeSelectStatement(sql, mapper);
     }
 
+    public Set<YearEndChartEntryRecord> getYearEndChartEntries(int year, int limit) {
+        String sql = "SELECT year, position, track_id" +
+                "     FROM yearEndChartEntries" +
+                "     WHERE year = " + year +
+                "     AND position <= " + limit;
+        Function<ResultSet, YearEndChartEntryRecord> mapper = resultSet -> {
+            try {
+                return YearEndChartEntryRecord.builder()
+                        .year(resultSet.getInt("year"))
+                        .position(resultSet.getInt("position"))
+                        .track_id(resultSet.getString("track_id"))
+                        .build();
+            } catch (SQLException e) {
+                throw new RuntimeException("Couldn't extract year-end chart entry!", e);
+            }
+        };
+        return new HashSet<>(executeSelectStatement(sql, mapper));
+    }
+
     private TrackPositionRecord createChartEntryRecord(ResultSet resultSet) {
         try {
             return ImmutableTrackPositionRecord.builder()
@@ -337,6 +382,14 @@ public class PostgresConnection {
                 "     JOIN trackArtists ta ON t.id = ta.track_id" +
                 "     WHERE ta.artist_id = " + quote(artistId) +
                 "     AND t.name = " + quote(title);
+
+        List<TrackRecord> tracks = executeSelectStatement(sql, this::createTrackRecord);
+        return tracks.isEmpty() ? Optional.empty() : Optional.of(Iterables.getOnlyElement(tracks));
+    }
+
+    public Optional<TrackRecord> getTrackById(String trackId) {
+        String sql = "SELECT t.id, t.name, t.href, t.uri, t.is_youtube FROM tracks t" +
+                "     WHERE t.id = " + quote(trackId);
 
         List<TrackRecord> tracks = executeSelectStatement(sql, this::createTrackRecord);
         return tracks.isEmpty() ? Optional.empty() : Optional.of(Iterables.getOnlyElement(tracks));

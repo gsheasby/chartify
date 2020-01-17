@@ -1,17 +1,17 @@
 package chart.postgres;
 
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-
-import com.google.common.collect.Maps;
-
 import chart.Chart;
 import chart.ChartConfig;
 import chart.ChartEntry;
 import chart.ChartRun;
 import chart.Song;
 import chart.spotify.SpotifyChart;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 public class MultiChartLoader {
     private final ChartConfig config;
@@ -40,6 +40,13 @@ public class MultiChartLoader {
                 }
             }
         }
+
+        // Mark which entries were in the last chart
+        Iterables.getLast(charts).entries()
+                .stream()
+                .map(ChartEntry::toSong)
+                .forEach(song -> chartRuns.get(song).setActive(true));
+
         return chartRuns;
     }
 }

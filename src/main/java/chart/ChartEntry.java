@@ -1,8 +1,8 @@
 package chart;
 
-import java.util.Optional;
-
 import org.immutables.value.Value;
+
+import java.util.Optional;
 
 public interface ChartEntry {
     Integer position();
@@ -24,6 +24,7 @@ public interface ChartEntry {
     @Value.Default
     default Song toSong() {
         return ImmutableSong.builder()
+                            .id(id())
                             .title(title())
                             .artist(artist())
                             .build();

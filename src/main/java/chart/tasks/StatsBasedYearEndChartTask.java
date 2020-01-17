@@ -1,20 +1,20 @@
 package chart.tasks;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import chart.ChartConfig;
 import chart.ChartRun;
 import chart.Song;
 import chart.postgres.MultiChartLoader;
 import chart.postgres.YearEndChartPrinter;
 
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 public class StatsBasedYearEndChartTask {
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
-        int year = 2018;
+        int year = 2019;
         if (args.length < 1) {
             System.out.println("Using default year of " + year);
         } else {
