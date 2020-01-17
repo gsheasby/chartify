@@ -36,7 +36,9 @@ public class YearEndChartPreviewTask {
         PostgresConnection connection = PostgresConnection.create(config.postgresConfig());
 
         Map<Song, ChartRun> chartRuns = new MultiChartLoader(config).getAllChartRuns(year);
+        System.out.println("Loaded charts for " + year);
         List<List<SimpleSpotifyChartEntry>> yecSections = getPartsOfYearEndChart(config);
+        System.out.println("Loaded year-end charts from Spotify");
         printYearEndChartPreview(year, connection, chartRuns, yecSections);
     }
 
@@ -52,6 +54,9 @@ public class YearEndChartPreviewTask {
             Map<Song, ChartRun> chartRuns,
             List<List<SimpleSpotifyChartEntry>> yecSections) {
         Set<YearEndChartEntryRecord> lastYearsTopHundred = connection.getYearEndChartEntries(year - 1, 100);
+        System.out.println("Loaded YEC for " + (year - 1) + " from Postgres");
+
+        List<String> entriesForPrinting = Lists.newArrayListWithCapacity(LIMIT);
 
         int pos = 1;
         int sectionIndex = 1;
@@ -61,6 +66,7 @@ public class YearEndChartPreviewTask {
                 Song song = entry.toSong();
                 ChartRun chartRun = chartRuns.get(song);
                 YearEndChartPrinter.printWithStats(pos, chartRun);
+                entriesForPrinting.add(YearEndChartPrinter.getBbCodedString(pos, chartRun));
                 pos++;
             }
             System.out.println();
@@ -74,7 +80,6 @@ public class YearEndChartPreviewTask {
                 .collect(Collectors.toSet());;
 
         Iterator<ChartRun> yecIterator = remainingEntries.iterator();
-        List<String> entriesForPrinting = Lists.newArrayListWithCapacity(remainingEntries.size());
         for (int statPos = pos; yecIterator.hasNext() && statPos <= LIMIT; statPos++) {
             ChartRun chartRun = yecIterator.next();
 
