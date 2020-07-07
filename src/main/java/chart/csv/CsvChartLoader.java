@@ -1,13 +1,11 @@
 package chart.csv;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-
+import chart.Chart;
+import chart.FileReference;
 import com.google.common.collect.Lists;
 
-import chart.Chart;
-import javafx.util.Pair;
+import java.io.IOException;
+import java.util.List;
 
 public class CsvChartLoader {
     private final String folder;
@@ -22,11 +20,11 @@ public class CsvChartLoader {
         FileChartReader reader = new FileChartReader(folder);
 
         // TODO this is a bit weird - we get all the paths but only use the week numbers
-        List<Pair<Integer, Path>> files = loader.findFiles();
+        List<FileReference> files = loader.findFiles();
 
         List<Chart> charts = Lists.newArrayList();
-        for (Pair<Integer, Path> chartRef : files) {
-            charts.add(reader.findDerivedChart(chartRef.getKey()));
+        for (FileReference chartRef : files) {
+            charts.add(reader.findDerivedChart(chartRef.week()));
         }
 
         return charts;
