@@ -1,17 +1,16 @@
 package chart.csv;
 
+import chart.ChartReader;
+import chart.ChartUtils;
+import chart.FileReference;
+import org.joda.time.DateTime;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.joda.time.DateTime;
-
-import chart.ChartReader;
-import chart.ChartUtils;
-import javafx.util.Pair;
 
 public class FileChartReader implements ChartReader<CsvChart, CsvSimpleChart> {
     private final FileChartLoader fileChartLoader;
@@ -22,24 +21,22 @@ public class FileChartReader implements ChartReader<CsvChart, CsvSimpleChart> {
 
     @Override
     public CsvChart findLatestChart() throws IOException {
-        Pair<Integer, Path> mostRecent = fileChartLoader.findMostRecent();
-        int week = mostRecent.getKey();
-        Path chartPath = mostRecent.getValue();
-        return findDerivedChart(week, chartPath);
+        FileReference mostRecent = fileChartLoader.findMostRecent();
+        return findDerivedChart(mostRecent);
     }
 
     @Override
     public CsvChart findDerivedChart(int week) throws IOException {
         Path chartPath = fileChartLoader.findFileForWeek(week);
-        return findDerivedChart(week, chartPath);
+        return findDerivedChart(FileReference.of(week, chartPath));
     }
 
-    private CsvChart findDerivedChart(int week, Path chartPath) throws IOException {
-        DateTime chartDate = ChartUtils.getDate(chartPath.getFileName().toString());
-        Stream<String> lines = Files.lines(chartPath);
+    private CsvChart findDerivedChart(FileReference fileReference) throws IOException {
+        DateTime chartDate = ChartUtils.getDate(fileReference.path().getFileName().toString());
+        Stream<String> lines = Files.lines(fileReference.path());
         List<CsvChartEntry> entries = lines.map(CsvLineParser::parseEntry).collect(Collectors.toList());
         return ImmutableCsvChart.builder()
-                                .week(week)
+                                .week(fileReference.week())
                                 .date(chartDate)
                                 .entries(entries)
                                 .build();

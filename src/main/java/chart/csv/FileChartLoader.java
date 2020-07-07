@@ -1,13 +1,13 @@
 package chart.csv;
 
+import chart.FileReference;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javafx.util.Pair;
 
 public class FileChartLoader {
     private String folder;
@@ -16,12 +16,12 @@ public class FileChartLoader {
         this.folder = folder;
     }
 
-    public List<Pair<Integer, Path>> findFiles() throws IOException {
+    public List<FileReference> findFiles() throws IOException {
         Path path = Paths.get(folder);
         List<Path> chartFiles = Files.walk(path)
                                      .filter(file -> file.getFileName().toString().endsWith(".csv"))
                                      .collect(Collectors.toList());
-        return chartFiles.stream().map(file -> new Pair<>(getWeek(file), file)).collect(Collectors.toList());
+        return chartFiles.stream().map(file -> FileReference.of(getWeek(file), file)).collect(Collectors.toList());
     }
 
     private int getWeek(Path path) {
@@ -40,7 +40,7 @@ public class FileChartLoader {
         return chartFiles.get(0);
     }
 
-    public Pair<Integer, Path> findMostRecent() throws IOException {
+    public FileReference findMostRecent() throws IOException {
         List<Path> chartFiles = Files.walk(Paths.get(folder), 1)
                                      .filter(path -> path.getFileName().toString().endsWith(".csv"))
                                      .collect(Collectors.toList());
@@ -56,6 +56,6 @@ public class FileChartLoader {
             }
         }
 
-        return new Pair<>(latestWeek, latest);
+        return FileReference.of(latestWeek, latest);
     }
 }

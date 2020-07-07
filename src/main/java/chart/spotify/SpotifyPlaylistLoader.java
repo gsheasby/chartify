@@ -1,7 +1,6 @@
 package chart.spotify;
 
 import com.google.common.collect.Lists;
-import com.wrapper.spotify.models.Playlist;
 import com.wrapper.spotify.models.PlaylistTrack;
 import com.wrapper.spotify.models.Track;
 
@@ -33,10 +32,8 @@ public class SpotifyPlaylistLoader {
         return convertToEntries(playlist, Optional.of(limit));
     }
 
-    // TODO this only loads the first 100 tracks in the playlist - need extra calls to load later items.
     private List<PlaylistTrack> load(String playlistId) {
-        Playlist playlist = spotifyApi.getPlaylist(playlistId);
-        return playlist.getTracks().getItems();
+        return spotifyApi.getPlaylistTracks(playlistId);
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
