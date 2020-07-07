@@ -19,7 +19,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
-import javafx.util.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 
@@ -27,6 +26,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.AbstractMap;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -215,18 +215,18 @@ public class PostgresConnection {
                 "     FROM chartEntries e" +
                 "     WHERE e.chart_week = " + week +
                 "     AND e.track_id IN " + getInClause(trackIds);
-        Function<ResultSet, Pair<String, Integer>> mapper = resultSet -> {
+        Function<ResultSet, Map.Entry<String, Integer>> mapper = resultSet -> {
             try {
                 String id = resultSet.getString("id");
                 Integer lastPos = resultSet.getInt("lastPos");
-                return new Pair<>(id, lastPos);
+                return new AbstractMap.SimpleEntry<>(id, lastPos);
             } catch (SQLException e) {
                 throw new RuntimeException("Couldn't extract chart entry!");
             }
         };
 
-        List<Pair<String, Integer>> entries = executeSelectStatement(sql, mapper);
-        return entries.stream().collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+        List<Map.Entry<String, Integer>> entries = executeSelectStatement(sql, mapper);
+        return entries.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public Map<String, Integer> getWeeksOnChart(Set<String> trackIds, int upToWeek) {
@@ -239,18 +239,18 @@ public class PostgresConnection {
                 "     WHERE e.track_id IN " + getInClause(trackIds) +
                 "     AND e.chart_week <= " + upToWeek +
                 "     GROUP BY e.track_id";
-        Function<ResultSet, Pair<String, Integer>> mapper = resultSet -> {
+        Function<ResultSet, Map.Entry<String, Integer>> mapper = resultSet -> {
             try {
                 String id = resultSet.getString("id");
                 Integer weeks = resultSet.getInt("weeks");
-                return new Pair<>(id, weeks);
+                return new AbstractMap.SimpleEntry<>(id, weeks);
             } catch (SQLException e) {
                 throw new RuntimeException("Couldn't extract chart entry!");
             }
         };
 
-        List<Pair<String, Integer>> entries = executeSelectStatement(sql, mapper);
-        return entries.stream().collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+        List<Map.Entry<String, Integer>> entries = executeSelectStatement(sql, mapper);
+        return entries.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public List<TrackPositionRecord> getTrackPositions(int week) {
