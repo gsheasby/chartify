@@ -1,5 +1,5 @@
 plugins {
-    id 'org.inferred.processors' version '1.2.12'
+    id 'org.inferred.processors' version '3.3.0'
 }
 
 apply plugin: 'java'
@@ -8,7 +8,7 @@ apply plugin: 'idea'
 group 'com.glenncode'
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 11
 
 repositories {
     mavenCentral()
@@ -21,7 +21,7 @@ dependencies {
     // https://mvnrepository.com/artifact/postgresql/postgresql
     compile group: 'postgresql', name: 'postgresql', version: '9.0-801.jdbc4'
 
-    compile group: 'org.immutables', name: 'value', version: '2.5.3'
+    compileOnly group: 'org.immutables', name: 'value', version: '2.5.3'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.6.7'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.6.7'
     compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.9.1'
@@ -35,5 +35,12 @@ dependencies {
 
     runtime group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.9.1'
 
-    processor group: 'org.immutables', name: 'value', version: '2.5.3'
+    runtime group: 'com.google.guava', name: 'guava', version: '18.0'
+    runtime group: 'org.yaml', name: 'snakeyaml', version: '1.18'
+
+    annotationProcessor "org.immutables:value:2.5.3"
+}
+
+compileJava {
+    options.annotationProcessorPath = configurations.annotationProcessor
 }

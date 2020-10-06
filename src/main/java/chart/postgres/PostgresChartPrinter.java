@@ -1,25 +1,27 @@
 package chart.postgres;
 
+import chart.ChartEntry;
+import chart.ChartPrinter;
+import chart.format.ChartFormatter;
+import chart.spotify.SpotifyChart;
+import chart.spotify.SpotifyChartEntry;
+import com.google.common.base.Preconditions;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.google.common.base.Preconditions;
-
-import chart.ChartEntry;
-import chart.format.ChartFormatter;
-import chart.ChartPrinter;
-import chart.spotify.SpotifyChart;
-import chart.spotify.SpotifyChartEntry;
 
 public class PostgresChartPrinter implements ChartPrinter<SpotifyChart> {
     private static final int CUTOFF = 60;
 
     private final ChartFormatter formatter;
+    private final PostgresChartHistoryPrinter historyPrinter;
 
-    public PostgresChartPrinter(ChartFormatter formatter) {
+    public PostgresChartPrinter(ChartFormatter formatter, PostgresChartHistoryPrinter historyPrinter) {
         this.formatter = formatter;
+        this.historyPrinter = historyPrinter;
     }
 
     @Override
@@ -43,6 +45,17 @@ public class PostgresChartPrinter implements ChartPrinter<SpotifyChart> {
         for (SpotifyChartEntry dropout : dropouts) {
             printDropout(dropout);
         }
+
+        System.out.println();
+        chart.entries().stream()
+                .filter(this::shouldPrintHistory)
+                .map(entry -> entry.track().getArtists())
+                .flatMap(Collection::stream)
+                .forEach(historyPrinter::printHistory);
+    }
+
+    private boolean shouldPrintHistory(SpotifyChartEntry entry) {
+        return !entry.lastPosition().isPresent() && entry.position() <= CUTOFF;
     }
 
     private void printChartHeader(SpotifyChart chart) {

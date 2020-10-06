@@ -1,14 +1,13 @@
 package chart.spotify;
 
+import com.google.common.collect.Lists;
+import com.wrapper.spotify.models.PlaylistTrack;
+import com.wrapper.spotify.models.Track;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.google.common.collect.Lists;
-import com.wrapper.spotify.models.Playlist;
-import com.wrapper.spotify.models.PlaylistTrack;
-import com.wrapper.spotify.models.Track;
 
 public class SpotifyPlaylistLoader {
     private final SpotifyApi spotifyApi;
@@ -34,8 +33,7 @@ public class SpotifyPlaylistLoader {
     }
 
     private List<PlaylistTrack> load(String playlistId) {
-        Playlist playlist = spotifyApi.getPlaylist(playlistId);
-        return playlist.getTracks().getItems();
+        return spotifyApi.getPlaylistTracks(playlistId);
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")

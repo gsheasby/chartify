@@ -4,6 +4,7 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 public abstract class Song {
+    public abstract String id();
     public abstract String title();
     public abstract String artist();
 

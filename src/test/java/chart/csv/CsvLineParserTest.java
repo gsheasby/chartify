@@ -1,12 +1,11 @@
 package chart.csv;
 
-import static org.junit.Assert.assertEquals;
+import chart.ChartEntry;
+import org.junit.Test;
 
 import java.util.Optional;
 
-import org.junit.Test;
-
-import chart.ChartEntry;
+import static org.junit.Assert.assertEquals;
 
 public class CsvLineParserTest {
     @Test
@@ -36,9 +35,9 @@ public class CsvLineParserTest {
     @Test
     public void parseChartLine() {
         ChartEntry actual = CsvLineParser.parseEntry("1,2,3,title,artist");
-        assertEquals(new Integer(1), actual.position());
+        assertEquals(Integer.valueOf(1), actual.position());
         assertEquals(Optional.of(2), actual.lastPosition());
-        assertEquals(new Integer(3), actual.weeksOnChart());
+        assertEquals(Integer.valueOf(3), actual.weeksOnChart());
         assertEquals("title", actual.title());
         assertEquals("artist", actual.artist());
     }
@@ -46,9 +45,9 @@ public class CsvLineParserTest {
     @Test
     public void parseNewEntry() {
         ChartEntry actual = CsvLineParser.parseEntry("1,,1,title,artist");
-        assertEquals(new Integer(1), actual.position());
+        assertEquals(Integer.valueOf(1), actual.position());
         assertEquals(Optional.empty(), actual.lastPosition());
-        assertEquals(new Integer(1), actual.weeksOnChart());
+        assertEquals(Integer.valueOf(1), actual.weeksOnChart());
         assertEquals("title", actual.title());
         assertEquals("artist", actual.artist());
     }
@@ -56,9 +55,9 @@ public class CsvLineParserTest {
     @Test
     public void parseChartLineWithSpotifyInfo() {
         ChartEntry actual = CsvLineParser.parseEntry("1,,1,title,artist,id,href,uri");
-        assertEquals(new Integer(1), actual.position());
+        assertEquals(Integer.valueOf(1), actual.position());
         assertEquals(Optional.empty(), actual.lastPosition());
-        assertEquals(new Integer(1), actual.weeksOnChart());
+        assertEquals(Integer.valueOf(1), actual.weeksOnChart());
         assertEquals("title", actual.title());
         assertEquals("artist", actual.artist());
         assertEquals("id", actual.id());

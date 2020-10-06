@@ -1,23 +1,21 @@
 package chart.csv;
 
-import static org.junit.Assert.assertEquals;
+import chart.FileReference;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import chart.csv.FileChartLoader;
-import javafx.util.Pair;
+import static org.junit.Assert.assertEquals;
 
 public class FileChartLoaderTest {
     private static String FOLDER = "src/test/resources/charts";
     private FileChartLoader loader;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         loader = new FileChartLoader(FOLDER);
     }
 
@@ -38,7 +36,7 @@ public class FileChartLoaderTest {
     public void canLoadMostRecentChart() throws IOException {
         Path expected = Paths.get(FOLDER, "1.csv");
 
-        Pair<Integer, Path> latest = loader.findMostRecent();
-        assertEquals(expected, latest.getValue());
+        FileReference latest = loader.findMostRecent();
+        assertEquals(expected, latest.path());
     }
 }

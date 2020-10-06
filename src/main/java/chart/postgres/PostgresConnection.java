@@ -10,13 +10,15 @@ import chart.postgres.raw.ImmutableTrackRecord;
 import chart.postgres.raw.TrackArtistRecord;
 import chart.postgres.raw.TrackPositionRecord;
 import chart.postgres.raw.TrackRecord;
+import chart.postgres.raw.YearEndChartEntryRecord;
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
-import javafx.util.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 
@@ -24,7 +26,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.AbstractMap;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -124,6 +128,30 @@ public class PostgresConnection {
                              entry.isYoutube());
     }
 
+    public void saveYearEndChartEntries(Set<YearEndChartEntryRecord> entries) {
+        try (Connection conn = manager.getConnection()) {
+            Statement statement = conn.createStatement();
+
+            String insertEntries = "INSERT INTO yearEndChartEntries (year, position, track_id)" +
+                    " VALUES " + getFieldsForYecEntries(entries) +
+                    " ON CONFLICT DO NOTHING";
+            statement.executeUpdate(insertEntries);
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to insert tracks!", e);
+        }
+    }
+
+    private String getFieldsForYecEntries(Set<YearEndChartEntryRecord> entries) {
+        return entries.stream().map(this::getFieldsForYecEntry).collect(Collectors.joining(", "));
+    }
+
+    private String getFieldsForYecEntry(YearEndChartEntryRecord record) {
+        return String.format("(%d, %d, '%s')",
+                record.year(),
+                record.position(),
+                record.track_id());
+    }
+
     private static String escapeQuotes(String name) {
         return StringUtils.replace(name, "'", "''");
     }
@@ -179,42 +207,50 @@ public class PostgresConnection {
     }
 
     public Map<String, Integer> getPositions(Set<String> trackIds, int week) {
+        if (trackIds.isEmpty()) {
+            return ImmutableMap.of();
+        }
+
         String sql = "SELECT e.track_id AS id, e.position AS lastPos" +
                 "     FROM chartEntries e" +
                 "     WHERE e.chart_week = " + week +
                 "     AND e.track_id IN " + getInClause(trackIds);
-        Function<ResultSet, Pair<String, Integer>> mapper = resultSet -> {
+        Function<ResultSet, Map.Entry<String, Integer>> mapper = resultSet -> {
             try {
                 String id = resultSet.getString("id");
                 Integer lastPos = resultSet.getInt("lastPos");
-                return new Pair<>(id, lastPos);
+                return new AbstractMap.SimpleEntry<>(id, lastPos);
             } catch (SQLException e) {
                 throw new RuntimeException("Couldn't extract chart entry!");
             }
         };
 
-        List<Pair<String, Integer>> entries = executeSelectStatement(sql, mapper);
-        return entries.stream().collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+        List<Map.Entry<String, Integer>> entries = executeSelectStatement(sql, mapper);
+        return entries.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public Map<String, Integer> getWeeksOnChart(Set<String> trackIds, int upToWeek) {
+        if (trackIds.isEmpty()) {
+            return ImmutableMap.of();
+        }
+
         String sql = "SELECT e.track_id AS id, COUNT(e.track_id) AS weeks" +
                 "     FROM chartEntries e" +
                 "     WHERE e.track_id IN " + getInClause(trackIds) +
                 "     AND e.chart_week <= " + upToWeek +
                 "     GROUP BY e.track_id";
-        Function<ResultSet, Pair<String, Integer>> mapper = resultSet -> {
+        Function<ResultSet, Map.Entry<String, Integer>> mapper = resultSet -> {
             try {
                 String id = resultSet.getString("id");
                 Integer weeks = resultSet.getInt("weeks");
-                return new Pair<>(id, weeks);
+                return new AbstractMap.SimpleEntry<>(id, weeks);
             } catch (SQLException e) {
                 throw new RuntimeException("Couldn't extract chart entry!");
             }
         };
 
-        List<Pair<String, Integer>> entries = executeSelectStatement(sql, mapper);
-        return entries.stream().collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+        List<Map.Entry<String, Integer>> entries = executeSelectStatement(sql, mapper);
+        return entries.stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     public List<TrackPositionRecord> getTrackPositions(int week) {
@@ -227,7 +263,19 @@ public class PostgresConnection {
         return executeSelectStatement(sql, this::createChartEntryRecord);
     }
 
+    public List<ChartEntryRecord> getChartEntries(Set<String> trackIds) {
+        if (trackIds.isEmpty()) {
+            return ImmutableList.of();
+        }
+
+        return getChartEntries(trackIds, getLatestWeek());
+    }
+
     public List<ChartEntryRecord> getChartEntries(Set<String> trackIds, int upToWeek) {
+        if (trackIds.isEmpty()) {
+            return ImmutableList.of();
+        }
+
         String sql = "SELECT chart_week, position, track_id" +
                 "     FROM chartEntries e" +
                 "     WHERE track_id IN " + getInClause(trackIds) +
@@ -246,6 +294,25 @@ public class PostgresConnection {
         return executeSelectStatement(sql, mapper);
     }
 
+    public Set<YearEndChartEntryRecord> getYearEndChartEntries(int year, int limit) {
+        String sql = "SELECT year, position, track_id" +
+                "     FROM yearEndChartEntries" +
+                "     WHERE year = " + year +
+                "     AND position <= " + limit;
+        Function<ResultSet, YearEndChartEntryRecord> mapper = resultSet -> {
+            try {
+                return YearEndChartEntryRecord.builder()
+                        .year(resultSet.getInt("year"))
+                        .position(resultSet.getInt("position"))
+                        .track_id(resultSet.getString("track_id"))
+                        .build();
+            } catch (SQLException e) {
+                throw new RuntimeException("Couldn't extract year-end chart entry!", e);
+            }
+        };
+        return new HashSet<>(executeSelectStatement(sql, mapper));
+    }
+
     private TrackPositionRecord createChartEntryRecord(ResultSet resultSet) {
         try {
             return ImmutableTrackPositionRecord.builder()
@@ -262,8 +329,19 @@ public class PostgresConnection {
     }
 
     public List<TrackArtistRecord> getTrackArtists(Set<String> trackIds) {
+        if (trackIds.isEmpty()) {
+            return ImmutableList.of();
+        }
+
         String sql = "SELECT track_id, artist_id FROM trackArtists" +
                 "    WHERE track_id IN " + getInClause(trackIds);
+
+        return executeSelectStatement(sql, this::createTrackArtistRecord);
+    }
+
+    public List<TrackArtistRecord> getTracksByArtist(String artistId) {
+        String sql = "SELECT track_id, artist_id FROM trackArtists" +
+                "    WHERE artist_id = " + artistId;
 
         return executeSelectStatement(sql, this::createTrackArtistRecord);
     }
@@ -280,6 +358,10 @@ public class PostgresConnection {
     }
 
     public Map<String, ArtistRecord> getArtists(Set<String> artistIds) {
+        if (artistIds.isEmpty()) {
+            return ImmutableMap.of();
+        }
+
         String sql = "SELECT id, name, href, uri, is_youtube FROM artists" +
                 "    WHERE id IN " + getInClause(artistIds);
 
@@ -309,6 +391,22 @@ public class PostgresConnection {
         }
 
         return tracks.isEmpty() ? Optional.empty() : Optional.of(Iterables.getOnlyElement(tracks));
+    }
+
+    public Optional<TrackRecord> getTrackById(String trackId) {
+        String sql = "SELECT t.id, t.name, t.href, t.uri, t.is_youtube FROM tracks t" +
+                "     WHERE t.id = " + quote(trackId);
+
+        List<TrackRecord> tracks = executeSelectStatement(sql, this::createTrackRecord);
+        return tracks.isEmpty() ? Optional.empty() : Optional.of(Iterables.getOnlyElement(tracks));
+    }
+
+    public List<TrackRecord> getTracks(String artistId) {
+        String sql = "SELECT t.id, t.name, t.href, t.uri, t.is_youtube FROM tracks t" +
+                "     JOIN trackArtists ta ON t.id = ta.track_id" +
+                "     WHERE ta.artist_id = " + quote(artistId);
+
+        return executeSelectStatement(sql, this::createTrackRecord);
     }
 
     private static String quote(String term) {

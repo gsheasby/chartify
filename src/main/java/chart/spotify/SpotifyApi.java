@@ -1,18 +1,19 @@
 package chart.spotify;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.wrapper.spotify.Api;
 import com.wrapper.spotify.exceptions.WebApiException;
 import com.wrapper.spotify.methods.ArtistSearchRequest;
-import com.wrapper.spotify.methods.PlaylistRequest;
+import com.wrapper.spotify.methods.PlaylistTracksRequest;
 import com.wrapper.spotify.methods.TrackRequest;
 import com.wrapper.spotify.methods.TrackSearchRequest;
 import com.wrapper.spotify.methods.TracksRequest;
 import com.wrapper.spotify.models.Artist;
 import com.wrapper.spotify.models.ClientCredentials;
 import com.wrapper.spotify.models.Page;
-import com.wrapper.spotify.models.Playlist;
+import com.wrapper.spotify.models.PlaylistTrack;
 import com.wrapper.spotify.models.Track;
 
 import java.io.IOException;
@@ -71,6 +72,10 @@ public class SpotifyApi {
         }
     }
 
+    public Artist getArtist(String name) {
+        return Iterables.getFirst(searchForArtist(name), null);
+    }
+
     List<Artist> searchForArtist(String name) {
         return getArtistSearchResultsFromSpotify(name).getItems();
     }
@@ -84,12 +89,27 @@ public class SpotifyApi {
         }
     }
 
-    Playlist getPlaylist(String playlistId) {
-        PlaylistRequest request = api.getPlaylist(config.userName(), playlistId).build();
+    List<PlaylistTrack> getPlaylistTracks(String playlistId) {
+        List<PlaylistTrack> tracks = Lists.newArrayList();
+        int limit = 100;
+        int offset = 0;
+        do {
+            Page<PlaylistTrack> playlistTrackPage = getPlaylistTrackPage(playlistId, limit, offset);
+            tracks.addAll(playlistTrackPage.getItems());
+            offset += limit;
+        } while (tracks.size() >= offset);
+        return tracks;
+    }
+
+    private Page<PlaylistTrack> getPlaylistTrackPage(String playlistId, int limit, int offset) {
+        PlaylistTracksRequest request = api.getPlaylistTracks(config.userName(), playlistId)
+                .limit(limit)
+                .offset(offset)
+                .build();
 
         try {
             return request.get();
-        } catch (IOException | WebApiException e) {
+        } catch (WebApiException | IOException e) {
             throw new RuntimeException("Couldn't load Spotify playlist", e);
         }
     }
