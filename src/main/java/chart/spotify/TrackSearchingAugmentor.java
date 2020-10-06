@@ -59,6 +59,8 @@ public class TrackSearchingAugmentor implements SpotifyAugmentor {
                 Track track = maybeTrack.get().track(ImmutableList.of(simpleArtist));
 
                 SpotifyChartEntry spotifyChartEntry = SpotifyChartEntry.builder().from(entry).track(track).build();
+
+                printTrackFound(track, "Found track from postgres");
                 return Optional.of(spotifyChartEntry);
             }
         }
