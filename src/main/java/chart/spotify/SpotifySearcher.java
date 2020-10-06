@@ -51,11 +51,32 @@ public class SpotifySearcher {
                     closestMatch = item;
                 }
             }
+
+            if (sameTitle) {
+                // Could be a "The" mismatch
+                String theArtist = addOrRemoveThe(artist);
+                if (item.getArtists().stream().anyMatch(a -> a.getName().equalsIgnoreCase(theArtist))) {
+                    List<String> artistNames = item.getArtists().stream()
+                            .map(SimpleArtist::getName)
+                            .collect(Collectors.toList());
+                    System.out.println("Matched artist " + artist + " with one of " + artistNames);
+                    return Optional.of(item);
+                }
+            }
         }
 
         return (closestMatch != null && closestDistance < 5)
                 ? Optional.of(closestMatch)
                 : Optional.empty();
+    }
+
+    // TODO: same as TrackSearchingAugmenter.getArtistInvariantToThe
+    private String addOrRemoveThe(String artist) {
+        if (artist.startsWith("The ")) {
+            return artist.substring(4);
+        } else {
+            return "The " + artist;
+        }
     }
 
     public Optional<SimpleArtist> searchForArtist(String name) {
