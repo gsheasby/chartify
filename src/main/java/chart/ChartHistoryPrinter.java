@@ -2,11 +2,9 @@ package chart;
 
 import chart.postgres.PostgresChartHistoryPrinter;
 import chart.spotify.SpotifyApi;
-import com.wrapper.spotify.exceptions.WebApiException;
 import com.wrapper.spotify.models.Artist;
 import com.wrapper.spotify.models.SimpleArtist;
 
-import java.io.IOException;
 import java.util.Optional;
 
 public class ChartHistoryPrinter {
@@ -18,7 +16,7 @@ public class ChartHistoryPrinter {
         this.printer = printer;
     }
 
-    public void printHistory(String artist) throws IOException {
+    public void printHistory(String artist) {
         Optional<Artist> maybeSpotifyArtist = getArtist(artist);
 
         if (!maybeSpotifyArtist.isPresent()) {
@@ -29,13 +27,8 @@ public class ChartHistoryPrinter {
         printHistory(maybeSpotifyArtist.get());
     }
 
-    private Optional<Artist> getArtist(String artist) throws IOException {
-        try {
-            return Optional.of(api.getArtist(artist));
-        } catch (WebApiException e) {
-            System.out.println("Couldn't load artist from Spotify!");
-            return Optional.empty();
-        }
+    private Optional<Artist> getArtist(String artist) {
+        return Optional.ofNullable(api.getArtist(artist));
     }
 
     private void printHistory(Artist spotifyArtist) {
