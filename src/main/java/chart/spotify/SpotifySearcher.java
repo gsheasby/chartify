@@ -2,6 +2,7 @@ package chart.spotify;
 
 import com.wrapper.spotify.models.Artist;
 import com.wrapper.spotify.models.SimpleArtist;
+import com.wrapper.spotify.models.SimpleTrack;
 import com.wrapper.spotify.models.Track;
 import org.apache.commons.lang.StringUtils;
 
@@ -22,15 +23,26 @@ public class SpotifySearcher {
         this.api = api;
     }
 
-    public Optional<Track> searchForTrack(String title, String artist) {
-        List<Track> tracks = api.searchForTrack(title, artist);
-        Optional<Track> bestMatch = getClosestMatch(tracks, title, artist);
+    public Optional<Track> searchForTrack(String title, String artistName) {
+        List<Track> tracks = api.searchForTrack(title, artistName);
+        Optional<Track> bestMatch = getClosestMatch(tracks, title, artistName);
 
-        if (!bestMatch.isPresent()) {
-            System.out.println(String.format(
-                    "Couldn't find exact matches for track %s by %s - potential matches were:\n%s", title, artist,
-                    printSearchResults(tracks)));
+        if (bestMatch.isPresent()) {
+            return bestMatch;
         }
+
+        // Try searching by artist
+        Artist artist = api.getArtist(artistName);
+        if (artist != null) {
+            Optional<SimpleTrack> maybeTrack = api.searchForTrack(title, artist);
+            if (maybeTrack.isPresent()) {
+                return Optional.ofNullable(api.getTrack(maybeTrack.get().getId()));
+            }
+        }
+
+        System.out.println(String.format(
+                "Couldn't find exact matches for track %s by %s - potential matches were:\n%s", title, artistName,
+                printSearchResults(tracks)));
         return bestMatch;
     }
 

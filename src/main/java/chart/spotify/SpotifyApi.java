@@ -10,14 +10,18 @@ import com.wrapper.spotify.methods.PlaylistTracksRequest;
 import com.wrapper.spotify.methods.TrackRequest;
 import com.wrapper.spotify.methods.TrackSearchRequest;
 import com.wrapper.spotify.methods.TracksRequest;
+import com.wrapper.spotify.models.Album;
 import com.wrapper.spotify.models.Artist;
 import com.wrapper.spotify.models.ClientCredentials;
 import com.wrapper.spotify.models.Page;
 import com.wrapper.spotify.models.PlaylistTrack;
+import com.wrapper.spotify.models.SimpleAlbum;
+import com.wrapper.spotify.models.SimpleTrack;
 import com.wrapper.spotify.models.Track;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class SpotifyApi {
@@ -46,6 +50,36 @@ public class SpotifyApi {
     List<Track> getTracks(List<String> trackIds) {
         List<List<String>> lists = Lists.partition(trackIds, 50); // Spotify API limits us to 50 trackIds per request
         return lists.stream().map(this::requestTracks).flatMap(List::stream).collect(Collectors.toList());
+    }
+
+    Optional<SimpleTrack> searchForTrack(String title, Artist artist) {
+        Page<SimpleAlbum> albumPage = getAlbumsForArtist(artist);
+        List<SimpleAlbum> albums = albumPage.getItems();
+        for (SimpleAlbum simpleAlbum: albums) {
+            Album album = getAlbum(simpleAlbum);
+            Optional<SimpleTrack> maybeTrack = album.getTracks().getItems().stream().filter(st -> st.getName().equalsIgnoreCase(title)).findAny();
+            if (maybeTrack.isPresent()) {
+                return maybeTrack;
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    private Page<SimpleAlbum> getAlbumsForArtist(Artist artist) {
+        try {
+            return api.getAlbumsForArtist(artist.getId()).build().get();
+        } catch (WebApiException | IOException e) {
+            throw new RuntimeException("Error getting albums for artist with name " + artist.getName(), e);
+        }
+    }
+
+    private Album getAlbum(SimpleAlbum simpleAlbum) {
+        try {
+            return api.getAlbum(simpleAlbum.getId()).build().get();
+        } catch (IOException | WebApiException e) {
+            throw new RuntimeException("Error getting album with name " + simpleAlbum.getName(), e);
+        }
     }
 
     private List<Track> requestTracks(List<String> trackIds) {
