@@ -19,8 +19,8 @@ public abstract class Song {
         }
 
         Song otherSong = (Song) other;
-        return title().equalsIgnoreCase(otherSong.title())
-                && artist().equalsIgnoreCase(otherSong.artist());
+        return id().equalsIgnoreCase(otherSong.id()) ||
+                (title().equalsIgnoreCase(otherSong.title()) && artist().equalsIgnoreCase(otherSong.artist()));
     }
 
     @Override
