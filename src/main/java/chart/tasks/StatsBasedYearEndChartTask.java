@@ -14,13 +14,13 @@ import java.util.stream.Collectors;
 
 public class StatsBasedYearEndChartTask {
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
-        int year = 2019;
+        int year = 2021;
         if (args.length < 1) {
             System.out.println("Using default year of " + year);
         } else {
             year = Integer.parseInt(args[0]);
         }
-        int limit = 200;
+        int limit = 300;
         if (args.length < 2) {
             System.out.println("Using default limit of " + limit);
         } else {

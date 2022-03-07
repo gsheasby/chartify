@@ -8,6 +8,7 @@ import chart.postgres.MultiChartLoader;
 import chart.postgres.PostgresConnection;
 import chart.postgres.YearEndChartPrinter;
 import chart.postgres.YearEndChartSaver;
+import chart.postgres.raw.YearEndChartEntryRecord;
 import chart.spotify.SimpleSpotifyChartEntry;
 import chart.spotify.SpotifyPlaylistLoader;
 import com.google.common.collect.Maps;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,7 +28,7 @@ public class YearEndChartSavingTask {
     private static final int LIMIT = 200;
 
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
-        int year = 2018;
+        int year = 2020;
         if (args.length < 1) {
             System.out.println("Using default year of " + year);
         } else {
@@ -38,7 +40,7 @@ public class YearEndChartSavingTask {
 
         Map<Song, ChartRun> chartRuns = new MultiChartLoader(config).getAllChartRuns(year);
         List<List<SimpleSpotifyChartEntry>> yecSections = getPartsOfYearEndChart(config);
-        Map<Integer, SimpleSpotifyChartEntry> yearEndChart = printYearEndChartPreview(chartRuns, yecSections);
+        Map<Integer, SimpleSpotifyChartEntry> yearEndChart = printYearEndChartPreview(year, connection, chartRuns, yecSections);
 
         YearEndChartSaver saver = new YearEndChartSaver(connection);
         saver.save(year, yearEndChart);
@@ -50,8 +52,14 @@ public class YearEndChartSavingTask {
         return playlistIds.stream().map(playlistLoader::loadChartEntries).collect(Collectors.toList());
     }
 
-    private static Map<Integer, SimpleSpotifyChartEntry> printYearEndChartPreview(Map<Song, ChartRun> chartRuns, List<List<SimpleSpotifyChartEntry>> yecSections) {
+    private static Map<Integer, SimpleSpotifyChartEntry> printYearEndChartPreview(
+            int year,
+            PostgresConnection connection,
+            Map<Song, ChartRun> chartRuns,
+            List<List<SimpleSpotifyChartEntry>> yecSections) {
         Map<Integer, SimpleSpotifyChartEntry> yearEndChart = Maps.newHashMap();
+        Set<YearEndChartEntryRecord> lastYearsTopHundred = connection.getYearEndChartEntries(year - 1, 100);
+        System.out.println("Loaded YEC for " + (year - 1) + " from Postgres");
 
         int pos = 1;
         int sectionIndex = 1;
@@ -59,7 +67,12 @@ public class YearEndChartSavingTask {
             System.out.println("-- Section " + sectionIndex + " --");
             for (SimpleSpotifyChartEntry entry : section) {
                 Song song = entry.toSong();
-                ChartRun chartRun = chartRuns.get(song);
+                ChartRun chartRun = Optional.ofNullable(chartRuns.get(song))
+                        .orElseGet(() -> chartRuns.entrySet().stream()
+                                .filter(e -> e.getKey().equals(song))
+                                .findAny()
+                                .map(Map.Entry::getValue)
+                                .orElseThrow());
                 YearEndChartPrinter.printWithStats(pos, chartRun);
                 yearEndChart.put(pos, entry);
 
@@ -70,10 +83,21 @@ public class YearEndChartSavingTask {
         }
 
         List<ChartRun> remainingEntries = getChartRunsNotInTopSections(chartRuns, yecSections);
+
+        Set<String> trackIdsToExclude = lastYearsTopHundred.stream()
+                .map(YearEndChartEntryRecord::track_id)
+                .collect(Collectors.toSet());;
+
         Iterator<ChartRun> yecIterator = remainingEntries.iterator();
         for (int statPos = pos; yecIterator.hasNext() && statPos <= LIMIT; statPos++) {
             ChartRun chartRun = yecIterator.next();
-            YearEndChartPrinter.printWithStats(statPos, chartRun);
+
+            if (trackIdsToExclude.contains(chartRun.getSong().id())) {
+                System.out.println("Skipping " + chartRun.getSong() + " from last year's top 100");
+                statPos--;
+            } else {
+                YearEndChartPrinter.printWithStats(statPos, chartRun);
+            }
         }
 
         return yearEndChart;
