@@ -55,7 +55,7 @@ public class YearEndChartPreviewTask {
             Map<Song, ChartRun> chartRuns,
             List<List<SimpleSpotifyChartEntry>> yecSections) {
         Set<YearEndChartEntryRecord> lastYearsTopHundred = connection.getYearEndChartEntries(year - 1, 100);
-        System.out.println("Loaded YEC for " + (year - 1) + " from Postgres");
+        System.out.println("Loaded YEC for " + (year - 1) + " from Postgres with " + lastYearsTopHundred.size() + " entries.");
 
         List<String> entriesForPrinting = Lists.newArrayListWithCapacity(LIMIT);
 
@@ -70,7 +70,7 @@ public class YearEndChartPreviewTask {
                                 .filter(e -> e.getKey().equals(song))
                                 .findAny()
                                 .map(Map.Entry::getValue)
-                                .orElseThrow());
+                                .orElseThrow(() -> new IllegalStateException("chart run not found for " + song.title())));
                 YearEndChartPrinter.printWithStats(pos, chartRun);
                 entriesForPrinting.add(YearEndChartPrinter.getBbCodedString(pos, chartRun));
                 pos++;
