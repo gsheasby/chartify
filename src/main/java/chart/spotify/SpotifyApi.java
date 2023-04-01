@@ -1,6 +1,7 @@
 package chart.spotify;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.wrapper.spotify.Api;
 import com.wrapper.spotify.exceptions.WebApiException;
@@ -9,14 +10,18 @@ import com.wrapper.spotify.methods.PlaylistTracksRequest;
 import com.wrapper.spotify.methods.TrackRequest;
 import com.wrapper.spotify.methods.TrackSearchRequest;
 import com.wrapper.spotify.methods.TracksRequest;
+import com.wrapper.spotify.models.Album;
 import com.wrapper.spotify.models.Artist;
 import com.wrapper.spotify.models.ClientCredentials;
 import com.wrapper.spotify.models.Page;
 import com.wrapper.spotify.models.PlaylistTrack;
+import com.wrapper.spotify.models.SimpleAlbum;
+import com.wrapper.spotify.models.SimpleTrack;
 import com.wrapper.spotify.models.Track;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class SpotifyApi {
@@ -47,6 +52,36 @@ public class SpotifyApi {
         return lists.stream().map(this::requestTracks).flatMap(List::stream).collect(Collectors.toList());
     }
 
+    Optional<SimpleTrack> searchForTrack(String title, Artist artist) {
+        Page<SimpleAlbum> albumPage = getAlbumsForArtist(artist);
+        List<SimpleAlbum> albums = albumPage.getItems();
+        for (SimpleAlbum simpleAlbum: albums) {
+            Album album = getAlbum(simpleAlbum);
+            Optional<SimpleTrack> maybeTrack = album.getTracks().getItems().stream().filter(st -> st.getName().equalsIgnoreCase(title)).findAny();
+            if (maybeTrack.isPresent()) {
+                return maybeTrack;
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    private Page<SimpleAlbum> getAlbumsForArtist(Artist artist) {
+        try {
+            return api.getAlbumsForArtist(artist.getId()).build().get();
+        } catch (WebApiException | IOException e) {
+            throw new RuntimeException("Error getting albums for artist with name " + artist.getName(), e);
+        }
+    }
+
+    private Album getAlbum(SimpleAlbum simpleAlbum) {
+        try {
+            return api.getAlbum(simpleAlbum.getId()).build().get();
+        } catch (IOException | WebApiException e) {
+            throw new RuntimeException("Error getting album with name " + simpleAlbum.getName(), e);
+        }
+    }
+
     private List<Track> requestTracks(List<String> trackIds) {
         Preconditions.checkArgument(trackIds.size() <= 50, "Can't request more than 50 artists!");
         TracksRequest request = api.getTracks(trackIds).build();
@@ -57,41 +92,35 @@ public class SpotifyApi {
         }
     }
 
-    Track getTrack(String title, String artist) {
+    List<Track> searchForTrack(String title, String artist) {
+        return getSearchResultsFromSpotify(title, artist).getItems();
+    }
+
+    private Page<Track> getSearchResultsFromSpotify(String title, String artist) {
         TrackSearchRequest request = api.searchTracks(title + " " + artist).build();
+
         try {
-            Page<Track> trackPage = request.get();
-            for (Track item : trackPage.getItems()) {
-                boolean sameTitle = item.getName().equalsIgnoreCase(title);
-                boolean sameArtist = item.getArtists().stream().anyMatch(a -> a.getName().equalsIgnoreCase(artist));
-                if (sameTitle && sameArtist) {
-                    return item;
-                }
-                // TODO have some measure of edit distance?
-            }
+            return request.get();
         } catch (IOException | WebApiException e) {
             throw new RuntimeException("Couldn't get track " + title, e);
         }
-
-        throw new IllegalStateException(String.format(
-                "Couldn't find exact matches for track %s by %s", title, artist));
     }
 
-    public Artist getArtist(String name) throws IOException, WebApiException {
+    public Artist getArtist(String name) {
+        return Iterables.getFirst(searchForArtist(name), null);
+    }
+
+    List<Artist> searchForArtist(String name) {
+        return getArtistSearchResultsFromSpotify(name).getItems();
+    }
+
+    private Page<Artist> getArtistSearchResultsFromSpotify(String name) {
         ArtistSearchRequest request = api.searchArtists(name).build();
-        List<Artist> items = request.get().getItems();
-        List<Artist> exactMatches = items.stream()
-                                         .filter(artist -> artist.getName().equalsIgnoreCase(name))
-                                         .collect(Collectors.toList());
-
-        if (exactMatches.isEmpty()) {
-            throw new IllegalStateException("Couldn't find any exact match for artist" + name);
+        try {
+            return request.get();
+        } catch (IOException | WebApiException e) {
+            throw new RuntimeException("Couldn't get artist " + name, e);
         }
-        if (exactMatches.size() > 1) {
-            System.out.println("Multiple matches found; returning the first result");
-        }
-
-        return exactMatches.get(0);
     }
 
     List<PlaylistTrack> getPlaylistTracks(String playlistId) {

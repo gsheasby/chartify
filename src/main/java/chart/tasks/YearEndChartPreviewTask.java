@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,7 +26,7 @@ public class YearEndChartPreviewTask {
     private static final int LIMIT = 200;
 
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
-        int year = 2019;
+        int year = 2021;
         if (args.length < 1) {
             System.out.println("Using default year of " + year);
         } else {
@@ -54,7 +55,7 @@ public class YearEndChartPreviewTask {
             Map<Song, ChartRun> chartRuns,
             List<List<SimpleSpotifyChartEntry>> yecSections) {
         Set<YearEndChartEntryRecord> lastYearsTopHundred = connection.getYearEndChartEntries(year - 1, 100);
-        System.out.println("Loaded YEC for " + (year - 1) + " from Postgres");
+        System.out.println("Loaded YEC for " + (year - 1) + " from Postgres with " + lastYearsTopHundred.size() + " entries.");
 
         List<String> entriesForPrinting = Lists.newArrayListWithCapacity(LIMIT);
 
@@ -64,7 +65,12 @@ public class YearEndChartPreviewTask {
             System.out.println("-- Section " + sectionIndex + " --");
             for (SimpleSpotifyChartEntry entry : section) {
                 Song song = entry.toSong();
-                ChartRun chartRun = chartRuns.get(song);
+                ChartRun chartRun = Optional.ofNullable(chartRuns.get(song))
+                        .orElseGet(() -> chartRuns.entrySet().stream()
+                                .filter(e -> e.getKey().equals(song))
+                                .findAny()
+                                .map(Map.Entry::getValue)
+                                .orElseThrow(() -> new IllegalStateException("chart run not found for " + song.title())));
                 YearEndChartPrinter.printWithStats(pos, chartRun);
                 entriesForPrinting.add(YearEndChartPrinter.getBbCodedString(pos, chartRun));
                 pos++;
@@ -84,11 +90,14 @@ public class YearEndChartPreviewTask {
             ChartRun chartRun = yecIterator.next();
 
             if (trackIdsToExclude.contains(chartRun.getSong().id())) {
-                entriesForPrinting.add("Skipping " + chartRun.getSong() + " from last year's top 100");
+                String skipping = "Skipping " + chartRun.getSong() + " from last year's top 100";
+                System.out.println(skipping);
+                entriesForPrinting.add(skipping);
                 statPos--; // TODO this is rather hacky!
                 continue;
             }
 
+            YearEndChartPrinter.printWithStats(statPos, chartRun);
             entriesForPrinting.add(YearEndChartPrinter.getBbCodedString(statPos, chartRun));
         }
 
@@ -96,10 +105,19 @@ public class YearEndChartPreviewTask {
     }
 
     private static List<ChartRun> getChartRunsNotInTopSections(Map<Song, ChartRun> chartRuns, List<List<SimpleSpotifyChartEntry>> topLists) {
-        Set<ChartRun> indexedTopRuns = topLists.stream()
-                .flatMap(List::stream) // Concatenate lists
+        List<SimpleSpotifyChartEntry> simpleSpotifyChartEntryStream = topLists.stream()
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+        long count = simpleSpotifyChartEntryStream.size();
+        Set<ChartRun> indexedTopRuns = simpleSpotifyChartEntryStream // Concatenate lists
+                .stream()
                 .map(SimpleChartEntry::toSong)
-                .map(chartRuns::get)
+                .map(song -> Optional.ofNullable(chartRuns.get(song))
+                        .orElseGet(() -> chartRuns.entrySet().stream()
+                                .filter(e -> e.getKey().equals(song))
+                                .findAny()
+                                .map(Map.Entry::getValue)
+                                .orElseThrow()))
                 .collect(Collectors.toSet());
 
         return chartRuns.values().stream()

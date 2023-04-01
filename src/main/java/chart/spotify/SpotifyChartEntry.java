@@ -1,15 +1,15 @@
 package chart.spotify;
 
-import java.util.Set;
-
-import org.immutables.value.Value;
-
+import chart.ChartEntry;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
+import com.wrapper.spotify.models.SimpleArtist;
 import com.wrapper.spotify.models.Track;
+import org.immutables.value.Value;
 
-import chart.ChartEntry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Value.Immutable
 public abstract class SpotifyChartEntry implements ChartEntry {
@@ -30,7 +30,9 @@ public abstract class SpotifyChartEntry implements ChartEntry {
 
     @Override
     public String artist() {
-        return track().getArtists().get(0).getName();
+        return track().getArtists().stream()
+                .map(SimpleArtist::getName)
+                .collect(Collectors.joining(", "));
     }
 
     @Override

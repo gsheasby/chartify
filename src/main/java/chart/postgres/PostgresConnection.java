@@ -371,7 +371,7 @@ public class PostgresConnection {
 
     public Optional<ArtistRecord> getArtist(String artistName) {
         String sql = "SELECT id, name, href, uri, is_youtube FROM artists" +
-                "    WHERE name = " + quote(artistName);
+                "    WHERE LOWER(name) = LOWER(" + quote(artistName) + ")";
 
         List<ArtistRecord> artists = executeSelectStatement(sql, this::createSimpleArtist);
         return artists.isEmpty() ? Optional.empty() : Optional.of(Iterables.getOnlyElement(artists));
@@ -381,9 +381,15 @@ public class PostgresConnection {
         String sql = "SELECT t.id, t.name, t.href, t.uri, t.is_youtube FROM tracks t" +
                 "     JOIN trackArtists ta ON t.id = ta.track_id" +
                 "     WHERE ta.artist_id = " + quote(artistId) +
-                "     AND t.name = " + quote(title);
+                "     AND LOWER(t.name) = LOWER(" + quote(title) + ")";
 
         List<TrackRecord> tracks = executeSelectStatement(sql, this::createTrackRecord);
+
+        if (tracks.size() > 1) {
+            System.err.println("Query returned multiple results!");
+            System.err.println(sql);
+        }
+
         return tracks.isEmpty() ? Optional.empty() : Optional.of(Iterables.getOnlyElement(tracks));
     }
 
@@ -458,6 +464,18 @@ public class PostgresConnection {
                                         .collect(Collectors.joining(", ")));
     }
 
+    public List<Integer> getChartWeeks() {
+        String sql = "SELECT week FROM chart";
+        Function<ResultSet, Integer> mapper = resultSet -> {
+            try {
+                return resultSet.getInt("week");
+            } catch (SQLException e) {
+                throw new RuntimeException("Failed to get week");
+            }
+        };
+        return executeSelectStatement(sql, mapper);
+    }
+
     public List<Integer> getChartWeeks(int year) {
         String sql = "SELECT week FROM chart WHERE date >= '" + year + "-01-01'" +
                 "     AND date <= '" + year + "-12-31'";
@@ -476,6 +494,11 @@ public class PostgresConnection {
         return executeSelectSingleStatement(sql, this::getDateTime, DateTime.now());
     }
 
+    public boolean chartExists(int week) {
+        String sql = "SELECT date FROM chart WHERE week = " + week;
+        return executeSingleSelectStatement(sql, this::getDateTime).isPresent();
+    }
+
     public int getLatestWeek() {
         String sql = "SELECT max(week) AS latest FROM chart";
         Function<ResultSet, Integer> mapper = resultSet -> {
@@ -489,16 +512,21 @@ public class PostgresConnection {
     }
 
     private <T> T executeSelectSingleStatement(String sql, Function<ResultSet, T> mapper, T defaultResult) {
+        return executeSingleSelectStatement(sql, mapper).orElse(defaultResult);
+    }
+
+    private <T> Optional<T> executeSingleSelectStatement(String sql, Function<ResultSet, T> mapper) {
+        Optional<T> result = Optional.empty();
         try (Connection conn = manager.getConnection()) {
             Statement statement = conn.createStatement();
             ResultSet resultSet = statement.executeQuery(sql);
             if (resultSet.next()) {
-                return mapper.apply(resultSet);
+                result = Optional.of(mapper.apply(resultSet));
             }
         } catch (SQLException e) {
             throw new RuntimeException("Failed to execute select statement!", e);
         }
-        return defaultResult;
+        return result;
     }
 
     private DateTime getDateTime(ResultSet resultSet) {

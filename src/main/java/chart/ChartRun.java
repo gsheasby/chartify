@@ -13,7 +13,7 @@ public class ChartRun implements Comparable<ChartRun> {
     private final Integer entryWeek;
     private final DateTime entryDate;
 
-    private List<Integer> positions;
+    private final List<Integer> positions;
     private boolean active = false;
 
     public ChartRun(Song song, Integer entryWeek, DateTime entryDate) {
@@ -55,7 +55,7 @@ public class ChartRun implements Comparable<ChartRun> {
         return positions.stream().mapToInt(i -> i).min().getAsInt();
     }
 
-    private Integer getWeeks() {
+    public Integer getWeeks() {
         return positions.size();
     }
 

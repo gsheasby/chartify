@@ -1,14 +1,5 @@
 package chart.postgres;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import com.google.common.collect.Sets;
-
 import chart.ChartCompiler;
 import chart.ChartEntry;
 import chart.SimpleChartEntry;
@@ -21,6 +12,14 @@ import chart.spotify.SimpleSpotifyChartEntry;
 import chart.spotify.SpotifyChart;
 import chart.spotify.SpotifyChartEntry;
 import chart.spotify.SpotifyChartReader;
+import com.google.common.collect.Sets;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class PostgresChartCompiler implements ChartCompiler<SpotifyChart> {
     private final SpotifyChartReader reader;
