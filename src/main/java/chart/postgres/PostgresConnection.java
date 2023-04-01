@@ -464,6 +464,18 @@ public class PostgresConnection {
                                         .collect(Collectors.joining(", ")));
     }
 
+    public List<Integer> getChartWeeks() {
+        String sql = "SELECT week FROM chart";
+        Function<ResultSet, Integer> mapper = resultSet -> {
+            try {
+                return resultSet.getInt("week");
+            } catch (SQLException e) {
+                throw new RuntimeException("Failed to get week");
+            }
+        };
+        return executeSelectStatement(sql, mapper);
+    }
+
     public List<Integer> getChartWeeks(int year) {
         String sql = "SELECT week FROM chart WHERE date >= '" + year + "-01-01'" +
                 "     AND date <= '" + year + "-12-31'";
