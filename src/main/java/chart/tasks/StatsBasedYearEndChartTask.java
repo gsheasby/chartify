@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class StatsBasedYearEndChartTask {
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
-        int year = 2021;
+        int year = 2022;
         if (args.length < 1) {
             System.out.println("Using default year of " + year);
         } else {
