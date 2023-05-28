@@ -47,28 +47,21 @@ public class CsvChartSaver implements ChartSaver<Chart> {
                                  entry.position(),
                                  entry.lastPosition().get(),
                                  entry.weeksOnChart(),
-                                 surroundWithQuotesIfComma(entry.title()),
-                                 surroundWithQuotesIfComma(entry.artist()),
-                                 surroundWithQuotesIfComma(entry.id()),
-                                 surroundWithQuotesIfComma(entry.href()),
-                                 surroundWithQuotesIfComma(entry.uri()));
+                    CsvUtils.sanitise(entry.title()),
+                    CsvUtils.sanitise(entry.artist()),
+                    CsvUtils.sanitise(entry.id()),
+                    CsvUtils.sanitise(entry.href()),
+                    CsvUtils.sanitise(entry.uri()));
         } else {
             return String.format("%d,,%d,%s,%s,%s,%s,%s",
                                  entry.position(),
                                  entry.weeksOnChart(),
-                                 surroundWithQuotesIfComma(entry.title()),
-                                 surroundWithQuotesIfComma(entry.artist()),
-                                 surroundWithQuotesIfComma(entry.id()),
-                                 surroundWithQuotesIfComma(entry.href()),
-                                 surroundWithQuotesIfComma(entry.uri()));
+                    CsvUtils.sanitise(entry.title()),
+                    CsvUtils.sanitise(entry.artist()),
+                    CsvUtils.sanitise(entry.id()),
+                    CsvUtils.sanitise(entry.href()),
+                    CsvUtils.sanitise(entry.uri()));
         }
     }
 
-    private String surroundWithQuotesIfComma(String str) {
-        if (str.indexOf(',') < 0) {
-            return str;
-        } else {
-            return "\"" + str + "\"";
-        }
-    }
 }

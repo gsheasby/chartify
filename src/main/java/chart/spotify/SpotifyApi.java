@@ -1,6 +1,7 @@
 package chart.spotify;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.wrapper.spotify.Api;
@@ -10,15 +11,16 @@ import com.wrapper.spotify.methods.PlaylistTracksRequest;
 import com.wrapper.spotify.methods.TrackRequest;
 import com.wrapper.spotify.methods.TrackSearchRequest;
 import com.wrapper.spotify.methods.TracksRequest;
+import com.wrapper.spotify.methods.UserPlaylistsRequest;
 import com.wrapper.spotify.models.Album;
 import com.wrapper.spotify.models.Artist;
 import com.wrapper.spotify.models.ClientCredentials;
 import com.wrapper.spotify.models.Page;
 import com.wrapper.spotify.models.PlaylistTrack;
 import com.wrapper.spotify.models.SimpleAlbum;
+import com.wrapper.spotify.models.SimplePlaylist;
 import com.wrapper.spotify.models.SimpleTrack;
 import com.wrapper.spotify.models.Track;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +38,39 @@ public class SpotifyApi {
     private SpotifyApi(Api api, SpotifyConfig config) {
         this.api = api;
         this.config = config;
+    }
+
+    public List<PlaylistTrack> getPlaylist(String name) {
+        try {
+            List<SimplePlaylist> allPlaylists = getAllPlaylists();
+            System.out.println(allPlaylists.size());
+            allPlaylists.stream().map(SimplePlaylist::getName).sorted().forEach(System.out::println);
+            return allPlaylists.stream()
+                    .filter(playlist -> playlist.getName().equalsIgnoreCase(name))
+                    .findAny()
+                    .map(playlist -> getPlaylistTracks(playlist.getId()))
+                    .orElseGet(ImmutableList::of);
+        } catch (IOException | WebApiException e) {
+            throw new RuntimeException("Couldn't find playlist " + name, e);
+        }
+    }
+
+    public List<SimplePlaylist> getAllPlaylists() throws IOException, WebApiException {
+        List<SimplePlaylist> playlists = Lists.newArrayList();
+        int limit= 50;
+        int offset = 0;
+        do {
+            UserPlaylistsRequest request = api
+                    .getPlaylistsForUser(config.userName())
+                    .limit(limit)
+                    .offset(offset)
+                    .build();
+            Page<SimplePlaylist> playlistPage = request.get();
+            playlists.addAll(playlistPage.getItems());
+            offset += limit;
+        } while (playlists.size() >= offset);
+        return playlists;
+
     }
 
     Track getTrack(String trackId) {
@@ -123,6 +158,10 @@ public class SpotifyApi {
         }
     }
 
+    public List<PlaylistTrack> getPlaylistTracks(SimplePlaylist playlist) {
+        return getPlaylistTracks(playlist.getId());
+    }
+
     List<PlaylistTrack> getPlaylistTracks(String playlistId) {
         List<PlaylistTrack> tracks = Lists.newArrayList();
         int limit = 100;
@@ -162,7 +201,10 @@ public class SpotifyApi {
 
     private static ClientCredentials getClientCredentials(Api api) {
         try {
-            return api.clientCredentialsGrant().build().get();
+            return api
+                    .clientCredentialsGrant()
+                    .scopes(ImmutableList.of("playlist-read-private", "playlist-read-collaborative"))
+                    .build().get();
         } catch (IOException | WebApiException e) {
             throw new RuntimeException("Couldn't authenticate to Spotify", e);
         }

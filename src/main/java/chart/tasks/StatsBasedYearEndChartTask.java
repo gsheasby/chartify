@@ -11,10 +11,11 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.joda.time.DateTime;
 
 public class StatsBasedYearEndChartTask {
     public static void main(String[] args) throws IOException, SQLException, ClassNotFoundException {
-        int year = 2022;
+        int year = DateTime.now().minusMonths(3).getYear();
         if (args.length < 1) {
             System.out.println("Using default year of " + year);
         } else {
